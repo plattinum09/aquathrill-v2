@@ -1,0 +1,29 @@
+# AQUATHRILL - Robots.txt
+# https://aquathrill-thailand.com
+
+User-agent: *
+Allow: /
+Disallow: /assets/js/
+Disallow: /assets/css/
+
+# Allow AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Sitemap
+Sitemap: https://aquathrill-thailand.com/sitemap.xml

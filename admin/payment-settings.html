@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <!-- บล็อกการเข้าถึงหน้านี้: ระบบ payment ใช้ Payso แล้ว ไม่ใช้หน้าตั้งค่าโอน/พร้อมเพย์นี้
+         redirect ทุกคน (รวม admin) กลับ dashboard ทันทีก่อนหน้า render
+         เปิดคืนได้โดยลบแท็ก script redirect บรรทัดล่างนี้ออก -->
+    <script>window.location.replace('index.html');</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าชำระเงิน | AQUATHRILL Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.06);padding:24px 0;z-index:100}
+        .sidebar .brand{padding:0 24px 24px;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.6);text-decoration:none;font-size:.95rem;transition:.2s;border-left:3px solid transparent}
+        .sidebar nav a:hover,.sidebar nav a.active{background:rgba(0,212,255,.08);color:#fff;border-left-color:#00d4ff}
+        .sidebar nav a i{width:20px;text-align:center}
+        .sidebar .logout-btn{position:absolute;bottom:24px;left:24px;right:24px;padding:12px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);border-radius:12px;color:#ff5252;text-align:center;cursor:pointer;font-family:inherit;font-size:.9rem;transition:.2s}
+        .sidebar .logout-btn:hover{background:rgba(255,80,80,.2)}
+        .main-content{margin-left:240px;padding:32px;max-width:900px}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+        .top-bar h2{font-size:1.6rem}
+        .btn{padding:10px 24px;border:none;border-radius:12px;font-family:inherit;font-weight:600;cursor:pointer;font-size:.9rem;transition:.3s;display:inline-flex;align-items:center;gap:8px}
+        .btn-primary{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,100,255,.3)}
+        .btn-success{background:linear-gradient(135deg,#00c853,#009624);color:#fff}
+        .btn-success:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,200,83,.3)}
+
+        /* Section card */
+        .settings-section{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;margin-bottom:24px}
+        .settings-section h3{font-size:1.15rem;margin-bottom:20px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+        .settings-section h3 i{color:#00d4ff;font-size:1.1rem}
+        .form-group{margin-bottom:18px}
+        .form-group label{display:block;font-size:.85rem;color:rgba(255,255,255,.6);margin-bottom:6px;font-weight:500}
+        .form-group input,.form-group textarea{width:100%;padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:1rem;font-family:inherit;outline:none;transition:.3s}
+        .form-group input:focus,.form-group textarea:focus{border-color:#00d4ff;background:rgba(0,212,255,.08)}
+        .form-group textarea{resize:vertical;min-height:80px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+        /* Toggle switch */
+        .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+        .toggle-row:last-child{border-bottom:none}
+        .toggle-row .toggle-label{font-size:.95rem}
+        .toggle-row .toggle-desc{font-size:.8rem;color:rgba(255,255,255,.4);margin-top:2px}
+        .toggle-switch{position:relative;width:52px;height:28px;flex-shrink:0}
+        .toggle-switch input{opacity:0;width:0;height:0}
+        .toggle-slider{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.15);border-radius:28px;cursor:pointer;transition:.3s}
+        .toggle-slider::before{content:'';position:absolute;height:22px;width:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+        .toggle-switch input:checked + .toggle-slider{background:linear-gradient(135deg,#00b4ff,#0066cc)}
+        .toggle-switch input:checked + .toggle-slider::before{transform:translateX(24px)}
+
+        /* Preview card */
+        .preview-card{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:16px;padding:20px;margin-top:20px}
+        .preview-card h4{font-size:.9rem;color:#00d4ff;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+        .preview-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem}
+        .preview-row:last-child{border-bottom:none}
+        .preview-row .label{color:rgba(255,255,255,.5)}
+        .preview-row .value{color:#fff;font-weight:500}
+
+        /* Toast */
+        .toast{position:fixed;top:24px;right:24px;padding:14px 24px;border-radius:12px;font-weight:600;z-index:999;transform:translateX(400px);transition:.4s;font-size:.9rem}
+        .toast.show{transform:translateX(0)}
+        .toast.success{background:#00c853;color:#fff}
+        .toast.error{background:#ff5252;color:#fff}
+
+        /* Last saved */
+        .last-saved{color:rgba(255,255,255,.4);font-size:.8rem;margin-top:8px}
+
+        /* QR Upload */
+        .qr-upload-area{border:2px dashed rgba(255,255,255,.15);border-radius:16px;padding:32px;text-align:center;cursor:pointer;transition:.3s;position:relative;margin-top:12px}
+        .qr-upload-area:hover{border-color:#00d4ff;background:rgba(0,212,255,.04)}
+        .qr-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .qr-upload-area i{font-size:2rem;color:rgba(255,255,255,.25);margin-bottom:8px;display:block}
+        .qr-upload-area p{color:rgba(255,255,255,.4);font-size:.85rem}
+        .qr-preview{margin-top:16px;text-align:center}
+        .qr-preview img{max-width:220px;max-height:220px;border-radius:16px;border:2px solid rgba(0,212,255,.2);background:#fff;padding:8px}
+        .qr-preview .qr-remove{margin-top:10px;padding:6px 16px;background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.3);border-radius:8px;color:#ff5252;cursor:pointer;font-family:inherit;font-size:.8rem;transition:.2s}
+        .qr-preview .qr-remove:hover{background:rgba(255,80,80,.25)}
+
+        @media(max-width:768px){
+            .sidebar{width:60px;padding:16px 0}
+            .sidebar .brand,.sidebar nav a span,.sidebar .logout-btn span{display:none}
+            .sidebar nav a{justify-content:center;padding:12px}
+            .main-content{margin-left:60px;padding:16px}
+            .form-row{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">AQUATHRILL</div>
+        <nav>
+            <a href="/admin/index.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="/admin/bookings.html"><i class="fas fa-calendar-check"></i> <span>การจอง</span></a>
+            <a href="/admin/availability.html"><i class="fas fa-ship"></i> <span>สถานะเรือ</span></a>
+
+            <a href="/admin/boat-types.html"><i class="fas fa-anchor"></i> <span>จัดการเรือ</span></a>
+            <a href="/admin/agent-pricing.html"><i class="fas fa-user-tie"></i> <span>ราคาตัวแทน</span></a>
+            <a href="/admin/promotions.html"><i class="fas fa-bullhorn"></i> <span>โปรโมชั่น</span></a>
+            <a href="/admin/gallery.html"><i class="fas fa-images"></i> <span>แกลเลอรี่</span></a>
+            <a href="/admin/reviews.html"><i class="fas fa-star"></i> <span>รีวิว Google</span></a>
+            <!-- ซ่อนเมนูชำระเงิน (ระบบ Payso ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
+            <a href="payment-settings.html" class="active"><i class="fas fa-credit-card"></i> <span>ชำระเงิน</span></a>
+            -->
+            <a href="../" target="_blank"><i class="fas fa-external-link-alt"></i> <span>ดูเว็บไซต์</span></a>
+        </nav>
+        <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span></button>
+    </aside>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2><i class="fas fa-credit-card" style="color:#00d4ff"></i> ตั้งค่าการชำระเงิน</h2>
+            <button class="btn btn-success" onclick="saveSettings()"><i class="fas fa-save"></i> บันทึก</button>
+        </div>
+
+        <!-- Bank Transfer Settings -->
+        <div class="settings-section">
+            <h3><i class="fas fa-university"></i> ข้อมูลบัญชีธนาคาร (โอนเงิน)</h3>
+            <div class="form-group">
+                <label>ชื่อธนาคาร</label>
+                <input type="text" id="bank-name" placeholder="เช่น กสิกรไทย (KBank)">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>เลขที่บัญชี</label>
+                    <input type="text" id="account-number" placeholder="เช่น 123-4-56789-0">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อบัญชี</label>
+                    <input type="text" id="account-name" placeholder="เช่น บจก. AQUATHRILL">
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="preview-card">
+                <h4><i class="fas fa-eye"></i> ตัวอย่างที่ลูกค้าจะเห็น</h4>
+                <div class="preview-row"><span class="label">ธนาคาร</span><span class="value" id="preview-bank">-</span></div>
+                <div class="preview-row"><span class="label">เลขที่บัญชี</span><span class="value" id="preview-account">-</span></div>
+                <div class="preview-row"><span class="label">ชื่อบัญชี</span><span class="value" id="preview-name">-</span></div>
+            </div>
+        </div>
+
+        <!-- PromptPay Settings -->
+        <div class="settings-section">
+            <h3><i class="fas fa-qrcode"></i> QR PromptPay</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>หมายเลข PromptPay (เบอร์โทร / เลขบัตรประชาชน)</label>
+                    <input type="text" id="promptpay-number" placeholder="เช่น 0812345678">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อผู้รับเงิน</label>
+                    <input type="text" id="promptpay-name" placeholder="เช่น AQUATHRILL CO.,LTD.">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>รูป QR Code PromptPay</label>
+                <div class="qr-upload-area" id="qr-upload-area">
+                    <input type="file" accept="image/*" id="qr-file-input" onchange="handleQrUpload(this)">
+                    <i class="fas fa-qrcode"></i>
+                    <p>คลิกหรือลากรูป QR Code มาวาง (JPG, PNG — สูงสุด 5MB)</p>
+                </div>
+                <div class="qr-preview" id="qr-preview" style="display:none">
+                    <img id="qr-preview-img" src="" alt="QR Code">
+                    <br>
+                    <button class="qr-remove" onclick="removeQrImage()"><i class="fas fa-trash"></i> ลบรูป QR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods Toggle -->
+        <div class="settings-section">
+            <h3><i class="fas fa-toggle-on"></i> เปิด/ปิดช่องทางชำระเงิน</h3>
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label"><i class="fas fa-bolt" style="color:#00d4ff"></i> ชำระออนไลน์ (Payso)</div>
+                    <div class="toggle-desc">บัตรเครดิต/เดบิต, QR PromptPay, Internet Banking, ผ่อน 0%, e-Wallet — ผ่าน Payso Gateway</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-credit" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label"><i class="fas fa-university" style="color:#00d4ff"></i> โอนเงิน</div>
+                    <div class="toggle-desc">โอนผ่านธนาคาร แล้วส่งสลิป</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-bank" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label"><i class="fas fa-qrcode" style="color:#00d4ff"></i> QR PromptPay</div>
+                    <div class="toggle-desc">สแกน QR Code ผ่านแอปธนาคาร</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-promptpay" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Additional Note -->
+        <div class="settings-section">
+            <h3><i class="fas fa-sticky-note"></i> หมายเหตุเพิ่มเติม</h3>
+            <div class="form-group">
+                <label>ข้อความที่แสดงในหน้าชำระเงิน (ถ้ามี)</label>
+                <textarea id="payment-note" placeholder="เช่น กรุณาชำระเงินภายใน 24 ชั่วโมง หลังจากทำการจอง"></textarea>
+            </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px">
+            <button class="btn btn-success" onclick="saveSettings()" style="padding:14px 32px;font-size:1rem"><i class="fas fa-save"></i> บันทึกการตั้งค่า</button>
+        </div>
+        <div class="last-saved" id="last-saved"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const API = '/api';
+    let currentQrImageUrl = '';
+
+    // Auth check
+    (async () => {
+        try {
+            const r = await fetch(API + '/admin-auth.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'check' }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (!d.authenticated) location.href = 'index.html';
+            else loadSettings();
+        } catch(e) { location.href = 'index.html'; }
+    })();
+
+    async function doLogout() {
+        await fetch(API + '/admin-auth.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'logout' }),
+            credentials: 'include'
+        });
+        location.href = 'index.html';
+    }
+
+    async function loadSettings() {
+        try {
+            const r = await fetch(API + '/payment-settings.php');
+            const d = await r.json();
+            if (d.settings) {
+                const s = d.settings;
+                document.getElementById('bank-name').value = s.bank_name || '';
+                document.getElementById('account-number').value = s.account_number || '';
+                document.getElementById('account-name').value = s.account_name || '';
+                document.getElementById('promptpay-number').value = s.promptpay_number || '';
+                document.getElementById('promptpay-name').value = s.promptpay_name || '';
+                document.getElementById('toggle-credit').checked = s.credit_card_enabled !== false;
+                document.getElementById('toggle-bank').checked = s.bank_transfer_enabled !== false;
+                document.getElementById('toggle-promptpay').checked = s.promptpay_enabled !== false;
+                document.getElementById('payment-note').value = s.payment_note || '';
+                if (s.promptpay_qr_image) {
+                    currentQrImageUrl = s.promptpay_qr_image;
+                    document.getElementById('qr-preview-img').src = s.promptpay_qr_image;
+                    document.getElementById('qr-preview').style.display = '';
+                    document.getElementById('qr-upload-area').style.display = 'none';
+                }
+                if (s.updated_at) {
+                    document.getElementById('last-saved').innerHTML = '<i class="fas fa-clock"></i> บันทึกล่าสุด: ' + s.updated_at;
+                }
+                updatePreview();
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function saveSettings() {
+        const settings = {
+            bank_name: document.getElementById('bank-name').value.trim(),
+            account_number: document.getElementById('account-number').value.trim(),
+            account_name: document.getElementById('account-name').value.trim(),
+            promptpay_number: document.getElementById('promptpay-number').value.trim(),
+            promptpay_name: document.getElementById('promptpay-name').value.trim(),
+            promptpay_qr_image: currentQrImageUrl || '',
+            credit_card_enabled: document.getElementById('toggle-credit').checked,
+            bank_transfer_enabled: document.getElementById('toggle-bank').checked,
+            promptpay_enabled: document.getElementById('toggle-promptpay').checked,
+            payment_note: document.getElementById('payment-note').value.trim()
+        };
+
+        try {
+            const r = await fetch(API + '/payment-settings.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (d.success) {
+                showToast('บันทึกสำเร็จ!', 'success');
+                document.getElementById('last-saved').innerHTML = '<i class="fas fa-clock"></i> บันทึกล่าสุด: ' + (d.settings.updated_at || 'เมื่อสักครู่');
+            } else {
+                showToast('เกิดข้อผิดพลาด', 'error');
+            }
+        } catch(e) {
+            showToast('ไม่สามารถบันทึกได้', 'error');
+        }
+    }
+
+    // Live preview
+    ['bank-name', 'account-number', 'account-name'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updatePreview);
+    });
+
+    function updatePreview() {
+        document.getElementById('preview-bank').textContent = document.getElementById('bank-name').value || '-';
+        document.getElementById('preview-account').textContent = document.getElementById('account-number').value || '-';
+        document.getElementById('preview-name').textContent = document.getElementById('account-name').value || '-';
+    }
+
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + type + ' show';
+        setTimeout(() => { t.classList.remove('show'); }, 3000);
+    }
+
+    // QR Upload
+    async function handleQrUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        if (file.size > 5 * 1024 * 1024) { showToast('ไฟล์ใหญ่เกิน 5MB', 'error'); return; }
+
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const r = await fetch(API + '/upload.php', { method: 'POST', body: formData, credentials: 'include' });
+            const d = await r.json();
+            if (d.success) {
+                currentQrImageUrl = d.url;
+                document.getElementById('qr-preview-img').src = d.url;
+                document.getElementById('qr-preview').style.display = '';
+                document.getElementById('qr-upload-area').style.display = 'none';
+                showToast('อัปโหลด QR Code สำเร็จ!', 'success');
+            } else {
+                showToast(d.error || 'อัปโหลดไม่สำเร็จ', 'error');
+            }
+        } catch(e) {
+            showToast('อัปโหลดไม่สำเร็จ', 'error');
+        }
+        input.value = '';
+    }
+
+    function removeQrImage() {
+        currentQrImageUrl = '';
+        document.getElementById('qr-preview').style.display = 'none';
+        document.getElementById('qr-upload-area').style.display = '';
+        document.getElementById('qr-file-input').value = '';
+    }
+    </script>
+</body>
+</html>

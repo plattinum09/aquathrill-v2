@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <title>Agent Dashboard | AQUATHRILL</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <style>
+        /* ===== DASHBOARD STYLES ===== */
+        .dash-welcome {
+            background: linear-gradient(135deg, rgba(201,168,106,0.12), rgba(201,168,106,0.04));
+            border: 1px solid rgba(201,168,106,0.2);
+            border-radius: 16px; padding: 22px 24px;
+            margin-bottom: 24px; display: flex; align-items: center; gap: 16px;
+        }
+        .dash-welcome i { font-size: 2rem; color: #e8c98a; }
+        .dash-welcome h3 { color: #fff; margin: 0 0 4px; font-weight: 700; }
+        .dash-welcome p { color: rgba(255,255,255,0.5); margin: 0; font-size: 0.85rem; }
+
+        /* Stats Row */
+        .dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+        .dash-stat {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px; text-align: center; transition: transform 0.3s;
+        }
+        .dash-stat:hover { transform: translateY(-3px); }
+        .dash-stat .stat-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px; font-size: 1.1rem;
+        }
+        .dash-stat .stat-num { font-size: 1.8rem; font-weight: 800; color: #fff; line-height: 1; }
+        .dash-stat .stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+        /* Quick Actions */
+        .dash-quick { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 30px; }
+        .dash-quick a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 16px 18px; border-radius: 14px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .dash-quick a:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
+        .dash-quick a i { font-size: 1.2rem; color: #e8c98a; }
+
+        /* ===== BOAT QUEUE CALENDAR ===== */
+        .queue-section { margin-top: 10px; }
+        .queue-section > h2 {
+            color: #fff; font-size: 1.15rem; font-weight: 700;
+            margin: 0 0 18px; display: flex; align-items: center; gap: 10px;
+        }
+        .queue-section > h2 i { color: #00b4ff; }
+
+        /* Legend */
+        .q-legend {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            margin-bottom: 18px; padding: 12px 16px;
+            background: rgba(255,255,255,0.03); border-radius: 12px;
+        }
+        .q-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+        .q-legend-dot { width: 12px; height: 12px; border-radius: 4px; }
+        .q-legend-dot.available { background: #00c853; }
+        .q-legend-dot.limited { background: #ffab00; }
+        .q-legend-dot.booked { background: #ff3d71; }
+        .q-legend-dot.past { background: rgba(255,255,255,0.1); }
+
+        /* Boat Tabs */
+        .q-boat-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .q-boat-tab {
+            padding: 8px 18px; border-radius: 24px; font-size: 0.8rem; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.3s;
+            font-family: 'Kanit', sans-serif;
+        }
+        .q-boat-tab:hover { border-color: rgba(0,180,255,0.35); color: #fff; }
+        .q-boat-tab.active {
+            background: linear-gradient(135deg, #00b4ff, #0066cc);
+            border-color: transparent; color: #fff;
+        }
+
+        /* Month Nav */
+        .q-month-nav {
+            display: flex; align-items: center; justify-content: center;
+            gap: 20px; margin-bottom: 30px;
+        }
+        .q-month-nav button {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: #fff; width: 44px; height: 44px; border-radius: 12px;
+            font-size: 1.1rem; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .q-month-nav button:hover { background: rgba(0,180,255,0.2); border-color: rgba(0,180,255,0.4); }
+        .q-month-label { font-size: 1.5rem; font-weight: 700; color: #fff; min-width: 220px; text-align: center; }
+
+        /* Calendar Grid */
+        .q-cal-wrap {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px; padding: 24px; overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .q-cal-header {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 4px; margin-bottom: 8px;
+        }
+        .q-cal-header span {
+            text-align: center; font-size: 0.8rem; font-weight: 600;
+            color: rgba(255,255,255,0.4); padding: 8px 0; text-transform: uppercase;
+        }
+        .q-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .q-day {
+            aspect-ratio: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            border-radius: 12px; font-size: 1rem; font-weight: 600;
+            cursor: default; transition: all 0.25s; position: relative; gap: 2px;
+        }
+        .q-day .q-num { font-size: 1rem; font-weight: 600; line-height: 1; }
+        .q-day .q-status {
+            font-size: 0.55rem; font-weight: 400; letter-spacing: 0.5px; opacity: 0.8;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+        }
+        .q-day { overflow: hidden; }
+        .q-day.empty { background: none; }
+        .q-day.past { background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.18); }
+        .q-day.available {
+            background: rgba(0,200,83,0.1); color: #69f0ae;
+            border: 1px solid rgba(0,200,83,0.18); cursor: pointer;
+        }
+        .q-day.available:hover { background: rgba(0,200,83,0.22); transform: scale(1.08); }
+        .q-day.available .q-status { color: #69f0ae; }
+        .q-day.limited {
+            background: rgba(255,171,0,0.1); color: #ffd54f;
+            border: 1px solid rgba(255,171,0,0.18); cursor: pointer;
+        }
+        .q-day.limited:hover { background: rgba(255,171,0,0.22); transform: scale(1.08); }
+        .q-day.limited .q-status { color: #ffd54f; }
+        .q-day.booked {
+            background: rgba(255,61,113,0.08); color: rgba(255,61,113,0.55);
+            border: 1px solid rgba(255,61,113,0.1);
+        }
+        .q-day.booked .q-status { color: rgba(255,61,113,0.45); }
+        .q-day.today { box-shadow: 0 0 0 2px #00d4ff; }
+
+        /* Day Detail Popup */
+        .q-detail-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,10,30,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .q-detail-overlay.active { opacity:1; pointer-events:auto; }
+        .q-detail-card {
+            background: linear-gradient(145deg, rgba(15,25,50,0.97), rgba(8,14,35,0.98));
+            border: 1px solid rgba(201,168,106,0.2);
+            border-radius: 20px; padding: 24px; width: 92%; max-width: 560px;
+            max-height: 85vh; overflow-y: auto; position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(201,168,106,0.05);
+        }
+        .q-detail-close {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; width: 32px; height: 32px; border-radius: 50%;
+            cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .q-detail-close:hover { background: rgba(255,61,113,0.3); }
+        .q-detail-date {
+            font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px;
+        }
+        .q-detail-badge {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 600; margin-bottom: 14px;
+        }
+        .q-detail-badge.available { background: rgba(0,200,83,0.15); color: #69f0ae; }
+        .q-detail-badge.limited { background: rgba(255,171,0,0.15); color: #ffd54f; }
+        .q-detail-badge.booked { background: rgba(255,61,113,0.15); color: #ff6b8a; }
+
+        .q-slot-cards{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+        .q-slot-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px}
+        .q-slot-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+        .q-slot-card-grid .q-label{font-size:.65rem;color:rgba(255,255,255,0.4);font-weight:500}
+        .q-slot-card-grid .q-value{font-size:.82rem;color:rgba(255,255,255,0.85);font-weight:600;margin-bottom:4px}
+        .q-slot-card-grid .q-value-right{text-align:right}
+        .q-slot-card-btn{text-align:center;margin-top:10px}
+        .q-slot-badge {
+            display: inline-block; padding: 2px 10px; border-radius: 12px;
+            font-size: 0.68rem; font-weight: 600;
+        }
+        .q-slot-badge.available { background: rgba(0,200,83,0.15); color: #69f0ae; }
+        .q-slot-badge.limited { background: rgba(255,171,0,0.15); color: #ffd54f; }
+        .q-slot-badge.booked { background: rgba(255,61,113,0.12); color: #ff6b8a; }
+
+        /* Summary counts */
+        .q-summary {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            margin-top: 20px;
+        }
+        .q-summary-item {
+            text-align: center; padding: 12px; border-radius: 12px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+        }
+        .q-summary-item .q-s-num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+        .q-summary-item .q-s-label { font-size: 0.68rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+        .q-s-available .q-s-num { color: #69f0ae; }
+        .q-s-limited .q-s-num { color: #ffd54f; }
+        .q-s-booked .q-s-num { color: #ff6b8a; }
+
+        /* ===== SIDEBAR LANGUAGE SWITCHER ===== */
+        .sidebar-lang {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-lang-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .sidebar-lang-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .sl-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 6px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.6);
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.78rem; font-weight: 500;
+            cursor: pointer; transition: 0.2s;
+        }
+        .sl-btn:hover {
+            background: rgba(0,212,255,0.1);
+            border-color: rgba(0,212,255,0.3);
+            color: #fff;
+        }
+        .sl-btn.active {
+            background: rgba(0,212,255,0.15);
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+        .sl-btn img { width: 18px; height: 13px; border-radius: 2px; }
+
+        /* ===== MOBILE AGENT TOP BAR ===== */
+        .agent-mobile-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+        .agent-mobile-bar .amb-left {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .agent-mobile-bar .amb-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, #c9a86a, #e8c98a);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: 700; color: #0a1628;
+        }
+        .agent-mobile-bar .amb-name {
+            font-weight: 600; font-size: 0.9rem; color: #fff;
+        }
+        .agent-mobile-bar .amb-badge {
+            font-size: 0.65rem; padding: 2px 8px; border-radius: 10px;
+            background: rgba(201,168,106,0.2); border: 1px solid rgba(201,168,106,0.4);
+            color: #e8c98a; font-weight: 600;
+        }
+        .agent-mobile-bar .amb-right {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .agent-mobile-bar .amb-btn {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6); width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.85rem; transition: 0.2s;
+        }
+        .agent-mobile-bar .amb-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .agent-mobile-bar .amb-btn.logout { color: #ff5252; border-color: rgba(255,80,80,0.2); }
+        .agent-mobile-bar .amb-btn.logout:hover { background: rgba(255,80,80,0.15); }
+        /* Mobile lang dropdown */
+        .amb-lang-wrap { position: relative; }
+        .amb-lang-menu {
+            display: none; position: absolute; top: 42px; right: 0; z-index: 100;
+            background: rgba(13,40,71,0.98); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 6px; min-width: 130px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .amb-lang-menu.open { display: block; }
+        .amb-lang-menu button {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+            padding: 8px 12px; background: none; border: none; color: rgba(255,255,255,0.7);
+            font-family: 'Kanit',sans-serif; font-size: 0.85rem; cursor: pointer;
+            border-radius: 8px; transition: 0.2s;
+        }
+        .amb-lang-menu button:hover { background: rgba(0,212,255,0.1); color: #fff; }
+        .amb-lang-menu button.active { color: #00d4ff; }
+        .amb-lang-menu img { width: 18px; height: 13px; border-radius: 2px; }
+
+        @media (max-width: 768px) {
+            .agent-mobile-bar { display: flex; }
+            .account-sidebar { display: none; }
+            .account-layout { grid-template-columns: 1fr; gap: 0; max-width: 100%; overflow: hidden; }
+            .account-page { padding: 20px 6px 40px; }
+            .account-content {
+                padding: 4px;
+                border-radius: 0;
+                border: none;
+                background: none;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                min-width: 0;
+                overflow: hidden;
+                word-break: break-word;
+            }
+            .queue-section { margin-left: -4px; margin-right: -4px; }
+
+            /* Welcome */
+            .dash-welcome { padding: 16px; gap: 12px; margin-bottom: 16px; }
+            .dash-welcome i { font-size: 1.5rem; }
+            .dash-welcome h3 { font-size: 0.95rem; word-break: break-word; overflow-wrap: break-word; }
+            .dash-welcome p { font-size: 0.78rem; }
+
+            /* Stats & Quick Actions */
+            .dash-stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+            .dash-stat { padding: 14px 8px; border-radius: 12px; }
+            .dash-stat .stat-icon { width: 32px; height: 32px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 6px; }
+            .dash-stat .stat-num { font-size: 1.3rem; }
+            .dash-stat .stat-label { font-size: 0.65rem; }
+            .dash-quick { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+            .dash-quick a { padding: 12px; font-size: 0.8rem; border-radius: 12px; }
+            .dash-quick a i { font-size: 1rem; }
+
+            /* Calendar Section */
+            .queue-section > h2 { font-size: 0.95rem; margin-bottom: 12px; }
+            .q-legend { gap: 10px; padding: 10px 12px; margin-bottom: 12px; }
+            .q-legend-item { font-size: 0.7rem; }
+            .q-legend-dot { width: 10px; height: 10px; }
+            .q-boat-tabs { gap: 6px; margin-bottom: 12px; }
+            .q-boat-tab { padding: 6px 12px; font-size: 0.72rem; }
+            .q-month-nav { gap: 10px; margin-bottom: 16px; }
+            .q-month-nav button { width: 36px; height: 36px; font-size: 0.9rem; }
+            .q-month-label { font-size: 1.2rem; min-width: 180px; }
+
+            /* Calendar Grid — mobile friendly */
+            .q-cal-wrap { padding: 10px; border-radius: 16px; }
+            .q-cal-header span { font-size: 0.75rem; padding: 8px 0; font-weight: 700; }
+            .q-cal-grid { gap: 4px; }
+            .q-day { border-radius: 10px; gap: 2px; aspect-ratio: auto; padding: 6px 2px; min-height: 48px; }
+            .q-day .q-num { font-size: 0.85rem; font-weight: 700; }
+            .q-day .q-status { font-size: 0.45rem; letter-spacing: 0; }
+
+            /* Summary */
+            .q-summary { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+            .q-summary-item { padding: 10px 6px; border-radius: 10px; }
+            .q-summary-item .q-s-num { font-size: 1.2rem; }
+            .q-summary-item .q-s-label { font-size: 0.6rem; }
+
+            /* Day Detail & Booking Popup */
+            .q-detail-card { width: 96%; max-width: none; padding: 18px; border-radius: 16px; }
+            .q-detail-date { font-size: 0.95rem; }
+            .q-slot-card { padding: 12px 14px; }
+            .q-slot-badge { font-size: 0.6rem; padding: 2px 6px; }
+
+            /* Booking Modal inputs */
+            .q-detail-card input, .q-detail-card select { font-size: 0.85rem; }
+
+            /* Prevent overflow on all sections */
+            .queue-section, .dash-welcome, #booking-history { max-width: 100%; overflow-x: hidden; }
+            .q-boat-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; padding-bottom: 4px; }
+            .q-boat-tab { white-space: nowrap; flex-shrink: 0; }
+        }
+    </style>
+</head>
+<body>
+    <main class="account-page">
+        <div class="container">
+            <!-- Mobile Top Bar (visible < 768px) -->
+            <div class="agent-mobile-bar" id="agent-mobile-bar">
+                <div class="amb-left">
+                    <div class="amb-avatar" id="amb-avatar">A</div>
+                    <div>
+                        <div class="amb-name" id="amb-name">Agent</div>
+                        <span class="amb-badge"><i class="fas fa-id-badge"></i> Agent</span>
+                    </div>
+                </div>
+                <div class="amb-right">
+                    <div class="amb-lang-wrap">
+                        <button class="amb-btn" onclick="document.getElementById('amb-lang-menu').classList.toggle('open')" title="Language">
+                            <i class="fas fa-globe"></i>
+                        </button>
+                        <div class="amb-lang-menu" id="amb-lang-menu">
+                            <button onclick="I18n.setLang('th')" data-lang="th" class="active"><img src="https://flagcdn.com/w20/th.png" alt=""> ไทย</button>
+                            <button onclick="I18n.setLang('en')" data-lang="en"><img src="https://flagcdn.com/w20/gb.png" alt=""> English</button>
+                            <button onclick="I18n.setLang('ru')" data-lang="ru"><img src="https://flagcdn.com/w20/ru.png" alt=""> Русский</button>
+                            <button onclick="I18n.setLang('zh')" data-lang="zh"><img src="https://flagcdn.com/w20/cn.png" alt=""> 中文</button>
+                        </div>
+                    </div>
+                    <button class="amb-btn logout" onclick="document.getElementById('agent-logout').click()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="account-layout">
+                <!-- Sidebar -->
+                <aside class="account-sidebar">
+                    <div class="account-avatar" id="agent-avatar" style="background:linear-gradient(135deg, #c9a86a, #e8c98a);">A</div>
+                    <div class="account-name" id="agent-name">Agent</div>
+                    <div class="account-email" id="agent-email">agent@email.com</div>
+                    <div style="text-align:center;margin-bottom:15px;">
+                        <span style="display:inline-block;padding:4px 14px;background:rgba(201,168,106,0.2);border:1px solid rgba(201,168,106,0.4);border-radius:20px;color:#e8c98a;font-size:0.75rem;font-weight:600;" data-i18n="agent.badge">
+                            <i class="fas fa-id-badge"></i> ตัวแทน
+                        </span>
+                    </div>
+                    <ul class="account-menu">
+                        <li><a href="./" class="active" data-i18n="agent.dashboard"><i class="fas fa-tachometer-alt"></i> แดชบอร์ด</a></li>
+                        <li><a href="#" id="agent-logout" data-i18n="agent.logout"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</a></li>
+                    </ul>
+                    <div class="sidebar-lang">
+                        <div class="sidebar-lang-label"><i class="fas fa-globe"></i> Language</div>
+                        <div class="sidebar-lang-btns">
+                            <button onclick="I18n.setLang('th')" data-lang="th" class="sl-btn"><img src="https://flagcdn.com/w20/th.png" alt=""> TH</button>
+                            <button onclick="I18n.setLang('en')" data-lang="en" class="sl-btn"><img src="https://flagcdn.com/w20/gb.png" alt=""> EN</button>
+                            <button onclick="I18n.setLang('ru')" data-lang="ru" class="sl-btn"><img src="https://flagcdn.com/w20/ru.png" alt=""> RU</button>
+                            <button onclick="I18n.setLang('zh')" data-lang="zh" class="sl-btn"><img src="https://flagcdn.com/w20/cn.png" alt=""> 中文</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Dashboard Content -->
+                <div class="account-content">
+                    <!-- Welcome -->
+                    <div class="dash-welcome">
+                        <i class="fas fa-hand-sparkles"></i>
+                        <div>
+                            <h3><span data-i18n="agent.welcome">ยินดีต้อนรับ,</span> <span id="dash-agent-name">Agent</span>!</h3>
+                            <p data-i18n="agent.welcome_sub">จองเรือและจัดการสื่อของคุณได้ที่นี่</p>
+                        </div>
+                    </div>
+
+                    <!-- hidden price stores populated dynamically -->
+                    <div id="price-stores" style="display:none"></div>
+
+                    <!-- ===== BOOKING HISTORY ===== -->
+                    <div style="margin-bottom:28px">
+                        <h2 style="color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+                            <span data-i18n="agent.my_bookings"><i class="fas fa-list" style="color:#00b4ff"></i> การจองของฉัน</span>
+                            <button onclick="loadMyBookings()" style="background:none;border:none;color:rgba(255,255,255,.4);font-family:'Kanit',sans-serif;font-size:.75rem;cursor:pointer" data-i18n="agent.refresh"><i class="fas fa-sync-alt"></i> รีเฟรช</button>
+                        </h2>
+                        <div id="booking-history">
+                            <div style="text-align:center;padding:24px;color:rgba(255,255,255,.3)" data-i18n="agent.loading"><i class="fas fa-circle-notch fa-spin"></i> กำลังโหลด...</div>
+                        </div>
+                    </div>
+
+                    <!-- ===== BOAT QUEUE CALENDAR ===== -->
+                    <div class="queue-section">
+                        <h2 data-i18n="agent.calendar_title"><i class="fas fa-ship"></i> ตารางคิวเรือ — วัน/เวลาที่ว่าง</h2>
+                        <div class="q-legend">
+                            <div class="q-legend-item"><span class="q-legend-dot available"></span> <span data-i18n="agent.available">ว่าง</span></div>
+                            <div class="q-legend-item"><span class="q-legend-dot limited"></span> <span data-i18n="agent.limited">เหลือน้อย</span></div>
+                            <div class="q-legend-item"><span class="q-legend-dot booked"></span> <span data-i18n="agent.full">เต็ม</span></div>
+                            <div class="q-legend-item"><span class="q-legend-dot past"></span> <span data-i18n="agent.past">ผ่านแล้ว</span></div>
+                        </div>
+                        <!-- Boat Tabs (populated dynamically) -->
+                        <div class="q-boat-tabs" id="q-boat-tabs">
+                            <button class="q-boat-tab active" data-boat="all" data-i18n="agent.all_boats">ทั้งหมด</button>
+                        </div>
+                        <!-- Month Nav -->
+                        <div class="q-month-nav">
+                            <button id="q-prev"><i class="fas fa-chevron-left"></i></button>
+                            <div class="q-month-label" id="q-month-label"></div>
+                            <button id="q-next"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <!-- Calendar -->
+                        <div class="q-cal-wrap">
+                            <div class="q-cal-header">
+                                <span data-i18n="agent.cal_sun">อา</span><span data-i18n="agent.cal_mon">จ</span><span data-i18n="agent.cal_tue">อ</span><span data-i18n="agent.cal_wed">พ</span><span data-i18n="agent.cal_thu">พฤ</span><span data-i18n="agent.cal_fri">ศ</span><span data-i18n="agent.cal_sat">ส</span>
+                            </div>
+                            <div class="q-cal-grid" id="q-cal-grid"></div>
+                        </div>
+                        <!-- Summary -->
+                        <div class="q-summary" id="q-summary">
+                            <div class="q-summary-item q-s-available">
+                                <div class="q-s-num" id="q-count-available">0</div>
+                                <div class="q-s-label" data-i18n="agent.days_available">วันว่าง</div>
+                            </div>
+                            <div class="q-summary-item q-s-limited">
+                                <div class="q-s-num" id="q-count-limited">0</div>
+                                <div class="q-s-label" data-i18n="agent.days_limited">เหลือน้อย</div>
+                            </div>
+                            <div class="q-summary-item q-s-booked">
+                                <div class="q-s-num" id="q-count-booked">0</div>
+                                <div class="q-s-label" data-i18n="agent.days_full">เต็มแล้ว</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Day Detail Popup -->
+    <div class="q-detail-overlay" id="q-detail-overlay">
+        <div class="q-detail-card">
+            <button class="q-detail-close" id="q-detail-close"><i class="fas fa-times"></i></button>
+            <div class="q-detail-date" id="q-detail-date"></div>
+            <div id="q-detail-badge-wrap"></div>
+            <div id="q-detail-body" class="q-slot-cards"></div>
+        </div>
+    </div>
+
+    <script src="../assets/js/i18n-core.js?v=20260724a"></script>
+    <script src="../assets/js/i18n-loader.js?v=20260724a"></script>
+
+    <!-- ===== BOOKING MODAL ===== -->
+    <div class="q-detail-overlay" id="booking-overlay">
+        <div class="q-detail-card" style="max-width:480px">
+            <button class="q-detail-close" onclick="closeBooking()"><i class="fas fa-times"></i></button>
+            <div class="q-detail-date" id="bk-title" data-i18n="agent.book_title">จองเรือ</div>
+            <p style="color:rgba(255,255,255,.45);font-size:.8rem;margin-bottom:18px" data-i18n="agent.book_desc">กรอกข้อมูลลูกค้าและเลือกวันที่ต้องการ</p>
+
+            <div style="display:flex;flex-direction:column;gap:12px">
+                <!-- Date -->
+                <div>
+                    <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:5px" data-i18n="agent.date"><i class="fas fa-calendar"></i> วันที่</label>
+                    <input type="date" id="bk-date" style="width:100%;padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;outline:none"
+                        onchange="checkDateAvailability()">
+                    <div id="bk-date-status" style="font-size:.75rem;margin-top:4px"></div>
+                </div>
+                <!-- Time Slot -->
+                <div>
+                    <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:5px" data-i18n="agent.time_slot"><i class="fas fa-clock"></i> รอบ</label>
+                    <select id="bk-slot" style="width:100%;padding:10px 12px;background:rgba(13,40,71,1);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.85rem;outline:none">
+                        <option value="morning" data-i18n="agent.morning">รอบเช้า 09:00–13:00</option>
+                        <option value="afternoon" data-i18n="agent.afternoon">รอบบ่าย 14:00–18:00</option>
+                    </select>
+                </div>
+                <!-- Guests -->
+                <div>
+                    <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:5px" data-i18n="agent.guests"><i class="fas fa-users"></i> จำนวนคน</label>
+                    <select id="bk-guests" style="width:100%;padding:10px 12px;background:rgba(13,40,71,1);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.85rem;outline:none">
+                        <option value="1">1 คน</option>
+                        <option value="2" selected>2 คน</option>
+                        <option value="3">3 คน</option>
+                        <option value="4">4 คน</option>
+                        <option value="5">5 คน</option>
+                    </select>
+                </div>
+                <!-- Customer Name -->
+                <div>
+                    <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:5px" data-i18n="agent.customer_name"><i class="fas fa-user"></i> ชื่อลูกค้า</label>
+                    <input type="text" id="bk-name" placeholder="ชื่อ-นามสกุลลูกค้า" data-i18n-placeholder="agent.customer_name_ph" style="width:100%;padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;outline:none">
+                </div>
+                <!-- Customer Phone -->
+                <div>
+                    <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:5px" data-i18n="agent.customer_phone"><i class="fas fa-phone"></i> เบอร์โทรลูกค้า</label>
+                    <input type="tel" id="bk-phone" placeholder="0812345678" style="width:100%;padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;outline:none">
+                </div>
+                <!-- Customer Email -->
+                <div>
+                    <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:5px" data-i18n="agent.customer_email"><i class="fas fa-envelope"></i> อีเมลลูกค้า (ไม่บังคับ)</label>
+                    <input type="email" id="bk-email" placeholder="customer@email.com" style="width:100%;padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;outline:none">
+                </div>
+                <!-- Price -->
+                <div style="background:rgba(201,168,106,.08);border:1px solid rgba(201,168,106,.2);border-radius:10px;padding:12px;text-align:center">
+                    <div style="font-size:.75rem;color:rgba(255,255,255,.45)" data-i18n="agent.agent_price">ราคาตัวแทน</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#e8c98a" id="bk-price-display">฿-</div>
+                </div>
+            </div>
+
+            <button id="bk-submit-btn" onclick="submitBooking()" style="width:100%;margin-top:16px;padding:13px;background:linear-gradient(135deg,#c9a86a,#e8c98a);border:none;border-radius:12px;color:#0a1628;font-family:'Kanit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s">
+                <i class="fas fa-calendar-check"></i> <span data-i18n="agent.confirm_booking">ยืนยันการจอง</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== PAYMENT MODAL ===== -->
+    <div class="q-detail-overlay" id="payment-overlay">
+        <div class="q-detail-card" style="max-width:460px">
+            <button class="q-detail-close" onclick="closePayment()"><i class="fas fa-times"></i></button>
+            <div class="q-detail-date" data-i18n="agent.payment_title">ชำระเงิน</div>
+            <div style="background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:.82rem;color:#69f0ae">
+                <span data-i18n="agent.booking_success"><i class="fas fa-check-circle"></i> จองสำเร็จ! Booking ID:</span> <strong id="pay-booking-id">-</strong>
+            </div>
+            <p style="color:rgba(255,255,255,.45);font-size:.82rem;margin-bottom:16px;text-align:center">
+                <span data-i18n="agent.amount_due">ยอดชำระ:</span> <strong style="color:#e8c98a;font-size:1.1rem" id="pay-amount-display">฿-</strong>
+            </p>
+
+            <!-- Payment method tabs -->
+            <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+                <!-- ใช้ Payso (บัตรเครดิต/ออนไลน์) อย่างเดียว — ซ่อนปุ่มโอนเงิน/QR PromptPay (2026-05-21)
+                     เก็บปุ่มไว้ใน DOM (display:none) เพราะ setPayTab อ้างถึง id เหล่านี้ — เปิดคืนได้โดยลบ style="display:none" -->
+                <button class="q-boat-tab" id="pay-tab-transfer" onclick="setPayTab('transfer')" data-i18n="agent.transfer" style="display:none">
+                    <i class="fas fa-university"></i> โอนเงิน
+                </button>
+                <button class="q-boat-tab" id="pay-tab-qr" onclick="setPayTab('qr')" data-i18n="agent.qr_promptpay" style="display:none">
+                    <i class="fas fa-qrcode"></i> QR PromptPay
+                </button>
+                <button class="q-boat-tab active" id="pay-tab-credit" onclick="setPayTab('credit')" data-i18n="agent.credit_card">
+                    <i class="fas fa-credit-card"></i> บัตรเครดิต
+                </button>
+            </div>
+
+            <!-- Transfer section -->
+            <div id="pay-transfer-section">
+                <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;margin-bottom:14px;font-size:.85rem;line-height:1.8">
+                    <div id="pay-bank-info" style="color:rgba(255,255,255,.7)" data-i18n="agent.loading_account">กำลังโหลดข้อมูลบัญชี...</div>
+                </div>
+                <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:6px" data-i18n="agent.upload_slip"><i class="fas fa-image"></i> อัปโหลด Slip โอนเงิน</label>
+                <input type="file" id="slip-file" accept="image/*" style="display:none" onchange="previewSlip(this)">
+                <div onclick="document.getElementById('slip-file').click()" id="slip-drop" style="border:2px dashed rgba(255,255,255,.2);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:12px" onmouseover="this.style.borderColor='#e8c98a'" onmouseout="this.style.borderColor='rgba(255,255,255,.2)'">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:1.8rem;color:rgba(255,255,255,.25);display:block;margin-bottom:8px"></i>
+                    <p style="color:rgba(255,255,255,.35);font-size:.82rem" data-i18n="agent.click_slip">คลิกเพื่อเลือกรูป Slip (JPG/PNG/WebP)</p>
+                </div>
+                <img id="slip-preview" src="" style="display:none;width:100%;max-height:160px;object-fit:contain;border-radius:10px;border:1px solid rgba(255,255,255,.1);margin-bottom:12px" alt="slip preview">
+                <button id="upload-slip-btn" onclick="uploadSlip()" disabled style="width:100%;padding:12px;background:linear-gradient(135deg,#c9a86a,#e8c98a);border:none;border-radius:12px;color:#0a1628;font-family:'Kanit',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;opacity:.5;transition:all .3s">
+                    <i class="fas fa-paper-plane"></i> <span data-i18n="agent.send_slip">ส่ง Slip รออนุมัติ</span>
+                </button>
+            </div>
+
+            <!-- Credit card section -->
+            <div id="pay-credit-section" style="display:none;text-align:center;padding:20px 0">
+                <i class="fas fa-credit-card" style="font-size:2rem;color:#00b4ff;display:block;margin-bottom:12px"></i>
+                <p style="color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:20px" data-i18n="agent.credit_redirect">คุณจะถูกนำไปยังหน้าชำระเงิน Payso เพื่อชำระด้วยบัตรเครดิต/เดบิต หรือ QR</p>
+                <button onclick="payCreditCard()" style="width:100%;padding:13px;background:linear-gradient(135deg,#00b4ff,#0066cc);border:none;border-radius:12px;color:#fff;font-family:'Kanit',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .3s" data-i18n="agent.pay_credit">
+                    <i class="fas fa-lock"></i> ชำระด้วยบัตรเครดิต
+                </button>
+            </div>
+
+            <!-- QR PromptPay section -->
+            <div id="pay-qr-section" style="display:none;text-align:center;padding:10px 0">
+                <p style="color:rgba(255,255,255,.5);font-size:.8rem;margin-bottom:14px" data-i18n="agent.scan_qr">สแกน QR Code เพื่อชำระผ่าน PromptPay</p>
+                <div id="pay-qr-img-wrap" style="display:inline-block;background:#fff;border-radius:16px;padding:12px;margin-bottom:14px">
+                    <img id="pay-qr-img" src="" alt="PromptPay QR" style="width:200px;height:200px;object-fit:contain;display:block">
+                </div>
+                <div id="pay-qr-number" style="font-size:1rem;font-weight:700;color:#e8c98a;margin-bottom:6px"></div>
+                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:18px" data-i18n="agent.scan_then_slip">สแกนแล้วกรุณาส่ง Slip หลักฐานให้ทีมงาน</div>
+                <label style="font-size:.8rem;color:rgba(255,255,255,.5);display:block;margin-bottom:6px" data-i18n="agent.upload_confirm_slip"><i class="fas fa-image"></i> อัปโหลด Slip ยืนยัน</label>
+                <input type="file" id="slip-file-qr" accept="image/*" style="display:none" onchange="previewSlipQR(this)">
+                <div onclick="document.getElementById('slip-file-qr').click()" style="border:2px dashed rgba(0,180,255,.3);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:12px" onmouseover="this.style.borderColor='#00b4ff'" onmouseout="this.style.borderColor='rgba(0,180,255,.3)'">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;color:rgba(0,180,255,.4);display:block;margin-bottom:6px"></i>
+                    <p style="color:rgba(255,255,255,.35);font-size:.8rem" data-i18n="agent.click_slip_qr">คลิกเพื่อเลือกรูป Slip</p>
+                </div>
+                <img id="slip-preview-qr" src="" style="display:none;width:100%;max-height:140px;object-fit:contain;border-radius:10px;border:1px solid rgba(255,255,255,.1);margin-bottom:12px" alt="slip preview">
+                <button id="upload-slip-qr-btn" onclick="uploadSlipQR()" disabled style="width:100%;padding:12px;background:linear-gradient(135deg,#00b4ff,#0066cc);border:none;border-radius:12px;color:#fff;font-family:'Kanit',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;opacity:.5;transition:all .3s">
+                    <i class="fas fa-paper-plane"></i> <span data-i18n="agent.send_slip">ส่ง Slip รออนุมัติ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Detail Popup -->
+    <div class="q-detail-overlay" id="q-detail-overlay">
+        <div class="q-detail-card">
+            <button class="q-detail-close" id="q-detail-close"><i class="fas fa-times"></i></button>
+            <div class="q-detail-date" id="q-detail-date"></div>
+            <div id="q-detail-badge-wrap"></div>
+            <div id="q-detail-body" class="q-slot-cards"></div>
+        </div>
+    </div>
+
+    <script>
+    // ===== I18N HELPER =====
+    function t(key, fallback) {
+        if (window.I18n && I18n.t) {
+            var val = I18n.t(key);
+            return (val && val !== key) ? val : (fallback || key);
+        }
+        return fallback || key;
+    }
+
+    // ===== STATE =====
+    var agentData = JSON.parse(localStorage.getItem('aquathrill_agent') || 'null');
+    var agentPricingData = {};
+    var normalPricesFromApi = {}; // updated after API load
+    var paymentSettings = {};
+    var currentBoat = '';
+    var boatTypesData = []; // loaded from API
+    var boats = []; // populated dynamically
+    var currentBookingId = '';
+    var currentPrice = 0;
+
+    // Set agent name (desktop + mobile)
+    if (agentData) {
+        var el = document.getElementById('dash-agent-name');
+        var agName = agentData.name || agentData.displayName || 'Agent';
+        if (el) el.textContent = agName;
+        var ambName = document.getElementById('amb-name');
+        if (ambName) ambName.textContent = agName;
+        var ambAvatar = document.getElementById('amb-avatar');
+        if (ambAvatar) ambAvatar.textContent = agName.charAt(0).toUpperCase();
+    }
+
+    // ===== SESSION GUARD + SIDEBAR + LOGOUT (moved from agent.js) =====
+    if (!agentData) {
+        window.location.href = '/agent/login';
+    } else {
+        var sbName = agentData.name || agentData.displayName || 'Agent';
+        var sbAvatar = document.getElementById('agent-avatar');
+        var sbNameEl = document.getElementById('agent-name');
+        var sbEmailEl = document.getElementById('agent-email');
+        if (sbAvatar) sbAvatar.textContent = sbName.charAt(0).toUpperCase();
+        if (sbNameEl) sbNameEl.textContent = sbName;
+        if (sbEmailEl) sbEmailEl.textContent = agentData.email || '';
+
+        var agentLogoutBtn = document.getElementById('agent-logout');
+        if (agentLogoutBtn) {
+            agentLogoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (confirm(t('agent.confirm_logout', 'ต้องการออกจากระบบ?'))) {
+                    fetch('/api/agent-auth.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'logout' }),
+                        credentials: 'include'
+                    }).finally(function () {
+                        localStorage.removeItem('aquathrill_agent');
+                        window.location.href = '/agent/login';
+                    });
+                }
+            });
+        }
+    }
+
+    // Highlight active language button (sidebar + mobile)
+    (function() {
+        var lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
+        document.querySelectorAll('[data-lang]').forEach(function(btn) {
+            if (btn.getAttribute('data-lang') === lang) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    })();
+
+    // Close mobile lang menu on outside click
+    document.addEventListener('click', function(e) {
+        var menu = document.getElementById('amb-lang-menu');
+        if (menu && !e.target.closest('.amb-lang-wrap')) menu.classList.remove('open');
+    });
+
+    // ===== LOAD BOAT TYPES & AGENT PRICING =====
+    (async function loadBoatTypesAndPricing() {
+        // Load boat types from API
+        try {
+            var btR = await fetch('/api/boat-types-v2.php');
+            var btD = await btR.json();
+            boatTypesData = btD.boat_types || [];
+        } catch(e) {
+            boatTypesData = [{id:'12ft',name:'SEASTORM 12ft',total_boats:1,max_guests:3,max_weight:200,price:9900},{id:'14ft',name:'SEASTORM 14ft',total_boats:1,max_guests:5,max_weight:400,price:10900}];
+        }
+        if (!currentBoat && boatTypesData.length) currentBoat = boatTypesData[0].id;
+        // Build boats array for calendar
+        boats = boatTypesData.map(function(bt){ return {id:bt.id, name:bt.name, cap:'2-'+bt.max_guests+' คน'}; });
+        // Build boat tabs
+        var tabsEl = document.getElementById('q-boat-tabs');
+        var tabsHtml = '<button class="q-boat-tab active" data-boat="all" data-i18n="agent.all_boats">ทั้งหมด</button>';
+        boatTypesData.forEach(function(bt){
+            tabsHtml += '<button class="q-boat-tab" data-boat="' + bt.id + '">' + bt.name + '</button>';
+        });
+        tabsEl.innerHTML = tabsHtml;
+        tabsEl.querySelectorAll('.q-boat-tab').forEach(function(tab){
+            tab.addEventListener('click', function(){ selBoat=this.dataset.boat; tabsEl.querySelectorAll('.q-boat-tab').forEach(function(t){t.classList.remove('active')}); this.classList.add('active'); loadAvailability(); });
+        });
+        if (window.I18n && I18n.translateNew) I18n.translateNew();
+        // Build hidden price stores
+        var storesEl = document.getElementById('price-stores');
+        var storesHtml = '';
+        boatTypesData.forEach(function(bt){
+            storesHtml += '<span id="price-display-' + bt.id + '"></span><span id="price-note-' + bt.id + '"></span>';
+            normalPricesFromApi[bt.id] = bt.price || 0;
+        });
+        storesEl.innerHTML = storesHtml;
+
+        // Load agent pricing
+        try {
+            var apR = await fetch('/api/agent-pricing.php');
+            var apD = await apR.json();
+            agentPricingData = apD.agent_pricing || {};
+            paymentSettings = apD.payment_settings || {};
+            var serverPrices = apD.normal_prices || {};
+            Object.keys(serverPrices).forEach(function(k){ normalPricesFromApi[k] = serverPrices[k]; });
+
+            boatTypesData.forEach(function(bt){
+                var k = bt.id;
+                var normal = normalPricesFromApi[k] || bt.price || 0;
+                var useAgent = agentPricingData.enabled && agentPricingData[k];
+                var price = useAgent ? agentPricingData[k].price : normal;
+                var el = document.getElementById('price-display-' + k);
+                if (el) el.textContent = '฿' + price.toLocaleString('th-TH');
+                var noteEl = document.getElementById('price-note-' + k);
+                if (noteEl) {
+                    if (useAgent) {
+                        var saved = normal - price;
+                        var pct = Math.round(saved/normal*100);
+                        noteEl.textContent = t('agent.special_price','ราคาพิเศษตัวแทน') + ' (' + t('agent.saved_pct','ประหยัด') + ' ' + pct + '%)';
+                    } else {
+                        noteEl.textContent = t('agent.normal_price','ราคาปกติ');
+                    }
+                }
+            });
+        } catch(e) { console.error('Failed to load pricing', e); }
+    })();
+
+    // ===== LOAD BOOKING HISTORY =====
+    function loadMyBookings() {
+        if (!agentData || !agentData.id) {
+            document.getElementById('booking-history').innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,.3)">' + t('agent.please_login', 'กรุณาเข้าสู่ระบบก่อน') + '</div>';
+            return;
+        }
+        fetch('/api/agent-booking.php?agent_id=' + agentData.id + '&action=list')
+            .then(r => r.json()).then(d => renderBookingHistory(d.bookings || []))
+            .catch(() => {
+                document.getElementById('booking-history').innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,.3)"><i class="fas fa-info-circle"></i> ' + t('agent.no_bookings', 'ยังไม่มีการจอง') + '</div>';
+            });
+    }
+
+    function renderBookingHistory(bookings) {
+        var el = document.getElementById('booking-history');
+        if (!bookings.length) {
+            el.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,.3)"><i class="fas fa-calendar-times" style="font-size:1.8rem;display:block;margin-bottom:8px"></i>' + t('agent.no_bookings', 'ยังไม่มีการจอง') + '</div>';
+            return;
+        }
+        var statusMap = {pending:'⏳ ' + t('agent.pending_payment','รอชำระ'), confirmed:'✅ ' + t('agent.confirmed','ยืนยันแล้ว'), cancelled:'❌ ' + t('agent.cancelled','ยกเลิก')};
+        var statusColor = {pending:'rgba(255,171,0,.15)', confirmed:'rgba(0,200,83,.12)', cancelled:'rgba(255,61,113,.1)'};
+        var statusTextColor = {pending:'#ffd54f', confirmed:'#69f0ae', cancelled:'#ff6b8a'};
+
+        el.innerHTML = bookings.map(b => {
+            var d = new Date(b.booking_date);
+            var monthKey = 'agent.month_' + (d.getMonth()+1);
+            var dateStr = d.getDate() + ' ' + t(monthKey) + ' ค.ศ ' + d.getFullYear();
+            var slotLabel = b.time_slot === 'morning' ? t('agent.morning_slot','รอบเช้า') : t('agent.afternoon_slot','รอบบ่าย');
+            var st = b.status || 'pending';
+            var cancelBtn = (st === 'pending')
+                ? '<button onclick="cancelBooking(\'' + b.booking_id + '\')" ' +
+                  'style="margin-top:6px;padding:4px 12px;background:rgba(255,61,113,.12);border:1px solid rgba(255,61,113,.2);border-radius:8px;color:#ff6b8a;font-family:\'Kanit\',sans-serif;font-size:.72rem;cursor:pointer;transition:all .2s" ' +
+                  'onmouseover="this.style.background=\'rgba(255,61,113,.25)\'" onmouseout="this.style.background=\'rgba(255,61,113,.12)\'">' +
+                  t('agent.cancel','<i class="fas fa-times-circle"></i> ยกเลิก') + '</button>'
+                : '';
+            return '<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;margin-bottom:8px">' +
+                '<div style="flex:1;min-width:0">' +
+                '<div style="font-size:.72rem;color:rgba(255,255,255,.35)">' + b.booking_id + '</div>' +
+                '<div style="font-weight:600;font-size:.9rem">' + b.customer_name + ' · ' + b.boat_type.toUpperCase() + '</div>' +
+                '<div style="font-size:.78rem;color:rgba(255,255,255,.4)">' + dateStr + ' · ' + slotLabel + ' · ' + b.guests + ' คน</div>' +
+                cancelBtn +
+                '</div>' +
+                '<div style="text-align:right;flex-shrink:0">' +
+                '<div style="font-size:.95rem;font-weight:700;color:#e8c98a">฿' + Number(b.total_price).toLocaleString('th-TH') + '</div>' +
+                '<span style="font-size:.72rem;padding:3px 10px;border-radius:8px;background:' + (statusColor[st]||statusColor.pending) + ';color:' + (statusTextColor[st]||statusTextColor.pending) + '">' + (statusMap[st]||st) + '</span>' +
+                '</div></div>';
+        }).join('');
+    }
+
+    async function cancelBooking(bookingId) {
+        if (!confirm(t('agent.confirm_cancel','ต้องการยกเลิกการจอง ') + bookingId + '?')) return;
+        if (!agentData || !agentData.id) { alert(t('agent.please_login','กรุณาเข้าสู่ระบบ')); return; }
+
+        try {
+            var r = await fetch('/api/agent-booking.php', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    booking_id: bookingId,
+                    agent_id: agentData.id,
+                    action: 'cancel'
+                })
+            });
+            var d = await r.json();
+            if (d.success) {
+                loadMyBookings();
+            } else {
+                alert(d.error || t('agent.cancel_fail','ยกเลิกไม่สำเร็จ'));
+            }
+        } catch(e) {
+            alert(t('agent.error_generic','เกิดข้อผิดพลาด กรุณาลองใหม่'));
+        }
+    }
+
+    // ===== BOOKING MODAL =====
+    function openBooking(boatType) {
+        currentBoat = boatType;
+        var btInfo = boatTypesData.find(function(b){ return b.id === boatType; });
+        document.getElementById('bk-title').textContent = t('agent.book_title','จองเรือ') + ' ' + (btInfo ? btInfo.name : boatType.toUpperCase());
+
+        var agentPrice = agentPricingData[boatType] && agentPricingData[boatType].price;
+        currentPrice = agentPrice || (normalPricesFromApi[boatType] || 0);
+        document.getElementById('bk-price-display').textContent = '฿' + currentPrice.toLocaleString('th-TH');
+
+
+        // Reset form
+        var minDate = new Date().toISOString().split('T')[0];
+        document.getElementById('bk-date').min = minDate;
+        document.getElementById('bk-date').value = '';
+        document.getElementById('bk-date-status').textContent = '';
+        document.getElementById('bk-name').value = '';
+        document.getElementById('bk-phone').value = '';
+        document.getElementById('bk-email').value = '';
+        document.getElementById('bk-submit-btn').disabled = false;
+        document.getElementById('bk-submit-btn').innerHTML = t('agent.confirm_booking','<i class="fas fa-calendar-check"></i> ยืนยันการจอง');
+
+        document.getElementById('booking-overlay').classList.add('active');
+        if (window.I18n && I18n.translateNew) I18n.translateNew();
+    }
+
+    function closeBooking() {
+        document.getElementById('booking-overlay').classList.remove('active');
+    }
+
+    function checkDateAvailability() {
+        var date = document.getElementById('bk-date').value;
+        var statusEl = document.getElementById('bk-date-status');
+        if (!date) return;
+
+        statusEl.textContent = t('agent.checking','กำลังตรวจสอบ...');
+        statusEl.style.color = 'rgba(255,255,255,.4)';
+
+        fetch('/api/availability.php?month=' + (new Date(date).getMonth()+1) + '&year=' + new Date(date).getFullYear() + '&boat=' + currentBoat)
+            .then(r => r.json()).then(d => {
+                var cal = d.calendar || {};
+                var status = cal[date] || 'available';
+                if (status === 'booked' || status === 'blocked') {
+                    statusEl.textContent = '❌ ' + t('agent.not_available','วันนี้ไม่ว่าง กรุณาเลือกวันอื่น');
+                    statusEl.style.color = '#ff6b8a';
+                } else if (status === 'limited') {
+                    statusEl.textContent = '⚠️ ' + t('agent.limited','เหลือน้อย');
+                    statusEl.style.color = '#ffd54f';
+                } else {
+                    statusEl.textContent = '✅ ' + t('agent.available','ว่าง');
+                    statusEl.style.color = '#69f0ae';
+                }
+            }).catch(() => { statusEl.textContent = ''; });
+    }
+
+    async function submitBooking() {
+        var date = document.getElementById('bk-date').value;
+        var name = document.getElementById('bk-name').value.trim();
+        var phone = document.getElementById('bk-phone').value.trim();
+        var slot = document.getElementById('bk-slot').value;
+
+        if (!date || !name || !phone) {
+            alert(t('agent.fill_required','กรุณากรอกวันที่ ชื่อลูกค้า และเบอร์โทรให้ครบ'));
+            return;
+        }
+        if (!agentData || !agentData.id) {
+            alert(t('agent.please_login','กรุณาเข้าสู่ระบบก่อน'));
+            return;
+        }
+
+        var btn = document.getElementById('bk-submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = t('agent.booking_processing','<i class="fas fa-spinner fa-spin"></i> กำลังจอง...');
+
+        try {
+            var r = await fetch('/api/agent-booking.php', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    boat_type: currentBoat,
+                    booking_date: date,
+                    time_slot: slot,
+                    guests: document.getElementById('bk-guests').value,
+                    customer_name: name,
+                    customer_phone: phone,
+                    customer_email: document.getElementById('bk-email').value,
+                    agent_id: agentData.id
+                })
+            });
+            var d = await r.json();
+            if (d.success) {
+                currentBookingId = d.booking_id;
+                currentPrice = d.total_price;
+                closeBooking();
+                openPayment();
+                loadMyBookings();
+            } else {
+                alert(d.error || t('agent.error_generic','เกิดข้อผิดพลาด'));
+                btn.disabled = false;
+                btn.innerHTML = t('agent.confirm_booking','<i class="fas fa-calendar-check"></i> ยืนยันการจอง');
+            }
+        } catch(e) {
+            alert(t('agent.error_generic','เกิดข้อผิดพลาด กรุณาลองใหม่'));
+            btn.disabled = false;
+            btn.innerHTML = t('agent.confirm_booking','<i class="fas fa-calendar-check"></i> ยืนยันการจอง');
+        }
+    }
+
+    // ===== PAYMENT MODAL =====
+    function openPayment() {
+        document.getElementById('pay-booking-id').textContent = currentBookingId;
+        document.getElementById('pay-amount-display').textContent = '฿' + currentPrice.toLocaleString('th-TH');
+
+        // Show bank info
+        var info = paymentSettings;
+        var bankHtml = '';
+        if (info.bank_name || info.account_number) {
+            bankHtml += '<div><i class="fas fa-university" style="color:#e8c98a"></i> <strong>' + (info.bank_name||'-') + '</strong></div>' +
+                '<div>เลขบัญชี: <strong>' + (info.account_number||'-') + '</strong></div>' +
+                '<div>ชื่อบัญชี: ' + (info.account_name||'-') + '</div>';
+        }
+        if (info.promptpay_number) {
+            bankHtml += '<div style="margin-top:8px"><i class="fas fa-qrcode" style="color:#00b4ff"></i> PromptPay: <strong>' + info.promptpay_number + '</strong></div>';
+        }
+        document.getElementById('pay-bank-info').innerHTML = bankHtml || t('agent.contact_admin_bank','ติดต่อ admin สำหรับข้อมูลบัญชี');
+
+        // Setup QR section
+        var qrImg = document.getElementById('pay-qr-img');
+        var qrNum = document.getElementById('pay-qr-number');
+        if (info.promptpay_qr) {
+            // Admin has uploaded a QR image
+            qrImg.src = info.promptpay_qr;
+            qrImg.style.display = 'block';
+        } else if (info.promptpay_number) {
+            // Generate QR from promptpay number via promptpay.io
+            var num = info.promptpay_number.replace(/-/g,'');
+            qrImg.src = 'https://promptpay.io/' + num + '/' + currentPrice + '.png';
+            qrImg.style.display = 'block';
+        } else {
+            qrImg.src = '';
+            qrImg.style.display = 'none';
+        }
+        qrNum.textContent = info.promptpay_number ? 'PromptPay: ' + info.promptpay_number : '';
+
+        // Reset slips
+        document.getElementById('slip-file').value = '';
+        document.getElementById('slip-preview').style.display = 'none';
+        document.getElementById('upload-slip-btn').disabled = true;
+        document.getElementById('upload-slip-btn').style.opacity = '0.5';
+        document.getElementById('slip-file-qr').value = '';
+        document.getElementById('slip-preview-qr').style.display = 'none';
+        document.getElementById('upload-slip-qr-btn').disabled = true;
+        document.getElementById('upload-slip-qr-btn').style.opacity = '0.5';
+
+        setPayTab('credit');
+        document.getElementById('payment-overlay').classList.add('active');
+    }
+
+    function closePayment() {
+        document.getElementById('payment-overlay').classList.remove('active');
+    }
+
+    function setPayTab(tab) {
+        document.getElementById('pay-tab-transfer').classList.toggle('active', tab==='transfer');
+        document.getElementById('pay-tab-qr').classList.toggle('active', tab==='qr');
+        document.getElementById('pay-tab-credit').classList.toggle('active', tab==='credit');
+        document.getElementById('pay-transfer-section').style.display = tab==='transfer' ? '' : 'none';
+        document.getElementById('pay-qr-section').style.display = tab==='qr' ? '' : 'none';
+        document.getElementById('pay-credit-section').style.display = tab==='credit' ? '' : 'none';
+    }
+
+    function previewSlipQR(input) {
+        if (!input.files || !input.files[0]) return;
+        var prev = document.getElementById('slip-preview-qr');
+        prev.src = URL.createObjectURL(input.files[0]);
+        prev.style.display = 'block';
+        var btn = document.getElementById('upload-slip-qr-btn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+
+    async function uploadSlipQR() {
+        if (!agentData || !agentData.id) { alert(t('agent.please_login','กรุณาเข้าสู่ระบบ')); return; }
+        var file = document.getElementById('slip-file-qr').files[0];
+        if (!file) { alert(t('agent.select_slip','กรุณาเลือกรูป slip ก่อน')); return; }
+
+        var btn = document.getElementById('upload-slip-qr-btn');
+        btn.disabled = true;
+        btn.innerHTML = t('agent.sending','<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...');
+
+        var fd = new FormData();
+        fd.append('slip', file);
+        fd.append('booking_id', currentBookingId);
+        fd.append('agent_id', agentData.id);
+        fd.append('amount', currentPrice);
+        fd.append('method', 'promptpay_qr');
+
+        try {
+            var r = await fetch('/api/agent-slip.php', { method:'POST', body:fd });
+            var d = await r.json();
+            if (d.success) {
+                closePayment();
+                alert(t('agent.slip_success','ส่ง Slip สำเร็จ! กรุณารอการยืนยันจาก admin'));
+                loadMyBookings();
+            } else {
+                alert(d.error || t('agent.slip_fail','ส่ง Slip ไม่สำเร็จ'));
+                btn.disabled = false;
+                btn.innerHTML = t('agent.send_slip','<i class="fas fa-paper-plane"></i> ส่ง Slip รออนุมัติ');
+                btn.style.opacity = '1';
+            }
+        } catch(e) {
+            alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+            btn.disabled = false;
+            btn.innerHTML = t('agent.send_slip','<i class="fas fa-paper-plane"></i> ส่ง Slip รออนุมัติ');
+            btn.style.opacity = '1';
+        }
+    }
+
+    function previewSlip(input) {
+        if (!input.files || !input.files[0]) return;
+        var prev = document.getElementById('slip-preview');
+        prev.src = URL.createObjectURL(input.files[0]);
+        prev.style.display = 'block';
+        var btn = document.getElementById('upload-slip-btn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+
+    async function uploadSlip() {
+        if (!agentData || !agentData.id) { alert(t('agent.please_login','กรุณาเข้าสู่ระบบ')); return; }
+        var file = document.getElementById('slip-file').files[0];
+        if (!file) { alert(t('agent.select_slip','กรุณาเลือกรูป slip ก่อน')); return; }
+
+        var btn = document.getElementById('upload-slip-btn');
+        btn.disabled = true;
+        btn.innerHTML = t('agent.sending','<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...');
+
+        var fd = new FormData();
+        fd.append('slip', file);
+        fd.append('booking_id', currentBookingId);
+        fd.append('agent_id', agentData.id);
+        fd.append('amount', currentPrice);
+
+        try {
+            var r = await fetch('/api/agent-slip.php', { method:'POST', body:fd });
+            var d = await r.json();
+            if (d.success) {
+                closePayment();
+                alert(t('agent.slip_success','ส่ง Slip สำเร็จ! กรุณารอการยืนยันจาก admin'));
+                loadMyBookings();
+            } else {
+                alert(d.error || t('agent.slip_fail','ส่ง Slip ไม่สำเร็จ'));
+                btn.disabled = false;
+                btn.innerHTML = t('agent.send_slip','<i class="fas fa-paper-plane"></i> ส่ง Slip รออนุมัติ');
+                btn.style.opacity = '1';
+            }
+        } catch(e) {
+            alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+            btn.disabled = false;
+            btn.innerHTML = t('agent.send_slip','<i class="fas fa-paper-plane"></i> ส่ง Slip รออนุมัติ');
+            btn.style.opacity = '1';
+        }
+    }
+
+    async function payCreditCard() {
+        try {
+            var r = await fetch('/api/paysolutions-payment.php', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({booking_id: currentBookingId})
+            });
+            var d = await r.json();
+            if (d.success && d.redirect_url) {
+                window.location.href = d.redirect_url;
+            } else {
+                alert(d.error || t('agent.error_generic','เกิดข้อผิดพลาด กรุณาลองใหม่'));
+            }
+        } catch(e) { alert('เกิดข้อผิดพลาด กรุณาลองใหม่'); }
+    }
+
+    // Close modals on backdrop click
+    document.getElementById('booking-overlay').addEventListener('click', function(e){ if(e.target===this) closeBooking(); });
+    document.getElementById('payment-overlay').addEventListener('click', function(e){ if(e.target===this) closePayment(); });
+
+    // ===== CALENDAR CODE =====
+    (function(){
+        var today = new Date();
+        var curMonth = today.getMonth();
+        var curYear = today.getFullYear();
+        var selBoat = 'all';
+        var calendarData = {};
+        var detailsData = {};
+        var pastSet = new Set();
+
+        function getMonthName(idx) {
+            var thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+            return t('agent.month_'+(idx+1), thaiMonths[idx]);
+        }
+        // boats array is populated dynamically by loadBoatTypesAndPricing()
+        function getSlots() { return [{id:'morning',label:t('agent.morning','รอบเช้า 09:00–13:00')},{id:'afternoon',label:t('agent.afternoon','รอบบ่าย 14:00–18:00')}]; }
+
+        function statusLabel(s){switch(s){case 'available':return t('agent.available','ว่าง');case 'limited':return t('agent.limited','เหลือน้อย');case 'booked':return t('agent.full','เต็ม');case 'blocked':return t('agent.blocked','ปิดรับ');default:return '';}}
+
+        function loadAvailability(){
+            fetch('/api/availability.php?month='+(curMonth+1)+'&year='+curYear+'&boat='+selBoat)
+                .then(r=>r.json()).then(d=>{calendarData=d.calendar||{};detailsData=d.details||{};pastSet=new Set(d.pastDates||[]);renderCal();}).catch(()=>{calendarData={};detailsData={};pastSet=new Set();renderCal();});
+        }
+
+        function renderCal(){
+            var grid=document.getElementById('q-cal-grid');
+            var label=document.getElementById('q-month-label');
+            label.textContent=getMonthName(curMonth)+' ค.ศ '+curYear;
+            var firstDay=new Date(curYear,curMonth,1).getDay();
+            var daysInMonth=new Date(curYear,curMonth+1,0).getDate();
+            var html='';var cA=0,cL=0,cB=0;
+            for(var i=0;i<firstDay;i++) html+='<div class="q-day empty"></div>';
+            for(var day=1;day<=daysInMonth;day++){
+                var dateStr=curYear+'-'+String(curMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+                var isPast=pastSet.has(dateStr);
+                var status=isPast?'past':(calendarData[dateStr]||'available');
+                var isToday=(day===today.getDate()&&curMonth===today.getMonth()&&curYear===today.getFullYear());
+                var sl=statusLabel(status);
+                var clickable=(!isPast && (status==='available'||status==='limited'));
+                if(status==='available')cA++;else if(status==='limited')cL++;else if(status==='booked'||status==='blocked')cB++;
+                var tdCls = isToday ? ' today' : '';
+                var clkAttr = clickable ? ' onclick="showDayDetail(\'' + dateStr + '\')" style="cursor:pointer;"' : '';
+                // Compute remaining boats count
+                var remainHtml = '';
+                if (!isPast && detailsData[dateStr]) {
+                    var totalAvail = 0;
+                    var dd = detailsData[dateStr];
+                    for (var bt in dd) { for (var s in dd[bt]) { totalAvail += (dd[bt][s].available || 0); } }
+                    if (totalAvail > 0 && status !== 'booked') {
+                        remainHtml = '<span class="q-status" style="color:#00d4ff">' + totalAvail + ' ' + t('agent.remaining_boats','ลำ') + '</span>';
+                    }
+                }
+                html += '<div class="q-day ' + status + tdCls + '"' + clkAttr + '>' +
+                    '<span class="q-num">' + day + '</span>' + (sl ? '<span class="q-status">' + sl + '</span>' : '') +
+                    remainHtml + '</div>';
+            }
+            grid.innerHTML=html;
+            document.getElementById('q-count-available').textContent=cA;
+            document.getElementById('q-count-limited').textContent=cL;
+            document.getElementById('q-count-booked').textContent=cB;
+        }
+
+
+        window.showDayDetail = function(dateStr) {
+            var overlay  = document.getElementById('q-detail-overlay');
+            var dateEl   = document.getElementById('q-detail-date');
+            var badgeWrap= document.getElementById('q-detail-badge-wrap');
+            var tbody    = document.getElementById('q-detail-body');
+
+            var dayStatus = calendarData[dateStr] || 'available';
+            var parts = dateStr.split('-');
+            dateEl.textContent = parseInt(parts[2]) + ' ' + getMonthName(parseInt(parts[1])-1) + ' ค.ศ ' + parts[0];
+            badgeWrap.innerHTML = '<span class="q-detail-badge ' + dayStatus + '">' + statusLabel(dayStatus) + '</span>';
+
+            var detail   = detailsData[dateStr] || {};
+            var boatList = selBoat === 'all' ? boats : boats.filter(function(b){ return b.id === selBoat; });
+            var html = '';
+
+            var slotsArr = getSlots();
+            boatList.forEach(function(boat) {
+                slotsArr.forEach(function(slot) {
+                    var boatSlots = detail[boat.id] || {};
+                    var slotInfo = boatSlots[slot.id] || {total:1, booked:0, blocked:0, available:1};
+                    var s = slotInfo.available <= 0 ? 'booked' : (slotInfo.available < slotInfo.total ? 'limited' : 'available');
+                    var canBook = slotInfo.available > 0;
+                    var countText = slotInfo.available + '/' + slotInfo.total + ' ' + t('agent.remaining_boats','ลำ');
+                    var agentPrice = agentPricingData[boat.id] && agentPricingData[boat.id].price;
+                    var price = agentPrice || (normalPricesFromApi[boat.id] || 0);
+                    var isAgentPrice = !!agentPrice;
+                    var priceTag = '<span style="color:#e8c98a">฿' + price.toLocaleString('th-TH') + '</span>' +
+                        (isAgentPrice ? ' <span style="font-size:.62rem;color:#69f0ae;font-weight:500">' + t('agent.special_price','ตัวแทน') + '</span>' : ' <span style="font-size:.62rem;color:rgba(255,255,255,.35)">' + t('agent.normal_price','ปกติ') + '</span>');
+
+                    html += '<div class="q-slot-card">' +
+                        '<div class="q-slot-card-grid">' +
+                            '<div><div class="q-label">' + t('agent.boat','เรือ') + '</div><div class="q-value">' + boat.name + '</div></div>' +
+                            '<div><div class="q-label q-value-right">' + t('agent.slot','รอบ') + '</div><div class="q-value q-value-right">' + slot.label + '</div></div>' +
+                            '<div><div class="q-label">' + t('agent.status','สถานะ') + '</div><div class="q-value"><span class="q-slot-badge ' + s + '">' + statusLabel(s) + '</span> <span style="font-size:.7rem;color:rgba(255,255,255,.45)">' + countText + '</span></div></div>' +
+                            '<div><div class="q-label q-value-right">' + t('agent.price','ราคา') + '</div><div class="q-value q-value-right" style="font-size:.95rem">' + priceTag + '</div></div>' +
+                        '</div>' +
+                        (canBook
+                            ? '<div class="q-slot-card-btn"><button onclick="bookFromCal(\'' + dateStr + '\',\'' + boat.id + '\',\'' + slot.id + '\')" ' +
+                              'style="padding:8px 28px;background:linear-gradient(135deg,#c9a86a,#e8c98a);border:none;border-radius:10px;color:#0a1628;font-family:\'Kanit\',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;width:100%">' +
+                              '<i class="fas fa-calendar-plus"></i> ' + t('agent.book_title','จอง') + '</button></div>'
+                            : '') +
+                        '</div>';
+
+                });
+            });
+
+            tbody.innerHTML = html;
+            overlay.classList.add('active');
+        };
+
+        // Called when agent clicks "จองเลย" from calendar popup
+        window.bookFromCal = function(dateStr, boatType, slotId) {
+            document.getElementById('q-detail-overlay').classList.remove('active');
+            // Open booking modal pre-filled
+            openBooking(boatType);
+            // Pre-fill date and slot after a tiny delay (modal animation)
+            setTimeout(function() {
+                document.getElementById('bk-date').value = dateStr;
+                document.getElementById('bk-slot').value = slotId;
+                checkDateAvailability();
+            }, 80);
+        };
+
+
+        document.getElementById('q-detail-close').addEventListener('click',function(){document.getElementById('q-detail-overlay').classList.remove('active');});
+        document.getElementById('q-detail-overlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});
+        document.getElementById('q-prev').addEventListener('click',function(){curMonth--;if(curMonth<0){curMonth=11;curYear--;}loadAvailability();});
+        document.getElementById('q-next').addEventListener('click',function(){curMonth++;if(curMonth>11){curMonth=0;curYear++;}loadAvailability();});
+        document.querySelectorAll('.q-boat-tab').forEach(function(tab){tab.addEventListener('click',function(){document.querySelectorAll('.q-boat-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');selBoat=this.dataset.boat;loadAvailability();});});
+
+        loadAvailability();
+
+        // Re-render calendar when language changes
+        document.addEventListener('langchange', function() {
+            loadAvailability();
+        });
+        // Re-render once when i18n finishes loading locale JSON
+        var _i18nRetry = setInterval(function() {
+            if (window.I18n && I18n.t && I18n.t('agent.available') !== 'agent.available') {
+                clearInterval(_i18nRetry);
+                loadAvailability();
+                loadMyBookings();
+            }
+        }, 200);
+        setTimeout(function() { clearInterval(_i18nRetry); }, 5000);
+    })();
+
+    // Init booking history
+    loadMyBookings();
+    </script>
+</body>
+</html>

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <title>โปรโมชั่น | AQUATHRILL</title>
+    <meta name="description" content="โปรโมชั่นพิเศษ AQUATHRILL — Self-Drive Mini Speedboat ทัวร์เกาะไข่ภูเก็ต แพ็คเกจสุดคุ้ม">
+    <link rel="canonical" href="https://aquathrill-thailand.com/promotions/">
+    <meta property="og:title" content="โปรโมชั่น | AQUATHRILL">
+    <meta property="og:description" content="Self-Drive Mini Speedboat ทัวร์เกาะไข่ภูเก็ต แพ็คเกจสุดคุ้ม">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aquathrill-thailand.com/promotions/">
+    <meta property="og:locale" content="th_TH">
+    <meta property="og:site_name" content="AQUATHRILL">
+    <meta property="og:image" content="https://aquathrill-thailand.com/images/hero-promotions.webp">
+    <meta property="og:image:secure_url" content="https://aquathrill-thailand.com/images/hero-promotions.webp">
+    <meta property="og:image:type" content="image/webp">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="โปรโมชั่น AQUATHRILL Mini Speedboat ทัวร์เกาะไข่">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="โปรโมชั่น | AQUATHRILL">
+    <meta name="twitter:description" content="Self-Drive Mini Speedboat ทัวร์เกาะไข่ภูเก็ต">
+    <meta name="twitter:image" content="https://aquathrill-thailand.com/images/hero-promotions.webp">
+    <meta name="twitter:image:alt" content="โปรโมชั่น AQUATHRILL Mini Speedboat ทัวร์เกาะไข่">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css?v=20260724a">
+    <!-- i18n-core must load synchronously so ?lang= URL param is detected BEFORE any inline scripts -->
+    <script src="../assets/js/i18n-core.js?v=20260724a"></script>
+    <script src="../assets/js/i18n-loader.js?v=20260724a" defer></script>
+    <style>
+        /* ===== PROMOTIONS PAGE STYLES ===== */
+
+        /* Hero with promo image */
+        .promo-hero {
+            position: relative;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(10,22,40,0.85) 0%, rgba(13,40,71,0.85) 50%, rgba(10,77,110,0.85) 100%), url('../images/hero-promotions.webp') center/cover no-repeat;
+        }
+        .promo-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 70% 50%, rgba(0,180,255,0.12) 0%, transparent 60%);
+        }
+        .promo-hero .container {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+        .promo-hero-text h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+        .promo-hero-text h1 span {
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .promo-hero-text .hero-subtitle {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.65);
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        .promo-hero-text .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ff6b35, #ff3366);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        .promo-hero-img {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            transform: perspective(800px) rotateY(-3deg);
+            transition: transform 0.5s ease;
+        }
+        .promo-hero-img:hover {
+            transform: perspective(800px) rotateY(0deg);
+        }
+        .promo-hero-img img {
+            width: 100%;
+            display: block;
+        }
+
+        /* Boat model cards */
+        .boat-models {
+            padding: 80px 0;
+            background: linear-gradient(180deg, #f0f8ff 0%, #fff 100%);
+        }
+        .boat-section-title {
+            text-align: center;
+            margin-bottom: 50px;
+            display: block !important;
+        }
+        .boat-section-title h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0d2847;
+            margin-bottom: 8px;
+        }
+        .boat-section-title p {
+            color: #5a6a80;
+            font-size: 1.05rem;
+        }
+        .boat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .boat-card {
+            background: #fff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(13,40,71,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .boat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(13,40,71,0.18);
+        }
+        .boat-card-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: linear-gradient(135deg, #00b4ff, #0066cc);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            z-index: 2;
+            letter-spacing: 0.5px;
+        }
+        .boat-card-img {
+            height: 220px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #e0f0ff, #c8e8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .boat-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .boat-card-body {
+            padding: 24px;
+        }
+        .boat-card-body h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0d2847;
+            margin-bottom: 12px;
+        }
+        .boat-specs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .boat-spec {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #5a6a80;
+        }
+        .boat-spec i {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,180,255,0.1);
+            color: #00b4ff;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .boat-card-price {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eef3f8;
+        }
+        .boat-card-price .price-amount {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ff3366;
+            line-height: 1;
+        }
+        .boat-card-price .price-unit {
+            font-size: 0.85rem;
+            color: #5a6a80;
+            padding-bottom: 3px;
+        }
+        .boat-card .btn-book {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00b4ff, #0066cc);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-family: 'Kanit', sans-serif;
+        }
+        .boat-card .btn-book:hover {
+            background: linear-gradient(135deg, #0099dd, #0055aa);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,100,200,0.3);
+        }
+
+        /* Khai Island trip section */
+        .trip-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #0d2847, #0a4d6e);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .trip-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 80%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,180,255,0.08) 0%, transparent 60%);
+        }
+        .trip-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .trip-img-side {
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .trip-img-side img {
+            width: 100%;
+            display: block;
+        }
+        .trip-details h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .trip-details h2 span {
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .trip-details .trip-sub {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.05rem;
+            margin-bottom: 24px;
+        }
+        .island-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .island-item {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .island-item .island-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,212,255,0.12);
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+        .island-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .island-item p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.4;
+        }
+
+        /* Tour includes */
+        .tour-includes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .include-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.8);
+        }
+        .include-chip i {
+            color: #00d4ff;
+            font-size: 0.85rem;
+        }
+
+        /* Schedule / time info */
+        .schedule-section {
+            padding: 80px 0;
+            background: #fff;
+        }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+        .schedule-card {
+            background: linear-gradient(135deg, #f5faff, #eef5ff);
+            border-radius: 20px;
+            padding: 32px 24px;
+            text-align: center;
+            border: 1px solid rgba(0,180,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .schedule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0,100,200,0.1);
+        }
+        .schedule-card .sched-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00b4ff, #0066cc);
+            border-radius: 16px;
+            margin: 0 auto 16px;
+            font-size: 1.3rem;
+            color: #fff;
+        }
+        .schedule-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0d2847;
+            margin-bottom: 8px;
+        }
+        .schedule-card p {
+            font-size: 0.9rem;
+            color: #5a6a80;
+            line-height: 1.5;
+        }
+
+        /* CTA Banner */
+        .cta-banner {
+            padding: 70px 0;
+            background: linear-gradient(135deg, #ff6b35, #ff3366);
+            text-align: center;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .cta-banner h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .cta-banner p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .cta-banner .btn-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            color: #ff3366;
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            position: relative;
+            font-family: 'Kanit', sans-serif;
+        }
+        .cta-banner .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+        }
+
+        /* Terms and conditions */
+        .terms-section {
+            padding: 60px 0;
+            background: #f8fafc;
+        }
+        .terms-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .term-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            border: 1px solid #eef3f8;
+        }
+        .term-card i {
+            font-size: 1.5rem;
+            color: #00b4ff;
+            margin-bottom: 12px;
+        }
+        .term-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0d2847;
+            margin-bottom: 6px;
+        }
+        .term-card p {
+            font-size: 0.85rem;
+            color: #5a6a80;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .promo-hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .promo-hero-img {
+                transform: none;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            .promo-hero-img:hover { transform: none; }
+
+            .trip-layout { grid-template-columns: 1fr; }
+            .tour-includes { grid-template-columns: repeat(2, 1fr); }
+            .schedule-grid { grid-template-columns: 1fr; }
+            .terms-grid { grid-template-columns: 1fr; }
+            .boat-section-title { margin-bottom: 30px; }
+            .boat-section-title h2 { font-size: 1.5rem; }
+            .boat-section-title p { font-size: 0.9rem; }
+        }
+        @media (max-width: 480px) {
+            .promo-hero-text h1 { font-size: 1.8rem; }
+            .promo-hero-text .hero-subtitle { font-size: 0.95rem; }
+            .tour-includes { grid-template-columns: 1fr; }
+
+            .schedule-card { padding: 22px 18px; }
+            .cta-banner h2 { font-size: 1.5rem; }
+            .cta-banner .btn-cta { padding: 14px 28px; font-size: 0.95rem; }
+            .boat-section-title h2 { font-size: 1.3rem; }
+            .boat-section-title p { font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="site-header"></div>
+
+    <!-- ===== HERO ===== -->
+    <section class="promo-hero">
+        <div class="container" style="padding-top:100px; padding-bottom:60px;">
+            <div class="promo-hero-text">
+                <div class="hero-badge"><i class="fas fa-fire"></i> <span data-i18n="promo.hero_badge">Thailand First Self-Drive!</span></div>
+                <h1>AQUATHRILL <br><span>Mini Speedboat</span></h1>
+                <p class="hero-subtitle" data-i18n="promo.hero_sub">Self-Drive Mini Speedboat แห่งแรกในไทย<br>ขับเอง (มีกัปตัน) ทัวร์เกาะไข่ ภูเก็ต</p>
+                <a href="../contact/" class="btn btn-primary" style="font-size:1.05rem;padding:14px 32px;">
+                    <i class="fab fa-whatsapp"></i> <span data-i18n="promo.hero_btn">จองเลย — +66958192778</span>
+                </a>
+            </div>
+            <div class="promo-hero-img fade-up" style="cursor:pointer;" onclick="openPromoLightbox(0)">
+                <img src="../images/โปรโมชั่น.webp" alt="AQUATHRILL Mini Speedboat SEASTORM — Private Boat Self Drive" loading="eager">
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== BOAT MODELS ===== -->
+    <section class="boat-models">
+        <div class="container">
+            <div class="boat-section-title fade-up">
+                <h2 data-i18n="promo.boat_title" style="white-space:nowrap;">🚤 เลือกรุ่น Mini Speedboat</h2>
+                <p data-i18n="promo.boat_sub" style="white-space:nowrap;">Private Boat — ขับเอง (มีกัปตันดูแล)</p>
+            </div>
+            <div class="services-grid" style="max-width: 800px; margin: 0 auto;">
+                <!-- SEASTORM 12 ft -->
+                <div class="service-card fade-up" data-boat="12ft" style="cursor:pointer;">
+                    <img src="../images/12-feet.webp" alt="SEASTORM 12 Feet Mini Speedboat" class="service-card-img">
+                    <div class="service-card-body">
+                        <h3><i class="fas fa-ship" style="color: var(--primary);"></i> SEASTORM 12 Feet</h3>
+                        <p data-i18n="svc.s12_desc">เรือมินิสปีดโบ๊ทขนาด 12 ฟุต เหมาะสำหรับ 2-3 คน น้ำหนักรวมสูงสุด 200 kg ขับเองพร้อมกัปตันดูแล</p>
+                        <div class="service-features">
+                            <span data-i18n="svc.s12_f1"><i class="fas fa-users"></i> 2-3 คน</span>
+                            <span data-i18n="svc.s12_f2"><i class="fas fa-weight-hanging"></i> สูงสุด 200 kg</span>
+                            <span data-i18n="svc.s12_f3"><i class="fas fa-user-tie"></i> มีกัปตัน</span>
+                        </div>
+                        <span class="price-tag" style="font-size: 1.1rem;" data-i18n="svc.s12_price">฿9,900 บาท / ลำ</span>
+                        <a href="/booking/" class="btn btn-primary" style="padding:10px 24px;font-size:0.85rem;margin-top:12px;display:inline-block;" onclick="event.stopPropagation();">
+                            <i class="fas fa-calendar-check"></i> <span data-i18n="promo.btn_book">จองเลย</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- SEASTORM 14 ft -->
+                <div class="service-card fade-up" data-boat="14ft" style="cursor:pointer;">
+                    <img src="../images/14-feet.webp" alt="SEASTORM 14 Feet Mini Speedboat" class="service-card-img">
+                    <div class="service-card-body">
+                        <h3><i class="fas fa-ship" style="color: var(--primary);"></i> SEASTORM 14 Feet</h3>
+                        <p data-i18n="svc.s14_desc">เรือมินิสปีดโบ๊ทขนาด 14 ฟุต เหมาะสำหรับ 2-5 คน น้ำหนักรวมสูงสุด 400 kg ขับเองพร้อมกัปตันดูแล</p>
+                        <div class="service-features">
+                            <span data-i18n="svc.s14_f1"><i class="fas fa-users"></i> 2-5 คน</span>
+                            <span data-i18n="svc.s14_f2"><i class="fas fa-weight-hanging"></i> สูงสุด 400 kg</span>
+                            <span data-i18n="svc.s14_f3"><i class="fas fa-user-tie"></i> มีกัปตัน</span>
+                        </div>
+                        <span class="price-tag" style="font-size: 1.1rem;" data-i18n="svc.s14_price">฿10,900 บาท / ลำ</span>
+                        <a href="/booking/" class="btn btn-primary" style="padding:10px 24px;font-size:0.85rem;margin-top:12px;display:inline-block;" onclick="event.stopPropagation();">
+                            <i class="fas fa-calendar-check"></i> <span data-i18n="promo.btn_book">จองเลย</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+    (function(){
+        var lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
+        var boatGrid = document.querySelector('.boat-models .services-grid');
+        if (!boatGrid) return;
+
+        var uiText = {
+            th: { book: 'จองเลย', unit: '/ ลำ', pax: 'คน', maxW: 'สูงสุด', captain: 'มีกัปตัน' },
+            en: { book: 'Book Now', unit: '/ boat', pax: 'pax', maxW: 'Max', captain: 'With Captain' },
+            ru: { book: 'Бронь', unit: '/ лодка', pax: 'чел.', maxW: 'Макс.', captain: 'С капитаном' },
+            zh: { book: '立即预订', unit: '/ 艘', pax: '人', maxW: '最大', captain: '配船长' }
+        };
+        var ui = uiText[lang] || uiText['th'];
+
+        fetch('/api/boat-types-v2.php').then(function(r){return r.json();}).then(function(d){
+            var apiBoats = d.boat_types || [];
+            apiBoats.forEach(function(bt){
+                var i18n = bt.i18n || {};
+                var loc = i18n[lang] || i18n['th'] || {};
+                var title = loc.title || bt.name;
+                var desc = loc.description || bt.description || '';
+                var priceDisplay = loc.price || ('฿' + Number(bt.price||0).toLocaleString('th-TH'));
+                if (priceDisplay) {
+                    var sfx = lang === 'th' ? 'บาท' : 'THB';
+                    if (priceDisplay.indexOf(sfx) === -1) priceDisplay += ' ' + sfx;
+                }
+                var priceUnit = loc.priceUnit || ui.unit;
+                var bookUrl = '/booking/';
+                var card = boatGrid.querySelector('.service-card[data-boat="'+bt.id+'"]');
+                if (!card) {
+                    card = document.createElement('div');
+                    card.className = 'service-card fade-up visible';
+                    card.setAttribute('data-boat', bt.id);
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', function(){
+                        if(window.BoatModal) BoatModal.open(this.dataset.boat);
+                    });
+                    boatGrid.appendChild(card);
+                }
+
+                var featHtml = '';
+                var specs = loc.specs || [];
+                var featsToRender = specs.length ? specs.map(function(s){ return {icon:s.icon||'fas fa-info',text:(s.val||s.value||'')+' '+(s.label||'')}; }) : [{icon:'fas fa-users',text:'2-'+bt.max_guests+' '+ui.pax},{icon:'fas fa-weight-hanging',text:ui.maxW+' '+bt.max_weight+' kg'},{icon:'fas fa-user-tie',text:ui.captain}];
+                featsToRender.forEach(function(f){
+                    var icon = 'fas fa-check', text = f;
+                    if(typeof f === 'object') { icon = f.icon || 'fas fa-check'; text = f.text || ''; }
+                    featHtml += '<span><i class="'+icon+'"></i> '+text+'</span>';
+                });
+
+                card.innerHTML = '<img src="' + (bt.image || (bt.images && bt.images[0]) || '../images/boat-default.webp') + '" alt="' + title + '" class="service-card-img">'
+                    + '<div class="service-card-body">'
+                    + '<h3><i class="fas fa-ship" style="color: var(--primary);"></i> ' + title + '</h3>'
+                    + '<p>' + desc + '</p>'
+                    + '<div class="service-features">' + featHtml + '</div>'
+                    + '<span class="price-tag" style="font-size:1.1rem;">' + priceDisplay + ' ' + priceUnit + '</span>'
+                    + '<a href="' + bookUrl + '" class="btn btn-primary" style="padding:10px 24px;font-size:0.85rem;margin-top:12px;display:inline-block;" onclick="event.stopPropagation();">'
+                    + '<i class="fas fa-calendar-check"></i> ' + (loc.bookLabel || ui.book) + '</a>'
+                    + '</div>';
+            });
+        }).catch(function(e){ console.error("Error loading boat data", e); });
+    })();
+    </script>
+
+    <!-- ===== KHAI ISLAND TRIP ===== -->
+    <section class="trip-section">
+        <div class="container">
+            <div class="trip-layout">
+                <div class="trip-img-side fade-up" style="cursor:pointer;" onclick="openPromoLightbox(1)">
+                    <img src="../images/โปรโมชั่น1.webp" alt="Khai Island Half Day Trip — AQUATHRILL Phuket" loading="lazy">
+                </div>
+                <div class="trip-details fade-up">
+                    <h2 data-i18n="promo.trip_title">ทัวร์ <span>เกาะไข่</span> ครึ่งวัน</h2>
+                    <p class="trip-sub" data-i18n="promo.trip_sub">3 Islands • 5 Points • 4 ชั่วโมง | ออกเดินทางจาก Phetphoom Pier, เกาะสิเหร่</p>
+
+                    <div class="island-list">
+                        <div class="island-item">
+                            <div class="island-icon">🏝️</div>
+                            <div>
+                                <h4 data-i18n="promo.isl1_name">เกาะไข่นุ้ย (Khai Nui)</h4>
+                                <p data-i18n="promo.isl1_desc">ดำน้ำชมปะการัง ให้อาหารปลาสีสัน เล่นน้ำอุ่น</p>
+                            </div>
+                        </div>
+                        <div class="island-item">
+                            <div class="island-icon">🐠</div>
+                            <div>
+                                <h4 data-i18n="promo.isl2_name">เกาะไข่นอก (Khai Nok)</h4>
+                                <p data-i18n="promo.isl2_desc">หาดทรายสวย น้ำใสระดับโลก ฝูงปลาว่ายรอบตัว</p>
+                            </div>
+                        </div>
+                        <div class="island-item">
+                            <div class="island-icon">📸</div>
+                            <div>
+                                <h4 data-i18n="promo.isl3_name">เกาะไข่ใน (Khai Nai)</h4>
+                                <p data-i18n="promo.isl3_desc">ทรายขาว น้ำเทอร์ควอยซ์ จุดถ่ายรูปสุดสวย</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-bottom:12px;color:rgba(255,255,255,0.9);"><i class="fas fa-check-circle" style="color:#00d4ff;"></i> <span data-i18n="promo.includes_title">Tour Includes</span></h4>
+                    <div class="tour-includes">
+                        <div class="include-chip"><i class="fas fa-van-shuttle"></i> <span data-i18n="promo.inc_transfer">รถรับ-ส่ง</span></div>
+                        <div class="include-chip"><i class="fas fa-mask-snorkel"></i> <span data-i18n="promo.inc_snorkel">อุปกรณ์ดำน้ำ</span></div>
+                        <div class="include-chip"><i class="fas fa-utensils"></i> <span data-i18n="promo.inc_food">อาหาร</span></div>
+                        <div class="include-chip"><i class="fas fa-glass-water"></i> <span data-i18n="promo.inc_drink">เครื่องดื่ม</span></div>
+                        <div class="include-chip"><i class="fas fa-user-tie"></i> <span data-i18n="promo.inc_captain">กัปตัน</span></div>
+                        <div class="include-chip"><i class="fas fa-shield-halved"></i> <span data-i18n="promo.inc_insurance">ประกันภัย</span></div>
+                    </div>
+
+                    <a href="https://wa.me/66958192778?text=สนใจทัวร์เกาะไข่" class="btn btn-primary" style="font-size:1.05rem;padding:14px 32px;" target="_blank">
+                        <i class="fab fa-whatsapp"></i> <span data-i18n="promo.btn_inquire">สอบถาม / จองทัวร์เกาะไข่</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SCHEDULE ===== -->
+    <section class="schedule-section">
+        <div class="container">
+            <div class="boat-section-title fade-up">
+                <h2 data-i18n="promo.sched_title" style="white-space:nowrap;">⏰ ตารางเดินทาง</h2>
+                <p data-i18n="promo.sched_sub" style="white-space:nowrap;">เลือกรอบที่สะดวก ออกเดินทางวันละ 2 รอบ</p>
+            </div>
+            <div class="schedule-grid">
+                <div class="schedule-card fade-up">
+                    <div class="sched-icon"><i class="fas fa-sun"></i></div>
+                    <h3 data-i18n="promo.morning">รอบเช้า</h3>
+                    <p><strong>Pick Up:</strong> 07:30 - 07:45</p>
+                    <p><strong data-i18n="promo.depart">ออกเดินทาง:</strong> 09:00 - 13:00</p>
+                </div>
+                <div class="schedule-card fade-up">
+                    <div class="sched-icon"><i class="fas fa-cloud-sun"></i></div>
+                    <h3 data-i18n="promo.afternoon">รอบบ่าย</h3>
+                    <p><strong>Pick Up:</strong> 12:30 - 12:45</p>
+                    <p><strong data-i18n="promo.depart">ออกเดินทาง:</strong> 14:00 - 18:00</p>
+                </div>
+                <div class="schedule-card fade-up">
+                    <div class="sched-icon"><i class="fas fa-map-pin"></i></div>
+                    <h3 data-i18n="promo.departure_point">จุดออกเดินทาง</h3>
+                    <p><strong>Phetphoom Pier</strong></p>
+                    <p data-i18n="promo.pier_location">เกาะสิเหร่, ภูเก็ต</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA BANNER ===== -->
+    <section class="cta-banner">
+        <div class="container" style="position:relative;">
+            <h2 data-i18n="promo.cta_title">🔥 จองวันนี้ รับส่วนลดพิเศษ!</h2>
+            <p data-i18n="promo.cta_sub">ติดต่อสอบถามหรือจองผ่าน WhatsApp ได้ทันที</p>
+            <a href="https://wa.me/66958192778" class="btn-cta" target="_blank">
+                <i class="fab fa-whatsapp"></i> +66958192778
+            </a>
+        </div>
+    </section>
+
+    <!-- ===== TERMS ===== -->
+    <section class="terms-section">
+        <div class="container">
+            <div class="boat-section-title fade-up">
+                <h2 data-i18n="promo.terms_title">📋 เงื่อนไขและข้อควรรู้</h2>
+            </div>
+            <div class="terms-grid">
+                <div class="term-card fade-up">
+                    <i class="fas fa-heart-pulse"></i>
+                    <h4 data-i18n="promo.term1_title">ไม่เหมาะสำหรับ</h4>
+                    <p data-i18n="promo.term1_desc">ผู้ป่วยโรคหัวใจ, ผู้ผ่าตัดหลัง, สตรีมีครรภ์, ผู้ผ่าตัดกระดูก</p>
+                </div>
+                <div class="term-card fade-up">
+                    <i class="fas fa-cloud-sun-rain"></i>
+                    <h4 data-i18n="promo.term2_title">ขึ้นกับสภาพอากาศ</h4>
+                    <p data-i18n="promo.term2_desc">โปรแกรมอาจเปลี่ยนแปลงตามสภาพอากาศเพื่อความปลอดภัย</p>
+                </div>
+                <div class="term-card fade-up">
+                    <i class="fas fa-undo"></i>
+                    <h4 data-i18n="promo.term3_title">ยกเลิกฟรี 48 ชม.</h4>
+                    <p data-i18n="promo.term3_desc">ยกเลิกหรือเลื่อนวันได้ฟรีล่วงหน้า 48 ชั่วโมงก่อนเดินทาง</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promo Lightbox -->
+    <div class="promo-lightbox" id="promo-lightbox">
+        <button class="plb-close" onclick="closePromoLightbox()"><i class="fas fa-times"></i></button>
+        <button class="plb-nav plb-prev" onclick="navPromoLightbox(-1)"><i class="fas fa-chevron-left"></i></button>
+        <button class="plb-nav plb-next" onclick="navPromoLightbox(1)"><i class="fas fa-chevron-right"></i></button>
+        <div class="plb-content">
+            <img id="promo-lb-img" alt="">
+        </div>
+        <div class="plb-counter" id="promo-lb-counter"></div>
+    </div>
+
+    <style>
+    .promo-lightbox{position:fixed;inset:0;z-index:99999;background:rgba(0,5,20,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);align-items:center;justify-content:center;display:none;}
+    .promo-lightbox.active{display:flex;}
+    .promo-lightbox .plb-close{position:absolute;top:20px;right:20px;z-index:10;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;}
+    .promo-lightbox .plb-close:hover{background:rgba(255,80,80,0.3);border-color:rgba(255,80,80,0.5);transform:rotate(90deg);}
+    .promo-lightbox .plb-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:#fff;width:50px;height:50px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;}
+    .promo-lightbox .plb-nav:hover{background:rgba(0,212,255,0.2);border-color:rgba(0,212,255,0.4);}
+    .promo-lightbox .plb-prev{left:20px;}
+    .promo-lightbox .plb-next{right:20px;}
+    .promo-lightbox .plb-content{max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center;}
+    .promo-lightbox .plb-content img{max-width:100%;max-height:85vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);object-fit:contain;transition:opacity .3s;}
+    .promo-lightbox .plb-counter{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.6);font-size:0.85rem;background:rgba(0,0,0,0.3);padding:6px 18px;border-radius:20px;}
+    .promo-hero-img:hover img,.trip-img-side:hover img,.boat-card-img:hover img{filter:brightness(1.05);}
+    </style>
+
+    <script>
+    var promoImages = [
+        {src:'../images/โปรโมชั่น.webp', alt:'AQUATHRILL SEASTORM Mini Speedboat'},
+        {src:'../images/โปรโมชั่น1.webp', alt:'Khai Island Half Day Trip'}
+    ];
+    var promoIdx = 0;
+    var promoLB = document.getElementById('promo-lightbox');
+    var promoImg = document.getElementById('promo-lb-img');
+    var promoCounter = document.getElementById('promo-lb-counter');
+
+    function openPromoLightbox(idx){
+        promoIdx = idx;
+        updatePromoLB();
+        promoLB.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closePromoLightbox(){
+        promoLB.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    function navPromoLightbox(dir){
+        promoIdx = (promoIdx + dir + promoImages.length) % promoImages.length;
+        updatePromoLB();
+    }
+    function updatePromoLB(){
+        promoImg.style.opacity = '0';
+        setTimeout(function(){
+            promoImg.src = promoImages[promoIdx].src;
+            promoImg.alt = promoImages[promoIdx].alt;
+            promoImg.onload = function(){ promoImg.style.opacity = '1'; };
+        }, 150);
+        promoCounter.textContent = (promoIdx+1) + ' / ' + promoImages.length;
+    }
+    promoLB.addEventListener('click', function(e){ if(e.target === promoLB) closePromoLightbox(); });
+    document.addEventListener('keydown', function(e){
+        if(!promoLB.classList.contains('active')) return;
+        if(e.key==='Escape') closePromoLightbox();
+        if(e.key==='ArrowLeft') navPromoLightbox(-1);
+        if(e.key==='ArrowRight') navPromoLightbox(1);
+    });
+    </script>
+
+    <!-- Dynamic content loader from admin editor -->
+    <script>
+    (async function(){
+        try {
+            // Use I18n.getLang() — i18n-core.js loads synchronously in <head> before this script
+            // It already handles ?lang= URL param > localStorage > default priority
+            var lang = (window.I18n && window.I18n.getLang) ? window.I18n.getLang() : 'th';
+
+            // Load Thai (default) content first (for images)
+            var r = await fetch('/api/page-content.php?page=promotions');
+            var d = await r.json();
+            var baseCont = d.content || null;
+
+            // Helper function for setting image src (used by both Thai and non-Thai paths)
+            // นอกจากตั้ง src ของ thumbnail แล้ว ต้อง sync array promoImages ที่ lightbox ใช้ด้วย
+            // ไม่งั้น thumbnail โชว์รูปใหม่ แต่กดดูรูปเต็มใน lightbox จะเป็นรูปเก่า (hardcode ไว้)
+            function setImg(sel, val) {
+                var el = document.querySelector(sel);
+                if (!el || !val) return;
+                el.src = val;
+                if (sel === '.promo-hero-img img' && promoImages[0]) promoImages[0].src = val;
+                if (sel === '.trip-img-side img' && promoImages[1]) promoImages[1].src = val;
+            }
+
+            // Load language-specific overrides if not Thai
+            var c = baseCont;
+            var imagesOnly = false;
+            if (lang !== 'th') {
+                // Try to load language-specific content from admin editor
+                var r2 = await fetch('/api/page-content.php?page=promotions_' + lang);
+                var d2 = await r2.json();
+                if (d2.content) {
+                    // Use language-specific content (text + images)
+                    c = d2.content;
+                    // Fill in images from Thai base if not set in lang-specific
+                    if (baseCont) {
+                        if (!c.hero) c.hero = {};
+                        if (!c.hero.image && baseCont.hero && baseCont.hero.image) c.hero.image = baseCont.hero.image;
+                        if (!c.trip) c.trip = {};
+                        if (!c.trip.image && baseCont.trip && baseCont.trip.image) c.trip.image = baseCont.trip.image;
+                    }
+                } else {
+                    // No lang-specific DB content — only apply images from Thai base
+                    // Text is already translated by i18n system, don't overwrite it
+                    c = baseCont;
+                    imagesOnly = true;
+                }
+            }
+            if (c && imagesOnly) {
+                // Only apply images from DB, preserve i18n-translated text
+                if (c.hero && c.hero.image) setImg('.promo-hero-img img', c.hero.image);
+                if (c.trip && c.trip.image) setImg('.trip-img-side img', c.trip.image);
+            } else if (c) {
+            // Helper functions
+            function setText(sel, val) { var el = document.querySelector(sel); if (el && val) el.textContent = val; }
+            function setHTML(sel, val) { var el = document.querySelector(sel); if (el && val) el.innerHTML = val; }
+
+            // Hero
+            if (c.hero) {
+                if (c.hero.badge) setText('.promo-hero-text .hero-badge span', c.hero.badge);
+                if (c.hero.title) setHTML('.promo-hero-text h1', c.hero.title);
+                if (c.hero.subtitle) setHTML('.promo-hero-text .hero-subtitle', c.hero.subtitle);
+                if (c.hero.image) setImg('.promo-hero-img img', c.hero.image);
+            }
+
+            // Trip
+            if (c.trip) {
+                if (c.trip.image) setImg('.trip-img-side img', c.trip.image);
+                if (c.trip.title) setHTML('.trip-details h2', c.trip.title);
+                if (c.trip.subtitle) setText('.trip-sub', c.trip.subtitle);
+                if (c.trip.islands) {
+                    var items = document.querySelectorAll('.island-item');
+                    c.trip.islands.forEach(function(isl, i) {
+                        if (!items[i]) return;
+                        if (isl.name) { var h = items[i].querySelector('h4'); if (h) h.textContent = isl.name; }
+                        if (isl.desc) { var p = items[i].querySelector('p'); if (p) p.textContent = isl.desc; }
+                    });
+                }
+                if (c.trip.includes) {
+                    var chips = document.querySelectorAll('.include-chip span');
+                    c.trip.includes.forEach(function(txt, i) { if (chips[i]) chips[i].textContent = txt; });
+                }
+            }
+
+            // Schedule
+            if (c.schedule) {
+                var scards = document.querySelectorAll('.schedule-card');
+                c.schedule.forEach(function(s, i) {
+                    if (!scards[i]) return;
+                    if (s.title) { var h = scards[i].querySelector('h3'); if (h) h.textContent = s.title; }
+                    if (s.lines) {
+                        var ps = scards[i].querySelectorAll('p');
+                        s.lines.forEach(function(l, j) { if (ps[j]) ps[j].innerHTML = l; });
+                    }
+                });
+            }
+
+            // CTA
+            if (c.cta) {
+                if (c.cta.title) setHTML('.cta-banner h2', c.cta.title);
+                if (c.cta.subtitle) setHTML('.cta-banner p', c.cta.subtitle);
+            }
+
+            // Terms
+            if (c.terms) {
+                var tcards = document.querySelectorAll('.term-card');
+                c.terms.forEach(function(t, i) {
+                    if (!tcards[i]) return;
+                    if (t.title) { var h = tcards[i].querySelector('h4'); if (h) h.textContent = t.title; }
+                    if (t.desc) { var p = tcards[i].querySelector('p'); if (p) p.textContent = t.desc; }
+                });
+            }
+            } // end if (c && imagesOnly) / else if (c)
+            // (Boat modal overrides removed as per boat consolidation)
+        } catch(e) { /* no saved content, use defaults */ }
+    })();
+    </script>
+
+
+
+    <div id="site-footer"></div>
+    <!-- i18n-core and i18n-loader are now loaded in <head> above -->
+    <script src="../assets/js/components.js?v=20260724a"></script>
+    <script src="../assets/js/main.js?v=20260724a"></script>
+    <script src="../assets/js/boat-modal.js?v=20260516c"></script>
+</body>
+</html>

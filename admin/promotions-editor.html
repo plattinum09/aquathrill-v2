@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขหน้าโปรโมชั่น | AQUATHRILL Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;height:100vh;display:flex;flex-direction:column}
+        .legacy-page-root--editor, body > div:has(.editor-toolbar){height:100vh;min-height:0;display:flex;flex-direction:column}
+
+        /* Top Toolbar */
+        .editor-toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(10,22,40,.97);border-bottom:1px solid rgba(255,255,255,.1);z-index:1000;flex-shrink:0}
+        .toolbar-left{display:flex;align-items:center;gap:16px}
+        .toolbar-left .back-btn{color:rgba(255,255,255,.6);text-decoration:none;font-size:.9rem;display:flex;align-items:center;gap:6px;transition:.2s}
+        .toolbar-left .back-btn:hover{color:#fff}
+        .toolbar-left h2{font-size:1.1rem;font-weight:600}
+        .toolbar-left h2 i{color:#00d4ff}
+        .toolbar-right{display:flex;align-items:center;gap:12px}
+        .toolbar-right .status{font-size:.8rem;color:rgba(255,255,255,.4);padding:6px 12px;background:rgba(255,255,255,.05);border-radius:8px}
+        .toolbar-right .status.editing{color:#ffab00;background:rgba(255,171,0,.1)}
+        .toolbar-right .status.saved{color:#00c853;background:rgba(0,200,83,.1)}
+        .btn-toolbar{padding:10px 20px;border:none;border-radius:10px;font-family:inherit;cursor:pointer;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:8px;transition:.2s}
+        .btn-edit-mode{background:rgba(255,171,0,.15);color:#ffab00;border:1px solid rgba(255,171,0,.3)}
+        .btn-edit-mode:hover{background:rgba(255,171,0,.25)}
+        .btn-edit-mode.active{background:rgba(0,212,255,.15);color:#00d4ff;border-color:rgba(0,212,255,.3)}
+        .btn-save{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff}
+        .btn-save:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,100,255,.3)}
+        .btn-save:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+        /* Language switcher */
+        .lang-switcher{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:3px;margin-right:8px}
+        .lang-switcher .lang-btn{padding:6px 14px;border:none;border-radius:8px;font-family:inherit;cursor:pointer;font-size:.78rem;font-weight:600;background:transparent;color:rgba(255,255,255,.5);transition:.2s;display:flex;align-items:center;gap:5px}
+        .lang-switcher .lang-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+        .lang-switcher .lang-btn.active{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff;box-shadow:0 2px 8px rgba(0,100,255,.3)}
+        .lang-switcher .lang-btn img{width:16px;height:12px;border-radius:2px}
+
+        /* iframe container */
+        .iframe-wrap{flex:1;min-height:0;position:relative;overflow:hidden}
+        .iframe-wrap iframe{width:100%;height:100%;border:none}
+
+        /* Image upload modal */
+        .img-modal{position:fixed;inset:0;background:rgba(0,5,20,.9);display:none;align-items:center;justify-content:center;z-index:9999}
+        .img-modal.active{display:flex}
+        .img-modal-box{background:#0d2847;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;max-width:500px;width:95%;text-align:center}
+        .img-modal-box h3{margin-bottom:20px;font-size:1.2rem}
+        .img-modal-box .current-preview{max-width:100%;max-height:200px;border-radius:12px;margin-bottom:16px;border:2px solid rgba(255,255,255,.1)}
+        .img-drop{border:2px dashed rgba(255,255,255,.2);border-radius:16px;padding:40px;cursor:pointer;transition:.2s;position:relative;margin-bottom:16px}
+        .img-drop:hover{border-color:#00d4ff;background:rgba(0,212,255,.04)}
+        .img-drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .img-drop p{color:rgba(255,255,255,.4);font-size:.9rem}
+        .img-drop i{font-size:2rem;color:rgba(255,255,255,.2);margin-bottom:8px;display:block}
+        .img-modal-actions{display:flex;gap:12px}
+        .img-modal-actions button{flex:1;padding:12px;border:none;border-radius:10px;font-family:inherit;cursor:pointer;font-size:.9rem;font-weight:600}
+        .img-btn-cancel{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+        .img-btn-upload{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff}
+
+        /* Reset dropdown */
+        .reset-wrap{position:relative;display:inline-block}
+        .btn-reset{background:rgba(255,61,113,.12);color:#ff3d71;border:1px solid rgba(255,61,113,.25)}
+        .btn-reset:hover{background:rgba(255,61,113,.22)}
+        .reset-menu{position:absolute;top:100%;right:0;margin-top:6px;background:#1a2744;border:1px solid rgba(255,255,255,.1);border-radius:12px;min-width:220px;box-shadow:0 12px 36px rgba(0,0,0,.5);z-index:999;display:none;overflow:hidden}
+        .reset-menu.show{display:block}
+        .reset-menu button{display:flex;align-items:center;gap:8px;width:100%;padding:10px 16px;background:none;border:none;color:#fff;font-family:inherit;font-size:.82rem;cursor:pointer;text-align:left;transition:.15s}
+        .reset-menu button:hover{background:rgba(255,61,113,.12)}
+        .reset-menu button i{width:16px;text-align:center;color:rgba(255,255,255,.4);font-size:.75rem}
+        .reset-menu .divider{height:1px;background:rgba(255,255,255,.08);margin:4px 0}
+        .reset-menu .reset-all{color:#ff3d71;font-weight:600}
+
+        /* Loading overlay */
+        .loading{position:fixed;inset:0;background:rgba(10,22,40,.95);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px}
+        .loading.hidden{display:none}
+        .loading i{font-size:2rem;color:#00d4ff}
+        .loading p{color:rgba(255,255,255,.6)}
+
+        /* Toast */
+        .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);padding:14px 28px;border-radius:14px;font-size:.9rem;font-weight:600;z-index:9999;transition:.3s;opacity:0;pointer-events:none}
+        .toast.show{opacity:1}
+        .toast.success{background:rgba(0,200,83,.9);color:#fff}
+        .toast.error{background:rgba(255,61,113,.9);color:#fff}
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>กำลังโหลดหน้าโปรโมชั่น...</p>
+    </div>
+
+    <div class="editor-toolbar">
+        <div class="toolbar-left">
+            <a href="/admin/promotions.html" class="back-btn"><i class="fas fa-arrow-left"></i> กลับ</a>
+            <h2><i class="fas fa-eye"></i> Visual Editor — หน้าโปรโมชั่น</h2>
+        </div>
+        <div class="toolbar-right">
+            <div class="lang-switcher" id="lang-switcher">
+                <button class="lang-btn active" data-lang="th" onclick="switchEditorLang('th')">
+                    <img src="https://flagcdn.com/w20/th.png" alt=""> TH
+                </button>
+                <button class="lang-btn" data-lang="en" onclick="switchEditorLang('en')">
+                    <img src="https://flagcdn.com/w20/gb.png" alt=""> EN
+                </button>
+                <button class="lang-btn" data-lang="ru" onclick="switchEditorLang('ru')">
+                    <img src="https://flagcdn.com/w20/ru.png" alt=""> RU
+                </button>
+                <button class="lang-btn" data-lang="zh" onclick="switchEditorLang('zh')">
+                    <img src="https://flagcdn.com/w20/cn.png" alt=""> ZH
+                </button>
+            </div>
+            <span class="status editing" id="status-badge">✏️ โหมดแก้ไข — คลิกข้อความเพื่อแก้ไข</span>
+            <!-- toggle-edit button removed: always in edit mode -->
+            <div class="reset-wrap" id="reset-wrap">
+                <button class="btn-toolbar btn-reset" onclick="toggleResetMenu()">
+                    <i class="fas fa-undo"></i> รีเซ็ต
+                </button>
+                <div class="reset-menu" id="reset-menu">
+                    <button onclick="resetSection('hero')"><i class="fas fa-image"></i> Hero Banner</button>
+                    <button onclick="resetSection('trip')"><i class="fas fa-route"></i> ทริปเที่ยวเกาะ</button>
+                    <button onclick="resetSection('schedule')"><i class="fas fa-clock"></i> ตารางเวลา</button>
+                    <button onclick="resetSection('cta')"><i class="fas fa-bullhorn"></i> CTA Banner</button>
+                    <button onclick="resetSection('terms')"><i class="fas fa-file-alt"></i> เงื่อนไข (Terms)</button>
+                    <div class="divider"></div>
+                    <button class="reset-all" onclick="resetSection('ALL')"><i class="fas fa-trash-alt"></i> รีเซ็ตทั้งหมด</button>
+                </div>
+            </div>
+            <button class="btn-toolbar btn-edit-mode" onclick="openImgModal()">
+                <i class="fas fa-images"></i> เปลี่ยนรูป
+            </button>
+            <button class="btn-toolbar btn-save" id="btn-save" onclick="saveContent()" disabled>
+                <i class="fas fa-save"></i> บันทึก
+            </button>
+        </div>
+    </div>
+
+    <div class="iframe-wrap">
+        <iframe id="page-iframe"></iframe>
+    </div>
+
+    <!-- Image Upload Modal — shows both images -->
+    <div class="img-modal" id="img-modal">
+        <div class="img-modal-box" style="max-width:600px">
+            <h3><i class="fas fa-images" style="color:#00d4ff"></i> เปลี่ยนรูปภาพ</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+                <!-- Hero Image -->
+                <div style="text-align:center">
+                    <div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:6px"><i class="fas fa-star"></i> รูป Hero (ด้านบน)</div>
+                    <img id="img-preview-hero" src="" alt="Hero" style="width:100%;height:120px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.1);margin-bottom:8px">
+                    <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(0,212,255,.15);border:1px dashed rgba(0,212,255,.4);border-radius:10px;color:#00d4ff;font-family:'Kanit',sans-serif;font-size:.78rem;cursor:pointer;transition:.2s">
+                        <i class="fas fa-camera"></i> เปลี่ยนรูป
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImgSlot(this,'hero')">
+                    </label>
+                    <div id="img-status-hero" style="font-size:.7rem;margin-top:4px;color:rgba(255,255,255,.3)"></div>
+                </div>
+                <!-- Trip Image -->
+                <div style="text-align:center">
+                    <div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:6px"><i class="fas fa-umbrella-beach"></i> รูป Trip (ทัวร์เกาะไข่)</div>
+                    <img id="img-preview-trip" src="" alt="Trip" style="width:100%;height:120px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.1);margin-bottom:8px">
+                    <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(0,212,255,.15);border:1px dashed rgba(0,212,255,.4);border-radius:10px;color:#00d4ff;font-family:'Kanit',sans-serif;font-size:.78rem;cursor:pointer;transition:.2s">
+                        <i class="fas fa-camera"></i> เปลี่ยนรูป
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImgSlot(this,'trip')">
+                    </label>
+                    <div id="img-status-trip" style="font-size:.7rem;margin-top:4px;color:rgba(255,255,255,.3)"></div>
+                </div>
+            </div>
+            <div class="img-modal-actions">
+                <button class="img-btn-cancel" onclick="closeImgModal()">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const API = '/api';
+    let editMode = false;
+    let hasChanges = false;
+    let currentImgTarget = null;
+    let pendingImgUrl = null;
+    let iframeDoc = null;
+    // Restore language from last session (persists across F5 refresh)
+    let currentEditorLang = (function(){
+        try { return sessionStorage.getItem('editor-lang') || 'th'; } catch(e){ return 'th'; }
+    })();
+
+    // Wait for iframe to load
+    const iframe = document.getElementById('page-iframe');
+
+    // Set initial iframe src based on restored language
+    (function(){
+        const baseSrc = '../promotions/';
+        iframe.src = baseSrc + '?lang=' + currentEditorLang;
+        // Restore active lang button UI
+        document.querySelectorAll('.lang-switcher .lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === currentEditorLang);
+        });
+    })();
+
+    iframe.addEventListener('load', function() {
+        try {
+            iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            // Hide header/footer for cleaner editor view
+            const hideCSS = iframeDoc.createElement('style');
+            hideCSS.textContent = '#site-header, #site-footer, .site-header, .site-footer, header, nav.navbar, .navbar, .top-nav, footer, .footer { display: none !important; } body { padding-top: 0 !important; margin-top: 0 !important; }';
+            iframeDoc.head.appendChild(hideCSS);
+            document.getElementById('loading').classList.add('hidden');
+
+            // IMPORTANT ORDER:
+            // 1. patchIframeLang() — patches I18n.getLang() + dispatches langchange at 0ms, 600ms
+            // 2. loadSavedContent() immediately — populates savedBoatModalData early (ready for when user opens modal)
+            // 3. loadSavedContent() at 700ms — re-apply DB content AFTER i18n-loader finishes translating [data-i18n] elements
+            //    This ensures DB overrides always win over locale JSON translations.
+            patchIframeLang(currentEditorLang);
+            loadSavedContent();            // Run #1: populate savedBoatModalData early
+            setTimeout(loadSavedContent, 700); // Run #2: override after i18n-loader finishes
+            // Auto-enter edit mode — always start in edit mode, no separate view mode
+            setTimeout(function() {
+                if (!editMode) toggleEditMode();
+            }, 800);
+        } catch(e) {
+            console.error('Cannot access iframe:', e);
+            document.getElementById('loading').classList.add('hidden');
+        }
+    });
+
+    function patchIframeLang(lang) {
+        const iWin = iframe.contentWindow;
+        if (!iWin) return;
+
+        // STEP 1: Ensure window.I18n exists in iframe (create stub if old server version missing it)
+        if (!iWin.I18n) {
+            iWin.I18n = {};
+        }
+
+        // STEP 2: Directly patch getLang() and related methods to return the editor's chosen language.
+        // This works even if the server's i18n-core.js is old and doesn't read ?lang= URL param.
+        iWin.I18n.getLang    = function() { return lang; };
+        iWin.I18n.isDefault  = function() { return lang === 'th'; };
+        iWin.I18n.defaultLang = 'th';
+
+        // STEP 3: Dispatch langchange so i18n-loader.js translates [data-i18n] elements
+        // and boat-modal.js re-renders any open modal in the correct language.
+        function dispatch() {
+            // Never dispatch if edit mode is active — it would overwrite contenteditable content
+            if (editMode) return;
+            try {
+                iframeDoc.dispatchEvent(
+                    new iWin.CustomEvent('langchange', { detail: { lang: lang } })
+                );
+            } catch(e) {}
+        }
+
+        // Dispatch immediately + retry after 600ms to let async i18n-loader finish
+        // NOTE: loadSavedContent() is called at 1600ms to apply DB overrides LAST
+        dispatch();
+        setTimeout(dispatch, 600);
+        // (1400ms dispatch removed — loadSavedContent at 1600ms is the final override)
+
+        // STEP 4: Guard against any inline observer that may overwrite the modal content.
+        // Poll until iWin.BoatModal is ready (boat-modal.js may still be executing at this point).
+        (function setupBoatLangObserver(attempts) {
+            try {
+                const boatOverlay = iframeDoc.getElementById('boatOverlay');
+                const boatModalAPI = iWin.BoatModal;
+
+                if (!boatOverlay || !boatModalAPI || !boatModalAPI.open) {
+                    // Not ready yet — retry up to 10 times at 200ms intervals
+                    if (attempts < 10) setTimeout(function() { setupBoatLangObserver(attempts + 1); }, 200);
+                    return;
+                }
+
+                // Clean up any previous observer to avoid stacking
+                if (boatOverlay._adminLangObserver) {
+                    boatOverlay._adminLangObserver.disconnect();
+                }
+
+                boatOverlay._adminLangObserver = new MutationObserver(function() {
+                    if (!boatOverlay.classList.contains('active')) return;
+                    // Skip if admin is in edit mode — user may be editing modal content
+                    if (editMode) return;
+                    // Modal just opened. Wait 80ms so any inline observers run first,
+                    // then force re-render in the correct editor language.
+                    setTimeout(function() {
+                        try {
+                            // Guard: check modal is still open and not in edit mode
+                            if (!boatOverlay.classList.contains('active')) return;
+                            if (editMode) return;
+                            const titleEl = iframeDoc.getElementById('boatModalTitle');
+                            const t = titleEl ? titleEl.textContent : '';
+                            const boatKey = t.indexOf('12') !== -1 ? '12ft'
+                                          : t.indexOf('14') !== -1 ? '14ft' : null;
+                            if (boatKey) boatModalAPI.open(boatKey);
+                        } catch(e) {}
+                    }, 80);
+                });
+                boatOverlay._adminLangObserver.observe(boatOverlay, {
+                    attributes: true, attributeFilter: ['class']
+                });
+            } catch(e) {}
+        })(0);
+    } // end patchIframeLang
+
+    // ===== EDIT MODE — always on, one-way =====
+    function toggleEditMode() {
+        if (editMode) return; // already in edit mode
+        editMode = true;
+        const badge = document.getElementById('status-badge');
+        badge.textContent = '✏️ โหมดแก้ไข — คลิกข้อความเพื่อแก้ไข, คลิกรูปเพื่อเปลี่ยน';
+        badge.className = 'status editing';
+        enableEditing();
+    }
+
+    // ===== RESET =====
+    function toggleResetMenu() {
+        document.getElementById('reset-menu').classList.toggle('show');
+    }
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.reset-wrap')) {
+            document.getElementById('reset-menu').classList.remove('show');
+        }
+    });
+
+    const sectionLabels = {
+        hero: 'Hero Banner',
+        trip: 'ทริปเที่ยวเกาะ',
+        schedule: 'ตารางเวลา',
+        cta: 'CTA Banner',
+        terms: 'เงื่อนไข',
+        ALL: 'ทั้งหมด'
+    };
+
+    async function resetSection(key) {
+        const label = sectionLabels[key] || key;
+        if (!confirm('รีเซ็ต "' + label + '" กลับเป็นค่าเริ่มต้น HTML?\nข้อมูลที่แก้ไขไว้จะหายไป')) return;
+
+        document.getElementById('reset-menu').classList.remove('show');
+
+        try {
+            const pageKey = currentEditorLang === 'th' ? 'promotions' : 'promotions_' + currentEditorLang;
+            const r = await fetch(API + '/page-content.php?page=' + pageKey);
+            const d = await r.json();
+            let content = d.content || {};
+
+            if (key === 'ALL') {
+                content = {};
+            } else {
+                delete content[key];
+            }
+
+            // Save updated content back
+            await fetch(API + '/page-content.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ page: pageKey, content: Object.keys(content).length ? content : null }),
+                credentials: 'include'
+            });
+
+            // Turn off edit mode before reload
+            if (editMode) {
+                editMode = false;
+                const btn = document.getElementById('btn-toggle-edit');
+                btn.innerHTML = '<i class="fas fa-edit"></i> เปิดโหมดแก้ไข';
+                btn.classList.remove('active');
+                document.getElementById('status-badge').textContent = '📖 โหมดดูอย่างเดียว';
+                document.getElementById('status-badge').className = 'status';
+                document.getElementById('reset-wrap').style.display = 'none';
+                hasChanges = false;
+                document.getElementById('btn-save').disabled = true;
+            }
+
+            // Reload iframe to show original HTML
+            iframe.src = iframe.src;
+            showToast('รีเซ็ต "' + label + '" สำเร็จ!', 'success');
+        } catch(e) {
+            showToast('เกิดข้อผิดพลาดในการรีเซ็ต', 'error');
+            console.error(e);
+        }
+    }
+
+    function enableEditing() {
+        if (!iframeDoc) return;
+
+        // Make text editable
+        const editableSelectors = [
+            '.promo-hero-text h1',
+            '.promo-hero-text .hero-subtitle',
+            '.promo-hero-text .hero-badge span',
+            '.trip-details h2',
+            '.trip-sub',
+            '.island-item h4',
+            '.island-item p',
+            '.include-chip span',
+            '.schedule-card h3',
+            '.schedule-card p',
+            '.cta-banner h2',
+            '.cta-banner p',
+            '.term-card h4',
+            '.term-card p',
+            'h4[data-i18n="promo.includes_title"] span'
+        ];
+
+        editableSelectors.forEach(sel => {
+            iframeDoc.querySelectorAll(sel).forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+                el.style.outline = '2px dashed rgba(0,212,255,0.3)';
+                el.style.outlineOffset = '4px';
+                el.style.cursor = 'text';
+                el.style.minWidth = '20px';
+                el.style.borderRadius = '4px';
+                el.addEventListener('focus', handleEditFocus);
+                el.addEventListener('blur', handleEditBlur);
+                el.addEventListener('input', handleEditInput);
+            });
+        });
+
+        // Add "เปลี่ยนรูป" button at top-right of images
+        const imgSelectors = [
+            '.promo-hero-img img',
+            '.trip-img-side img'
+        ];
+
+        function addImageEditButtons() {
+            imgSelectors.forEach(sel => {
+                iframeDoc.querySelectorAll(sel).forEach(img => {
+                    if (img.dataset.editBtnAdded) return;
+                    img.dataset.editBtnAdded = 'true';
+
+                    const btn = iframeDoc.createElement('button');
+                    btn.className = 'img-edit-btn';
+                    btn.innerHTML = '<i class="fas fa-camera"></i> เปลี่ยนรูป';
+                    btn.style.cssText = 'position:absolute;top:8px;right:8px;z-index:30;background:rgba(0,212,255,0.95);color:#fff;border:none;padding:8px 16px;border-radius:10px;font-family:Kanit,sans-serif;font-weight:600;font-size:0.8rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:transform 0.2s;display:flex;align-items:center;gap:6px;';
+
+                    btn.addEventListener('mouseenter', function(){ this.style.transform='scale(1.05)'; });
+                    btn.addEventListener('mouseleave', function(){ this.style.transform='scale(1)'; });
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openImgModal();
+                    });
+
+                    const parent = img.parentElement;
+                    if (iframeDoc.defaultView.getComputedStyle(parent).position === 'static') {
+                        parent.style.position = 'relative';
+                    }
+                    parent.appendChild(btn);
+                });
+            });
+        }
+        // Ensure image parents don't clip the edit button
+        function fixOverflow() {
+            imgSelectors.forEach(sel => {
+                iframeDoc.querySelectorAll(sel).forEach(img => {
+                    var p = img.parentElement;
+                    if (p) {
+                        p.style.overflow = 'visible';
+                        p.style.position = 'relative';
+                    }
+                });
+            });
+        }
+
+        // Run immediately + retry after delay (trip image may load late)
+        addImageEditButtons(); fixOverflow();
+        setTimeout(function(){ addImageEditButtons(); fixOverflow(); }, 1000);
+        setTimeout(function(){ addImageEditButtons(); fixOverflow(); }, 3000);
+
+        // Inject Font Awesome if not present
+        if (!iframeDoc.querySelector('link[href*="font-awesome"]')) {
+            const fa = iframeDoc.createElement('link');
+            fa.rel = 'stylesheet';
+            fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            iframeDoc.head.appendChild(fa);
+        }
+    }
+    function handleEditFocus() {
+        this.style.outline = '2px solid #00d4ff';
+        this.style.background = 'rgba(0,212,255,0.08)';
+    }
+    function handleEditBlur() {
+        this.style.outline = '2px dashed rgba(0,212,255,0.3)';
+        this.style.background = '';
+        markChanged();
+    }
+    function handleEditInput() {
+        markChanged();
+    }
+
+    function disableEditing() {
+        if (!iframeDoc) return;
+
+        // Remove contenteditable
+        iframeDoc.querySelectorAll('[contenteditable="true"]').forEach(el => {
+            el.removeAttribute('contenteditable');
+            el.style.outline = '';
+            el.style.outlineOffset = '';
+            el.style.cursor = '';
+            el.style.background = '';
+            el.removeEventListener('focus', handleEditFocus);
+            el.removeEventListener('blur', handleEditBlur);
+            el.removeEventListener('input', handleEditInput);
+        });
+
+        // Remove image edit buttons
+        iframeDoc.querySelectorAll('.img-edit-btn').forEach(el => el.remove());
+        iframeDoc.querySelectorAll('[data-edit-btn-added]').forEach(el => delete el.dataset.editBtnAdded);
+    }
+
+    function markChanged() {
+        hasChanges = true;
+        document.getElementById('btn-save').disabled = false;
+    }
+
+    // ===== IMAGE MODAL (both images) =====
+    const imgTargets = {
+        hero: { sel: '.promo-hero-img img', previewId: 'img-preview-hero', statusId: 'img-status-hero' },
+        trip: { sel: '.trip-img-side img', previewId: 'img-preview-trip', statusId: 'img-status-trip' }
+    };
+
+    function openImgModal() {
+        // Load current images from iframe
+        for (const [key, cfg] of Object.entries(imgTargets)) {
+            const img = iframeDoc ? iframeDoc.querySelector(cfg.sel) : null;
+            const preview = document.getElementById(cfg.previewId);
+            const status = document.getElementById(cfg.statusId);
+            if (preview) preview.src = img ? img.src : '';
+            if (status) status.textContent = '';
+        }
+        document.getElementById('img-modal').classList.add('active');
+    }
+
+    function closeImgModal() {
+        document.getElementById('img-modal').classList.remove('active');
+    }
+
+    async function handleImgSlot(input, slot) {
+        if (!input.files || !input.files[0]) return;
+        const cfg = imgTargets[slot];
+        if (!cfg) return;
+        const status = document.getElementById(cfg.statusId);
+        if (status) status.textContent = 'กำลังอัปโหลด...';
+        const formData = new FormData();
+        formData.append('image', input.files[0]);
+        try {
+            const r = await fetch(API + '/upload.php', { method: 'POST', body: formData, credentials: 'include' });
+            const d = await r.json();
+            if (d.success) {
+                // Update preview
+                document.getElementById(cfg.previewId).src = d.url;
+                // Update iframe image
+                const iframeImg = iframeDoc ? iframeDoc.querySelector(cfg.sel) : null;
+                if (iframeImg) iframeImg.src = d.url;
+                markChanged();
+                if (status) { status.textContent = '✅ เปลี่ยนรูปสำเร็จ!'; status.style.color = '#00c853'; }
+                showToast('เปลี่ยนรูป ' + (slot === 'hero' ? 'Hero' : 'Trip') + ' สำเร็จ!', 'success');
+            } else {
+                if (status) { status.textContent = '❌ ' + (d.error || 'อัปโหลดไม่สำเร็จ'); status.style.color = '#ff6b8a'; }
+            }
+        } catch(e) {
+            if (status) { status.textContent = '❌ อัปโหลดไม่สำเร็จ'; status.style.color = '#ff6b8a'; }
+        }
+        input.value = '';
+    }
+
+    // ===== SAVE/LOAD CONTENT =====
+    async function saveContent() {
+        if (!iframeDoc) return;
+        const btn = document.getElementById('btn-save');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+        btn.disabled = true;
+
+        // Extract all editable content
+        const content = {
+            hero: {
+                badge: getText('.promo-hero-text .hero-badge span'),
+                title: getHTML('.promo-hero-text h1'),
+                subtitle: getHTML('.promo-hero-text .hero-subtitle'),
+                image: getImgSrc('.promo-hero-img img')
+            },
+            trip: {
+                image: getImgSrc('.trip-img-side img'),
+                title: getHTML('.trip-details h2'),
+                subtitle: getText('.trip-sub'),
+                islands: [],
+                includes: []
+            },
+            schedule: [],
+            cta: {
+                title: getHTML('.cta-banner h2'),
+                subtitle: getHTML('.cta-banner p')
+            },
+            terms: [],
+            boatModals: {}
+        };
+
+        // Islands
+        iframeDoc.querySelectorAll('.island-item').forEach(item => {
+            content.trip.islands.push({
+                name: item.querySelector('h4')?.textContent || '',
+                desc: item.querySelector('p')?.textContent || ''
+            });
+        });
+
+        // Includes
+        iframeDoc.querySelectorAll('.include-chip span').forEach(chip => {
+            content.trip.includes.push(chip.textContent);
+        });
+
+        // Schedule
+        iframeDoc.querySelectorAll('.schedule-card').forEach(card => {
+            content.schedule.push({
+                title: card.querySelector('h3')?.textContent || '',
+                lines: Array.from(card.querySelectorAll('p')).map(p => p.innerHTML)
+            });
+        });
+
+        // Terms
+        iframeDoc.querySelectorAll('.term-card').forEach(card => {
+            content.terms.push({
+                title: card.querySelector('h4')?.textContent || '',
+                desc: card.querySelector('p')?.textContent || ''
+            });
+        });
+
+        try {
+            const pageKey = currentEditorLang === 'th' ? 'promotions' : 'promotions_' + currentEditorLang;
+            await fetch(API + '/page-content.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ page: pageKey, content }),
+                credentials: 'include'
+            });
+
+            hasChanges = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+            document.getElementById('status-badge').textContent = '✅ บันทึกสำเร็จ!';
+            document.getElementById('status-badge').className = 'status saved';
+            showToast('บันทึกเนื้อหาสำเร็จ! อัปเดตทุกหน้าแล้ว', 'success');
+
+            setTimeout(() => {
+                if (!hasChanges) {
+                    document.getElementById('status-badge').textContent = '✏️ โหมดแก้ไข';
+                    document.getElementById('status-badge').className = 'status editing';
+                }
+            }, 3000);
+        } catch(e) {
+            btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+            btn.disabled = false;
+            showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
+        }
+    }
+
+
+    async function loadSavedContent() {
+        try {
+            const pageKey = currentEditorLang === 'th' ? 'promotions' : 'promotions_' + currentEditorLang;
+            const r = await fetch(API + '/page-content.php?page=' + pageKey);
+            const d = await r.json();
+            if (d.content) {
+                applyContent(d.content);
+            }
+        } catch(e) {
+            console.warn('No saved content found');
+        }
+    }
+
+    function applyContent(c) {
+        if (!iframeDoc || !c) return;
+
+        // Hero
+        if (c.hero) {
+            if (c.hero.badge) setTextContent('.promo-hero-text .hero-badge span', c.hero.badge);
+            if (c.hero.title) setInnerHTML('.promo-hero-text h1', c.hero.title);
+            if (c.hero.subtitle) setInnerHTML('.promo-hero-text .hero-subtitle', c.hero.subtitle);
+            if (c.hero.image) setImgSrc('.promo-hero-img img', c.hero.image);
+        }
+
+        // Trip
+        if (c.trip) {
+            if (c.trip.image) setImgSrc('.trip-img-side img', c.trip.image);
+            if (c.trip.title) setInnerHTML('.trip-details h2', c.trip.title);
+            if (c.trip.subtitle) setTextContent('.trip-sub', c.trip.subtitle);
+            if (c.trip.islands) {
+                const items = iframeDoc.querySelectorAll('.island-item');
+                c.trip.islands.forEach((isl, i) => {
+                    if (!items[i]) return;
+                    if (isl.name) { const h = items[i].querySelector('h4'); if (h) h.textContent = isl.name; }
+                    if (isl.desc) { const p = items[i].querySelector('p'); if (p) p.textContent = isl.desc; }
+                });
+            }
+            if (c.trip.includes) {
+                const chips = iframeDoc.querySelectorAll('.include-chip span');
+                c.trip.includes.forEach((txt, i) => { if (chips[i]) chips[i].textContent = txt; });
+            }
+        }
+
+        // Schedule
+        if (c.schedule) {
+            const cards = iframeDoc.querySelectorAll('.schedule-card');
+            c.schedule.forEach((s, i) => {
+                if (!cards[i]) return;
+                if (s.title) { const h = cards[i].querySelector('h3'); if (h) h.textContent = s.title; }
+                if (s.lines) {
+                    const ps = cards[i].querySelectorAll('p');
+                    s.lines.forEach((l, j) => { if (ps[j]) ps[j].innerHTML = l; });
+                }
+            });
+        }
+
+        // CTA
+        if (c.cta) {
+            if (c.cta.title) setInnerHTML('.cta-banner h2', c.cta.title);
+            if (c.cta.subtitle) setInnerHTML('.cta-banner p', c.cta.subtitle);
+        }
+
+        // Terms
+        if (c.terms) {
+            const cards = iframeDoc.querySelectorAll('.term-card');
+            c.terms.forEach((t, i) => {
+                if (!cards[i]) return;
+                if (t.title) { const h = cards[i].querySelector('h4'); if (h) h.textContent = t.title; }
+                if (t.desc) { const p = cards[i].querySelector('p'); if (p) p.textContent = t.desc; }
+            });
+        }
+    }
+
+    // Helpers
+    function getText(sel) { const el = iframeDoc.querySelector(sel); return el ? el.textContent : ''; }
+    function getHTML(sel) { const el = iframeDoc.querySelector(sel); return el ? el.innerHTML : ''; }
+    function getImgSrc(sel) { const el = iframeDoc.querySelector(sel); return el ? el.src : ''; }
+    function setTextContent(sel, val) { const el = iframeDoc.querySelector(sel); if (el) el.textContent = val; }
+    function setInnerHTML(sel, val) { const el = iframeDoc.querySelector(sel); if (el) el.innerHTML = val; }
+    function setImgSrc(sel, val) { const el = iframeDoc.querySelector(sel); if (el) el.src = val; }
+
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + type + ' show';
+        setTimeout(() => { t.classList.remove('show'); }, 3000);
+    }
+
+    // Auth check
+    (async () => {
+        const r = await fetch(API + '/admin-auth.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'check' }),
+            credentials: 'include'
+        });
+        const d = await r.json();
+        if (!d.authenticated) location.href = 'index.html';
+    })();
+
+    // ===== LANGUAGE SWITCHER =====
+    function switchEditorLang(lang) {
+        if (lang === currentEditorLang) return;
+
+        // Warn about unsaved changes
+        if (hasChanges) {
+            if (!confirm('คุณมีการแก้ไขที่ยังไม่ได้บันทึก! ต้องการเปลี่ยนภาษาโดยไม่บันทึกหรือไม่?')) return;
+        }
+
+        // Turn off edit mode state (iframe.load will re-enter edit mode automatically)
+        if (editMode) {
+            disableEditing();
+            editMode = false;
+        }
+
+
+        currentEditorLang = lang;
+        // Persist across page refresh
+        try { sessionStorage.setItem('editor-lang', lang); } catch(e){}
+        hasChanges = false;
+        document.getElementById('btn-save').disabled = true;
+
+        // Update active button
+        document.querySelectorAll('.lang-switcher .lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
+        });
+
+        // Reload iframe with ?lang= query string so i18n-core.js and the page's inline
+        // script both pick up the correct language from URL.
+        document.getElementById('loading').classList.remove('hidden');
+        const baseSrc = '../promotions/';
+        iframe.src = baseSrc + '?lang=' + lang;
+
+        // Update status
+        const langNames = { th: 'ไทย', en: 'English', ru: 'Русский', zh: '中文' };
+        showToast('เปลี่ยนเป็นภาษา: ' + langNames[lang], 'success');
+    }
+    window.switchEditorLang = switchEditorLang;
+
+    // Warn before leaving with unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) { e.preventDefault(); e.returnValue = ''; }
+    });
+    </script>
+</body>
+</html>

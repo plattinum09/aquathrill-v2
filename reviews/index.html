@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <title>รีวิว | AQUATHRILL</title>
+    <meta name="description" content="รีวิวจากลูกค้า AQUATHRILL — ประสบการณ์ Mini Speedboat จากผู้ใช้งานจริง">
+    <link rel="canonical" href="https://aquathrill-thailand.com/reviews/">
+    <meta property="og:title" content="รีวิว | AQUATHRILL">
+    <meta property="og:description" content="รีวิวจากลูกค้า AQUATHRILL ประสบการณ์ Mini Speedboat จริง">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aquathrill-thailand.com/reviews/">
+    <meta property="og:locale" content="th_TH">
+    <meta property="og:site_name" content="AQUATHRILL">
+    <meta property="og:image" content="https://aquathrill-thailand.com/images/hero-reviews.webp">
+    <meta property="og:image:secure_url" content="https://aquathrill-thailand.com/images/hero-reviews.webp">
+    <meta property="og:image:type" content="image/webp">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="รีวิวจากลูกค้า AQUATHRILL Mini Speedboat">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="รีวิว | AQUATHRILL">
+    <meta name="twitter:description" content="รีวิวจากลูกค้า AQUATHRILL">
+    <meta name="twitter:image" content="https://aquathrill-thailand.com/images/hero-reviews.webp">
+    <meta name="twitter:image:alt" content="รีวิวจากลูกค้า AQUATHRILL Mini Speedboat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css?v=20260724a">
+
+    <style>
+    /* ===== REVIEWS PAGE CUSTOM STYLES ===== */
+    body,
+    body .section-padding,
+    body .bg-light,
+    body .rv-section {
+        background: #ffffff !important;
+        color: #1a2742;
+    }
+
+    /* Hero Enhanced */
+    .rv-hero {
+        position: relative;
+        min-height: 55vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #fff;
+        background: linear-gradient(135deg, rgba(8,16,35,0.75), rgba(8,16,35,0.5)),
+                    url('../images/hero-reviews.webp') center/cover no-repeat;
+        overflow: hidden;
+    }
+    .rv-hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 120px;
+        background: linear-gradient(to top, #ffffff, transparent);
+    }
+    .rv-hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 120px 20px 60px;
+    }
+    .rv-hero-content h1 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, #fff 0%, #a0d8ef 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .rv-hero-content p {
+        font-size: 1rem;
+        opacity: 0.7;
+        max-width: 700px;
+        margin: 0 auto;
+        white-space: nowrap;
+    }
+
+    /* Rating Badge */
+    .rv-rating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 60px;
+        padding: 12px 28px;
+        margin-top: 24px;
+    }
+    .rv-rating-badge .big-score {
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+    }
+    .rv-rating-badge .rating-info {
+        text-align: left;
+    }
+    .rv-rating-badge .rating-stars {
+        color: #ffc107;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
+    .rv-rating-badge .rating-count {
+        font-size: 0.75rem;
+        opacity: 0.6;
+        color: #fff;
+    }
+
+    /* Stats Strip */
+    .rv-stats {
+        background: transparent !important;
+        position: relative;
+        z-index: 3;
+        margin-top: -40px;
+    }
+    .rv-stats-inner {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .rv-stat {
+        padding: 28px 20px;
+        text-align: center;
+        border-right: 1px solid rgba(0,0,0,0.06);
+        transition: background 0.3s;
+    }
+    .rv-stat:last-child { border-right: none; }
+    .rv-stat:hover { background: rgba(0,212,255,0.05); }
+    .rv-stat-num {
+        display: block;
+        font-size: 1.6rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #00d4ff, #00a3cc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 4px;
+    }
+    .rv-stat-label {
+        font-size: 0.78rem;
+        color: rgba(0,0,0,0.45);
+    }
+
+    /* Review Cards Grid */
+    .rv-grid {
+        position: relative;
+        width: 100%;
+    }
+    .rv-grid .rv-card {
+        position: absolute;
+        width: calc(33.333% - 16px);
+    }
+
+    /* Review Card */
+    .rv-card {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 20px;
+        padding: 28px 24px 22px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+        display: flex;
+        flex-direction: column;
+    }
+    .rv-card::before {
+        content: '\201C';
+        position: absolute;
+        top: 12px;
+        right: 20px;
+        font-size: 5rem;
+        font-family: Georgia, serif;
+        color: rgba(0,212,255,0.06);
+        line-height: 1;
+        pointer-events: none;
+    }
+    .rv-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(0,212,255,0.25);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.1), 0 0 20px rgba(0,212,255,0.06);
+    }
+
+    /* Card Header */
+    .rv-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .rv-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        object-fit: cover;
+        border: 2px solid rgba(0,212,255,0.2);
+    }
+    .rv-name {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #1a2742;
+        margin-bottom: 2px;
+    }
+    .rv-trip {
+        font-size: 0.72rem;
+        color: rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .rv-trip i {
+        color: #00a3cc;
+        font-size: 0.65rem;
+    }
+
+    /* Stars */
+    .rv-stars {
+        margin-bottom: 12px;
+        color: #ffc107;
+        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
+    .rv-stars .score {
+        color: rgba(0,0,0,0.35);
+        font-size: 0.75rem;
+        margin-left: 8px;
+    }
+
+    /* Review Text */
+    .rv-text {
+        color: rgba(0,0,0,0.6);
+        font-size: 0.85rem;
+        line-height: 1.75;
+        margin-bottom: 16px;
+        position: relative;
+        flex-grow: 1;
+    }
+
+    /* Card Footer */
+    .rv-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 14px;
+        border-top: 1px solid rgba(0,0,0,0.06);
+        margin-top: auto;
+    }
+    .rv-date {
+        font-size: 0.72rem;
+        color: rgba(0,0,0,0.35);
+    }
+    .rv-date i {
+        margin-right: 4px;
+    }
+    .rv-verified {
+        font-size: 0.7rem;
+        color: #16a34a;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .rv-verified i { font-size: 0.65rem; }
+
+    /* CTA Section */
+    .rv-cta {
+        text-align: center;
+        margin-top: 50px;
+        padding: 40px 30px;
+        background: linear-gradient(145deg, rgba(0,212,255,0.06), rgba(0,212,255,0.02));
+        border: 1px solid rgba(0,212,255,0.1);
+        border-radius: 24px;
+    }
+    .rv-cta h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1a2742;
+        margin-bottom: 8px;
+    }
+    .rv-cta p {
+        color: rgba(0,0,0,0.45);
+        font-size: 0.88rem;
+        margin-bottom: 20px;
+    }
+    .rv-cta .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .rv-grid .rv-card { width: calc(50% - 12px); }
+    }
+    @media (max-width: 768px) {
+        .rv-hero-content h1 { font-size: 2rem; }
+        .rv-hero-content p { white-space: normal; font-size: .85rem; }
+        .rv-stats-inner { grid-template-columns: repeat(2, 1fr); }
+        .rv-stat:nth-child(2) { border-right: none; }
+        .rv-grid .rv-card { width: 100%; position: relative !important; top: auto !important; left: auto !important; }
+        .rv-rating-badge { padding: 10px 20px; }
+        .rv-rating-badge .big-score { font-size: 1.8rem; }
+    }
+    </style>
+</head>
+<body>
+    <div id="site-header"></div>
+
+    <!-- ===== HERO ===== -->
+    <header class="rv-hero">
+        <div class="rv-hero-content">
+            <h1 data-i18n="rv.hero_title">รีวิวจากลูกค้า</h1>
+            <p data-i18n="rv.hero_sub">ประสบการณ์จริงจากลูกค้าที่ไว้วางใจใช้บริการ Mini Speedboat กับ AQUATHRILL</p>
+            <div class="rv-rating-badge">
+                <span class="big-score">4.9</span>
+                <div class="rating-info">
+                    <div class="rating-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <span class="rating-count">จาก 37 รีวิว</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== STATS STRIP ===== -->
+    <section class="rv-stats">
+        <div class="container">
+            <div class="rv-stats-inner fade-up">
+                <div class="rv-stat">
+                    <span class="rv-stat-num" id="rv-total">35+</span>
+                    <span class="rv-stat-label" data-i18n="rv.stat1">รีวิวทั้งหมด</span>
+                </div>
+                <div class="rv-stat">
+                    <span class="rv-stat-num" id="rv-rating">4.9</span>
+                    <span class="rv-stat-label" data-i18n="rv.stat2">คะแนนเฉลี่ย</span>
+                </div>
+                <div class="rv-stat">
+                    <span class="rv-stat-num">98%</span>
+                    <span class="rv-stat-label" data-i18n="rv.stat3">ความพึงพอใจ</span>
+                </div>
+                <div class="rv-stat">
+                    <span class="rv-stat-num">15+</span>
+                    <span class="rv-stat-label" data-i18n="rv.stat4">ปีประสบการณ์</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="../assets/js/reviews-data.js?v=20260724a"></script>
+    <!-- ===== REVIEWS SECTION ===== -->
+    <section class="section-padding rv-section">
+        <div class="container">
+            <div class="section-title fade-up" style="margin-bottom: 30px;">
+                <h2 style="color:#1a2742;" data-i18n="rv.section_title">ลูกค้าพูดถึงเรา</h2>
+                <p style="color:rgba(0,0,0,0.5);" data-i18n="rv.section_sub">เสียงจริงจากผู้ใช้บริการ Mini Speedboat</p>
+            </div>
+
+            <!-- Review Grid (generated from shared data) -->
+            <div class="rv-grid" id="rv-grid-container"></div>
+            <script>
+            (function(){
+                var lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
+                var reviews = window.REVIEWS_DATA || [];
+                var container = document.getElementById('rv-grid-container');
+                if (!container || !reviews.length) return;
+
+                function getLang(){ return (window.I18n && I18n.getLang) ? I18n.getLang() : 'th'; }
+
+                function renderCards(l) {
+                    var html = '';
+                    reviews.forEach(function(r){
+                        var name = r.name[l] || r.name['th'];
+                        var text = r.text[l] || r.text['th'];
+                        var date = r.date[l] || r.date['th'];
+                        var verified = l === 'th' ? '<i class="fas fa-check-circle"></i> ยืนยันแล้ว' :
+                                       l === 'en' ? '<i class="fas fa-check-circle"></i> Verified' :
+                                       l === 'ru' ? '<i class="fas fa-check-circle"></i> Подтверждено' :
+                                       '<i class="fas fa-check-circle"></i> 已验证';
+                        var starsHtml = '';
+                        var full = Math.floor(r.stars);
+                        var half = r.stars % 1 >= 0.5;
+                        for (var s = 0; s < full; s++) starsHtml += '<i class="fas fa-star"></i>';
+                        if (half) starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                        starsHtml += '<span class="score">' + r.stars.toFixed(1) + '</span>';
+
+                        var avatarHtml = r.avatar
+                            ? '<img src="' + r.avatar + '" alt="' + name + '" class="rv-avatar">'
+                            : '<div class="rv-avatar" style="background:' + r.initColor + ';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.2rem;">' + name.charAt(0) + '</div>';
+                        var photosHtml = '';
+                        if (r.photos && r.photos.length) {
+                            photosHtml = '<div style="margin-top:12px;">';
+                            r.photos.forEach(function(p){ photosHtml += '<img src="' + p + '" alt="Review photo" style="width:100%;max-height:250px;object-fit:cover;border-radius:12px;cursor:pointer;" onclick="window.open(this.src)">'; });
+                            photosHtml += '</div>';
+                        }
+                        html += '<div class="rv-card fade-up">'
+                            + '<div class="rv-card-header">'
+                            + avatarHtml
+                            + '<div>'
+                            + '<div class="rv-name">' + name + (r.google ? ' <i class="fab fa-google" style="color:#4285f4;font-size:0.75rem;margin-left:4px;" title="Google Review"></i>' : '') + '</div>'
+                            + '<div class="rv-trip"><i class="fas fa-ship"></i> ' + r.trip + '</div>'
+                            + '</div></div>'
+                            + '<div class="rv-stars">' + starsHtml + '</div>'
+                            + '<p class="rv-text">' + text + '</p>'
+                            + photosHtml
+                            + '<div class="rv-card-footer">'
+                            + '<span class="rv-date"><i class="far fa-calendar-alt"></i> ' + date + '</span>'
+                            + '<span class="rv-verified">' + verified + '</span>'
+                            + '</div></div>';
+                    });
+                    container.innerHTML = html;
+                    requestAnimationFrame(function(){
+                        container.querySelectorAll('.fade-up').forEach(function(el){ el.classList.add('visible'); });
+                    });
+                }
+
+                function layoutMasonry() {
+                    var cards = container.querySelectorAll('.rv-card');
+                    if (!cards.length) return;
+                    var containerW = container.offsetWidth;
+                    var cols = 3;
+                    if (containerW < 768) cols = 1;
+                    else if (containerW < 1024) cols = 2;
+                    if (cols === 1) { container.style.height = 'auto'; return; }
+                    var gap = 24;
+                    var colW = (containerW - gap * (cols - 1)) / cols;
+                    var colHeights = [];
+                    for (var c = 0; c < cols; c++) colHeights.push(0);
+
+                    cards.forEach(function(card) {
+                        // หาคอลัมน์ที่เตี้ยสุด
+                        var minH = colHeights[0], minCol = 0;
+                        for (var c = 1; c < cols; c++) {
+                            if (colHeights[c] < minH) { minH = colHeights[c]; minCol = c; }
+                        }
+                        card.style.width = colW + 'px';
+                        card.style.left = (minCol * (colW + gap)) + 'px';
+                        card.style.top = colHeights[minCol] + 'px';
+                        colHeights[minCol] += card.offsetHeight + gap;
+                    });
+
+                    var maxH = 0;
+                    for (var c = 0; c < cols; c++) { if (colHeights[c] > maxH) maxH = colHeights[c]; }
+                    container.style.height = maxH + 'px';
+                }
+
+                function layoutAfterImages() {
+                    var images = container.querySelectorAll('img');
+                    var loaded = 0;
+                    var total = images.length;
+                    if (total === 0) { layoutMasonry(); return; }
+                    function check() { loaded++; if (loaded >= total) layoutMasonry(); }
+                    images.forEach(function(img) {
+                        if (img.complete) { check(); }
+                        else { img.addEventListener('load', check); img.addEventListener('error', check); }
+                    });
+                    // Fallback: layout after 2s even if images haven't loaded
+                    setTimeout(layoutMasonry, 2000);
+                }
+
+                renderCards(lang);
+                requestAnimationFrame(layoutAfterImages);
+                window.addEventListener('resize', layoutMasonry);
+
+                function updateRatingBadge() {
+                    var rating = window.REVIEWS_RATING;
+                    var total = window.REVIEWS_TOTAL;
+                    if (!rating && !total) return;
+
+                    var badge = document.querySelector('.rv-rating-badge');
+                    if (!badge) return;
+
+                    if (rating) {
+                        var scoreEl = badge.querySelector('.big-score');
+                        if (scoreEl) scoreEl.textContent = Number(rating).toFixed(1);
+
+                        var starsEl = badge.querySelector('.rating-stars');
+                        if (starsEl) {
+                            var full = Math.floor(rating);
+                            var hasHalf = (rating - full) >= 0.25 && (rating - full) < 0.75;
+                            if ((rating - full) >= 0.75) { full += 1; }
+                            var empty = 5 - full - (hasHalf ? 1 : 0);
+                            var starsHtml = '';
+                            for (var i = 0; i < full; i++) starsHtml += '<i class="fas fa-star"></i>';
+                            if (hasHalf) starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                            for (var j = 0; j < empty; j++) starsHtml += '<i class="far fa-star"></i>';
+                            starsEl.innerHTML = starsHtml;
+                        }
+                    }
+
+                    if (total) {
+                        var countEl = badge.querySelector('.rating-count');
+                        if (countEl) {
+                            var lang = getLang();
+                            var tpl = { th: 'จาก ' + total + ' รีวิว', en: 'From ' + total + ' reviews', ru: 'Из ' + total + ' отзывов', zh: '来自 ' + total + ' 条评价' };
+                            countEl.textContent = tpl[lang] || tpl.th;
+                        }
+                    }
+                }
+
+                document.addEventListener('langapplied', function(){
+                    renderCards(getLang());
+                    requestAnimationFrame(layoutAfterImages);
+                    updateRatingBadge();
+                });
+                document.addEventListener('reviewsUpdated', function(){
+                    reviews = window.REVIEWS_DATA || [];
+                    renderCards(getLang());
+                    requestAnimationFrame(layoutAfterImages);
+                    // Update stats from API
+                    var ratingEl = document.getElementById('rv-rating');
+                    if (ratingEl && window.REVIEWS_RATING) ratingEl.textContent = window.REVIEWS_RATING.toFixed(1);
+                    var totalEl = document.getElementById('rv-total');
+                    if (totalEl && window.REVIEWS_TOTAL) totalEl.textContent = window.REVIEWS_TOTAL + '+';
+                    updateRatingBadge();
+                });
+            })();
+            </script>
+
+
+            <!-- CTA -->
+            <div class="rv-cta fade-up">
+                <h3 data-i18n="rv.cta_title">พร้อมสร้างประสบการณ์ของคุณ?</h3>
+                <p data-i18n="rv.cta_sub">จองทริป Mini Speedboat วันนี้ รับส่วนลดพิเศษทันที</p>
+                <a href="../booking/" class="btn btn-primary"><i class="fas fa-calendar-check"></i> <span data-i18n="rv.cta_btn">จองเลย</span></a>
+            </div>
+
+        </div>
+    </section>
+
+    <div id="site-footer"></div>
+    <script src="../assets/js/i18n-core.js?v=20260724a"></script>
+    <script src="../assets/js/i18n-loader.js?v=20260724a" defer></script>
+    <script src="../assets/js/components.js?v=20260724a"></script>
+    <script src="../assets/js/main.js?v=20260724a"></script>
+
+</body>
+</html>

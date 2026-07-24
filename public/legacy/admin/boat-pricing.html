@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าราคาเรือ | AQUATHRILL Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#0d2847;padding:20px 0;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.06);z-index:100}
+        .sidebar .brand{text-align:center;font-size:1.3rem;font-weight:800;letter-spacing:2px;padding:10px 20px 30px;background:linear-gradient(135deg,#00d4ff,#00ff94);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.5);text-decoration:none;font-size:.9rem;transition:all .2s}
+        .sidebar nav a:hover,.sidebar nav a.active{color:#fff;background:rgba(0,212,255,.08)}
+        .sidebar nav a.active{border-right:3px solid #00d4ff}
+        .sidebar nav a i{width:20px;text-align:center}
+        .logout-btn{margin:20px;padding:10px;background:rgba(255,61,113,.1);border:1px solid rgba(255,61,113,.2);border-radius:10px;color:#ff3d71;font-family:inherit;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+        .main-content{margin-left:220px;padding:30px}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+        .top-bar h2{font-size:1.5rem}
+
+        /* Boat section cards */
+        .boat-section{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;margin-bottom:24px;transition:border-color .3s}
+        .boat-section:hover{border-color:rgba(0,212,255,.2)}
+        .boat-section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.07)}
+        .boat-section-header i{font-size:1.4rem;color:#00d4ff}
+        .boat-section-header h3{font-size:1.15rem;font-weight:600}
+        .boat-section-header .badge{background:rgba(0,212,255,.12);color:#00d4ff;padding:3px 10px;border-radius:20px;font-size:.75rem}
+
+        /* Price row */
+        .price-row{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+        .price-row label{font-size:.85rem;color:rgba(255,255,255,.5);white-space:nowrap}
+        .price-input-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:4px 16px;transition:border-color .2s;flex:1;max-width:280px}
+        .price-input-wrap:focus-within{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.12)}
+        .price-input-wrap .currency{font-size:1.1rem;font-weight:600;color:rgba(255,255,255,.4)}
+        .price-input-wrap input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:1.3rem;font-weight:700;font-family:'Kanit',sans-serif;padding:10px 0}
+        .current-price{font-size:.82rem;color:rgba(255,255,255,.5)}
+        .current-price strong{color:#00c853}
+
+        /* Gallery section */
+        .gallery-label{font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+        .gallery-label i{color:#00d4ff}
+        .gallery-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;min-height:80px;align-items:flex-start}
+        .gallery-thumb{position:relative;width:90px;height:70px;border-radius:10px;overflow:hidden;border:2px solid rgba(255,255,255,.1);flex-shrink:0;transition:border-color .2s}
+        .gallery-thumb:hover{border-color:rgba(0,212,255,.5)}
+        .gallery-thumb img{width:100%;height:100%;object-fit:cover}
+        .gallery-thumb .thumb-del{position:absolute;top:3px;right:3px;width:22px;height:22px;background:rgba(255,40,60,.85);border:none;border-radius:6px;color:#fff;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+        .gallery-thumb:hover .thumb-del{opacity:1}
+        .gallery-thumb .thumb-order{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.6);color:rgba(255,255,255,.7);font-size:.6rem;padding:1px 5px;border-radius:4px}
+
+        .btn-add-img{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(0,212,255,.1);border:1px dashed rgba(0,212,255,.4);border-radius:10px;color:#00d4ff;font-family:'Kanit',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s}
+        .btn-add-img:hover{background:rgba(0,212,255,.18);border-color:#00d4ff}
+
+        /* Upload modal */
+        .upload-modal{position:fixed;inset:0;background:rgba(0,5,20,.88);display:none;align-items:center;justify-content:center;z-index:9999}
+        .upload-modal.active{display:flex}
+        .upload-box{background:#0d2847;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;max-width:480px;width:95%}
+        .upload-box h3{margin-bottom:20px;font-size:1.1rem}
+        .upload-preview{width:100%;max-height:180px;object-fit:contain;border-radius:10px;margin-bottom:12px;display:none;border:1px solid rgba(255,255,255,.1)}
+        .drop-zone{border:2px dashed rgba(255,255,255,.2);border-radius:14px;padding:36px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:12px}
+        .drop-zone:hover{border-color:#00d4ff;background:rgba(0,212,255,.04)}
+        .drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .drop-zone i{font-size:1.8rem;color:rgba(255,255,255,.25);display:block;margin-bottom:8px}
+        .drop-zone p{color:rgba(255,255,255,.35);font-size:.85rem}
+        .upload-actions{display:flex;gap:10px;margin-top:4px}
+        .upload-actions button{flex:1;padding:11px;border:none;border-radius:10px;font-family:'Kanit',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer}
+        .btn-cancel-upload{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+        .btn-confirm-upload{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff}
+        .btn-confirm-upload:disabled{opacity:.4;cursor:not-allowed}
+
+        /* Save button */
+        .btn-save{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:linear-gradient(135deg,#00d4ff,#0096c7);border:none;border-radius:14px;color:#fff;font-family:'Kanit',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;transition:all .3s;margin-top:8px}
+        .btn-save:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,180,255,.3)}
+        .btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+        .toast{position:fixed;top:24px;right:24px;background:#0d2847;border:1px solid rgba(0,200,83,.3);color:#00c853;padding:14px 22px;border-radius:14px;font-size:.88rem;display:none;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.3);align-items:center;gap:9px}
+        .toast.show{display:flex}
+        .info-box{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:14px;padding:18px;margin-bottom:24px;font-size:.85rem;color:rgba(255,255,255,.6);line-height:1.8}
+        .info-box i{color:#00d4ff;margin-right:6px}
+        @media(max-width:768px){
+            .sidebar{width:60px}
+            .sidebar .brand,.sidebar nav a span,.sidebar .logout-btn span{display:none}
+            .sidebar nav a{justify-content:center;padding:14px}
+            .main-content{margin-left:60px;padding:16px}
+            .price-row{flex-direction:column;align-items:flex-start}
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">AQUATHRILL</div>
+        <nav>
+            <a href="/admin/index.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="/admin/bookings.html"><i class="fas fa-calendar-check"></i> <span>การจอง</span></a>
+            <a href="/admin/availability.html"><i class="fas fa-ship"></i> <span>สถานะเรือ</span></a>
+            <a href="/admin/boat-pricing.html" class="active"><i class="fas fa-tags"></i> <span>ราคา & รูปเรือ</span></a>
+            <a href="/admin/boat-types.html"><i class="fas fa-anchor"></i> <span>จัดการเรือ</span></a>
+            <a href="/admin/agent-pricing.html"><i class="fas fa-user-tie"></i> <span>ราคาตัวแทน</span></a>
+            <a href="/admin/promotions.html"><i class="fas fa-bullhorn"></i> <span>โปรโมชั่น</span></a>
+            <a href="/admin/gallery.html"><i class="fas fa-images"></i> <span>แกลเลอรี่</span></a>
+            <a href="/admin/reviews.html"><i class="fas fa-star"></i> <span>รีวิว Google</span></a>
+            <!-- ซ่อนเมนูชำระเงิน (ระบบ Payso ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
+            <a href="/admin/payment-settings.html"><i class="fas fa-credit-card"></i> <span>ชำระเงิน</span></a>
+            -->
+            <a href="/admin/change-password.html"><i class="fas fa-key"></i> <span>เปลี่ยนรหัสผ่าน</span></a>
+            <a href="../" target="_blank"><i class="fas fa-external-link-alt"></i> <span>ดูเว็บไซต์</span></a>
+        </nav>
+        <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span></button>
+    </aside>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2><i class="fas fa-tags" style="color:#00d4ff"></i> ราคา & รูป Gallery เรือ</h2>
+        </div>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            การเปลี่ยนราคาหรือรูป Gallery จะอัปเดตทุกหน้า (หน้าแรก, บริการ, โปรโมชั่น, จอง) อัตโนมัติ<br>
+            <i class="fas fa-images"></i> <strong>รูปแรกในรายการ Gallery = รูปหลักที่แสดงในหน้าการ์ดเรือ</strong>
+        </div>
+
+        <!-- SEASTORM 12ft -->
+        <div class="boat-section" id="section-12ft">
+            <div class="boat-section-header">
+                <i class="fas fa-ship"></i>
+                <h3>SEASTORM 12 Feet</h3>
+                <span class="badge">2-3 คน / 200kg</span>
+            </div>
+
+            <div class="price-row">
+                <label><i class="fas fa-tag"></i> ราคาต่อลำ</label>
+                <div class="price-input-wrap">
+                    <span class="currency">฿</span>
+                    <input type="number" id="price-12ft" placeholder="9900" min="0" step="100">
+                </div>
+                <span class="current-price" id="current-12ft">ปัจจุบัน: <strong>กำลังโหลด...</strong></span>
+            </div>
+
+            <div class="gallery-label"><i class="fas fa-images"></i> รูป Gallery ใน Popup (ลากเพื่อเรียงลำดับได้)</div>
+            <div class="gallery-grid" id="gallery-12ft"></div>
+            <button class="btn-add-img" onclick="openUpload('12ft')">
+                <i class="fas fa-plus"></i> เพิ่มรูป
+            </button>
+        </div>
+
+        <!-- SEASTORM 14ft -->
+        <div class="boat-section" id="section-14ft">
+            <div class="boat-section-header">
+                <i class="fas fa-ship"></i>
+                <h3>SEASTORM 14 Feet</h3>
+                <span class="badge">2-5 คน / 400kg</span>
+            </div>
+
+            <div class="price-row">
+                <label><i class="fas fa-tag"></i> ราคาต่อลำ</label>
+                <div class="price-input-wrap">
+                    <span class="currency">฿</span>
+                    <input type="number" id="price-14ft" placeholder="10900" min="0" step="100">
+                </div>
+                <span class="current-price" id="current-14ft">ปัจจุบัน: <strong>กำลังโหลด...</strong></span>
+            </div>
+
+            <div class="gallery-label"><i class="fas fa-images"></i> รูป Gallery ใน Popup (ลากเพื่อเรียงลำดับได้)</div>
+            <div class="gallery-grid" id="gallery-14ft"></div>
+            <button class="btn-add-img" onclick="openUpload('14ft')">
+                <i class="fas fa-plus"></i> เพิ่มรูป
+            </button>
+        </div>
+
+        <button class="btn-save" id="btn-save" onclick="saveAll()">
+            <i class="fas fa-save"></i> บันทึกทั้งหมด
+        </button>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="upload-modal" id="upload-modal">
+        <div class="upload-box">
+            <h3><i class="fas fa-image" style="color:#00d4ff"></i> เพิ่มรูปใน Gallery</h3>
+            <img class="upload-preview" id="upload-preview" alt="preview">
+            <div class="drop-zone" id="drop-zone">
+                <input type="file" id="file-input" accept="image/*" onchange="handleFile(this)">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>คลิกหรือลากไฟล์มาวาง (JPG, PNG, WebP — สูงสุด 5MB)</p>
+            </div>
+            <div class="upload-actions">
+                <button class="btn-cancel-upload" onclick="closeUpload()">ยกเลิก</button>
+                <button class="btn-confirm-upload" id="btn-confirm" onclick="confirmUpload()" disabled>
+                    <i class="fas fa-check"></i> เพิ่มรูปนี้
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
+
+    <script>
+    const API = '/api';
+
+    // In-memory gallery data
+    const galleries = { '12ft': [], '14ft': [] };
+    let uploadTarget = null;
+    let pendingUrl = null;
+
+    // Auth check
+    (async () => {
+        const r = await fetch(API + '/admin-auth.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'check'}), credentials:'include' });
+        const d = await r.json();
+        if (!d.authenticated) location.href = 'index.html';
+        else loadData();
+    })();
+
+    async function loadData() {
+        try {
+            const r = await fetch(API + '/boat-pricing.php');
+            const d = await r.json();
+            const p = d.prices || {'12ft':9900,'14ft':10900};
+            const boats = d.boats || {};
+
+            ['12ft','14ft'].forEach(key => {
+                document.getElementById('price-' + key).value = p[key];
+                document.getElementById('current-' + key).innerHTML =
+                    'ปัจจุบัน: <strong>฿' + Number(p[key]).toLocaleString('th-TH') + '</strong>';
+
+                // Load gallery images
+                const imgs = (boats[key] && boats[key].images && boats[key].images.length)
+                    ? boats[key].images
+                    : (key === '12ft'
+                        ? ['/images/12-feet.webp','/images/12-feet-1.webp','/images/12-feet-2.webp','/images/12-feet-3.webp','/images/12-feet-4.webp']
+                        : ['/images/14-feet.webp']);
+                galleries[key] = [...imgs];
+                renderGallery(key);
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    function renderGallery(key) {
+        const grid = document.getElementById('gallery-' + key);
+        grid.innerHTML = '';
+        galleries[key].forEach((url, idx) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'gallery-thumb';
+            thumb.draggable = true;
+            thumb.dataset.idx = idx;
+            thumb.innerHTML = `
+                <img src="${url}" onerror="this.src='/images/12-feet.webp'" alt="รูป ${idx+1}">
+                <button class="thumb-del" onclick="removeImg('${key}',${idx})" title="ลบรูปนี้"><i class="fas fa-times"></i></button>
+                <span class="thumb-order">${idx+1}</span>
+            `;
+            // Drag-to-reorder
+            thumb.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', idx); e.dataTransfer.effectAllowed = 'move'; });
+            thumb.addEventListener('dragover',  e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; thumb.style.borderColor='#00d4ff'; });
+            thumb.addEventListener('dragleave', () => thumb.style.borderColor = '');
+            thumb.addEventListener('drop', e => {
+                e.preventDefault();
+                thumb.style.borderColor = '';
+                const from = parseInt(e.dataTransfer.getData('text/plain'));
+                const to = idx;
+                if (from === to) return;
+                const moved = galleries[key].splice(from, 1)[0];
+                galleries[key].splice(to, 0, moved);
+                renderGallery(key);
+            });
+            grid.appendChild(thumb);
+        });
+    }
+
+    function removeImg(key, idx) {
+        if (galleries[key].length <= 1) { showToast('ต้องมีรูปอย่างน้อย 1 รูป'); return; }
+        galleries[key].splice(idx, 1);
+        renderGallery(key);
+    }
+
+    // ===== UPLOAD MODAL =====
+    function openUpload(key) {
+        uploadTarget = key;
+        pendingUrl = null;
+        document.getElementById('upload-preview').style.display = 'none';
+        document.getElementById('upload-preview').src = '';
+        document.getElementById('file-input').value = '';
+        document.getElementById('btn-confirm').disabled = true;
+        document.getElementById('upload-modal').classList.add('active');
+    }
+
+    function closeUpload() {
+        document.getElementById('upload-modal').classList.remove('active');
+        uploadTarget = null;
+        pendingUrl = null;
+    }
+
+    async function handleFile(input) {
+        if (!input.files || !input.files[0]) return;
+        const formData = new FormData();
+        formData.append('image', input.files[0]);
+        try {
+            const r = await fetch(API + '/upload.php', { method:'POST', body:formData, credentials:'include' });
+            const d = await r.json();
+            if (d.success) {
+                pendingUrl = d.url;
+                const prev = document.getElementById('upload-preview');
+                prev.src = d.url;
+                prev.style.display = 'block';
+                document.getElementById('btn-confirm').disabled = false;
+            } else {
+                showToast(d.error || 'อัปโหลดไม่สำเร็จ');
+            }
+        } catch(e) { showToast('อัปโหลดไม่สำเร็จ'); }
+    }
+
+    function confirmUpload() {
+        if (!uploadTarget || !pendingUrl) return;
+        galleries[uploadTarget].push(pendingUrl);
+        renderGallery(uploadTarget);
+        closeUpload();
+        showToast('เพิ่มรูปสำเร็จ! อย่าลืมกดบันทึก');
+    }
+
+    // ===== SAVE =====
+    async function saveAll() {
+        const btn = document.getElementById('btn-save');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+
+        const boats = {
+            '12ft': {
+                price: parseInt(document.getElementById('price-12ft').value) || 9900,
+                images: galleries['12ft'],
+                image: galleries['12ft'][0] || '/images/12-feet.webp'
+            },
+            '14ft': {
+                price: parseInt(document.getElementById('price-14ft').value) || 10900,
+                images: galleries['14ft'],
+                image: galleries['14ft'][0] || '/images/14-feet.webp'
+            }
+        };
+
+        try {
+            const r = await fetch(API + '/boat-pricing.php', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ boats, prices: {'12ft': boats['12ft'].price, '14ft': boats['14ft'].price} }),
+                credentials:'include'
+            });
+            const d = await r.json();
+            if (d.success) {
+                showToast('บันทึกสำเร็จ! ราคาและรูปอัปเดตทุกหน้าแล้ว');
+                // Update current price labels
+                ['12ft','14ft'].forEach(k => {
+                    document.getElementById('current-' + k).innerHTML =
+                        'ปัจจุบัน: <strong>฿' + Number(boats[k].price).toLocaleString('th-TH') + '</strong>';
+                });
+            } else {
+                showToast('เกิดข้อผิดพลาด: ' + (d.error || 'Unknown'));
+            }
+        } catch(e) { showToast('บันทึกไม่สำเร็จ กรุณาลองใหม่'); }
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> บันทึกทั้งหมด';
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    async function doLogout() {
+        await fetch(API + '/admin-auth.php', { method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:'logout'}), credentials:'include' });
+        location.href = 'index.html';
+    }
+    </script>
+</body>
+</html>

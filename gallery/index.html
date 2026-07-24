@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <title>แกลลอรี่ | AQUATHRILL</title>
+    <meta name="description" content="ชมภาพและวิดีโอจากประสบการณ์ Mini Speedboat กับ AQUATHRILL">
+    <link rel="canonical" href="https://aquathrill-thailand.com/gallery/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="แกลลอรี่ | AQUATHRILL">
+    <meta property="og:description" content="ชมภาพและวิดีโอจากประสบการณ์ Mini Speedboat กับ AQUATHRILL">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aquathrill-thailand.com/gallery/">
+    <meta property="og:locale" content="th_TH">
+    <meta property="og:site_name" content="AQUATHRILL">
+    <meta property="og:image" content="https://aquathrill-thailand.com/images/hero.webp">
+    <meta property="og:image:secure_url" content="https://aquathrill-thailand.com/images/hero.webp">
+    <meta property="og:image:type" content="image/webp">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="แกลลอรี่ AQUATHRILL Mini Speedboat ภูเก็ต">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="แกลลอรี่ | AQUATHRILL">
+    <meta name="twitter:description" content="ชมภาพและวิดีโอจากประสบการณ์ Mini Speedboat กับ AQUATHRILL">
+    <meta name="twitter:image" content="https://aquathrill-thailand.com/images/hero.webp">
+    <meta name="twitter:image:alt" content="แกลลอรี่ AQUATHRILL Mini Speedboat ภูเก็ต">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <style>
+        .gallery-date-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;justify-content:center}
+        .gallery-date-toolbar label{color:rgba(255,255,255,.7);font-size:.95rem;font-weight:500}
+        .gallery-date-toolbar input[type="date"]{padding:10px 18px;background:rgba(255,255,255,.06);border:1px solid rgba(0,212,255,.3);border-radius:12px;color:#fff;font-family:'Kanit',sans-serif;font-size:1rem;outline:none;transition:.3s;cursor:pointer}
+        .gallery-date-toolbar input[type="date"]:focus{border-color:#00d4ff;background:rgba(0,212,255,.1);box-shadow:0 0 20px rgba(0,212,255,.15)}
+        .gallery-date-toolbar input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer}
+        .date-btn{padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.7);cursor:pointer;font-family:'Kanit',sans-serif;font-size:.9rem;transition:.3s;display:inline-flex;align-items:center;gap:6px}
+        .date-btn:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:#fff}
+        .date-btn.active{background:linear-gradient(135deg,rgba(0,180,255,.2),rgba(0,102,204,.2));border-color:#00d4ff;color:#00d4ff}
+        .gallery-date-label{text-align:center;font-size:1.1rem;color:#00d4ff;margin-bottom:20px;font-weight:500}
+        .gallery-date-label i{margin-right:6px}
+        .gallery-no-results{text-align:center;padding:60px 20px;color:rgba(255,255,255,.4)}
+        .gallery-no-results i{font-size:3.5rem;margin-bottom:16px;display:block;color:rgba(0,212,255,.3)}
+        .gallery-no-results h3{color:rgba(255,255,255,.6);margin-bottom:8px;font-size:1.2rem}
+        .gallery-count{text-align:center;color:rgba(255,255,255,.4);font-size:.85rem;margin-bottom:16px}
+        .gallery-item-wrapper{position:relative;overflow:hidden;border-radius:12px}
+        .gallery-item-wrapper img{width:100%;display:block;border-radius:12px}
+        .gallery-dl-btn{position:absolute;bottom:10px;right:10px;width:36px;height:36px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:.3s;font-size:.9rem;z-index:2}
+        .gallery-item:hover .gallery-dl-btn{opacity:1}
+        .gallery-dl-btn:hover{background:rgba(0,180,255,.7);transform:scale(1.1)}
+        .lightbox-download{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:'Kanit',sans-serif;font-size:.9rem;font-weight:600;transition:.3s;margin-top:10px}
+        .lightbox-download:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,100,255,.4)}
+        /* YouTube specific */
+        .gallery-yt-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;background:rgba(220,0,0,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;pointer-events:none;transition:transform .2s,background .2s;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+        .gallery-item:hover .gallery-yt-play{transform:translate(-50%,-50%) scale(1.1);background:rgba(255,0,0,1)}
+        .gallery-yt-badge{position:absolute;top:8px;left:8px;background:rgba(220,0,0,.9);color:#fff;font-size:.65rem;padding:2px 8px;border-radius:5px;font-weight:700;letter-spacing:.5px;z-index:2}
+        .lightbox-yt-iframe{width:90vw;max-width:900px;aspect-ratio:16/9;border-radius:12px;border:none}
+
+        /* Tabs */
+        .gallery-tabs{display:flex;justify-content:center;gap:16px;margin-bottom:32px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:16px}
+        .gallery-tab{padding:12px 24px;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:'Kanit',sans-serif;font-size:1.1rem;font-weight:600;cursor:pointer;position:relative;transition:.3s}
+        .gallery-tab:hover{color:#fff}
+        .gallery-tab.active{color:#00d4ff}
+        .gallery-tab.active::after{content:'';position:absolute;bottom:-17px;left:0;width:100%;height:3px;background:linear-gradient(90deg,#00d4ff,#00ff88);border-radius:3px}
+
+        /* Albums Grid */
+        .albums-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;display:none} /* Hidden by default */
+        .album-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:20px;overflow:hidden;cursor:pointer;transition:.3s;position:relative}
+        .album-card:hover{transform:translateY(-8px);border-color:rgba(0,212,255,.4);box-shadow:0 12px 30px rgba(0,212,255,.15)}
+        .album-cover{aspect-ratio:4/3;background:#111;position:relative;overflow:hidden}
+        .album-cover i{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;color:rgba(0,212,255,.3)}
+        .album-cover img{width:100%;height:100%;object-fit:cover;opacity:0.6;transition:.4s}
+        .album-card:hover .album-cover img{opacity:1;transform:scale(1.05)}
+        .album-lock{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#ffb300;border:1px solid rgba(255,179,0,.3)}
+        .album-info{padding:20px;text-align:center}
+        .album-title{font-size:1.2rem;font-weight:600;color:#fff;margin-bottom:8px}
+        .album-meta{font-size:.85rem;color:rgba(255,255,255,.5)}
+
+        /* Password Modal */
+        .pwd-modal{position:fixed;inset:0;background:rgba(0,5,20,.9);backdrop-filter:blur(8px);z-index:9999;display:none;align-items:center;justify-content:center}
+        .pwd-modal.active{display:flex}
+        .pwd-box{background:linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:40px;width:90%;max-width:400px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+        .pwd-icon{width:64px;height:64px;background:rgba(0,212,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#00d4ff;margin:0 auto 20px}
+        .pwd-box h3{font-size:1.4rem;margin-bottom:8px}
+        .pwd-box p{color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:24px}
+        .pwd-input{width:100%;padding:14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-family:'Kanit',sans-serif;font-size:1rem;text-align:center;margin-bottom:16px;outline:none;transition:.3s;letter-spacing:2px}
+        .pwd-input:focus{border-color:#00d4ff;box-shadow:0 0 15px rgba(0,212,255,.2)}
+        .pwd-error{color:#ff5252;font-size:.85rem;margin-top:-8px;margin-bottom:16px;display:none}
+        .pwd-actions{display:flex;gap:12px}
+        .pwd-btn{flex:1;padding:12px;border:none;border-radius:12px;font-family:'Kanit',sans-serif;font-weight:600;font-size:1rem;cursor:pointer;transition:.3s}
+        .pwd-btn-cancel{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6)}
+        .pwd-btn-cancel:hover{background:rgba(255,255,255,.1);color:#fff}
+        .pwd-btn-submit{background:linear-gradient(135deg,#00d4ff,#00ff88);color:#0a1628}
+        .pwd-btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,212,255,.3)}
+        
+        /* Album View Back Button */
+        .btn-back-albums{display:none;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 20px;border-radius:20px;font-family:'Kanit',sans-serif;font-size:.95rem;cursor:pointer;margin-bottom:24px;transition:.3s}
+        .btn-back-albums:hover{background:rgba(255,255,255,.1)}
+        .btn-back-albums.active{display:inline-flex}
+        
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+    </style>
+</head>
+<body>
+    <div id="site-header"></div>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="gallery-hero">
+            <div class="container">
+                <h1 data-i18n="gallery.hero_title">แกลลอรี่</h1>
+                <p data-i18n="gallery.hero_sub">ภาพและวิดีโอจากประสบการณ์ Mini Speedboat กับ AQUATHRILL</p>
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section class="gallery-section">
+            <div class="container">
+                
+                <!-- Tabs -->
+                <div class="gallery-tabs">
+                    <button class="gallery-tab active" onclick="switchTab('public')" id="tab-public" data-i18n="gallery.tab_public"><i class="fas fa-images"></i> ภาพสาธารณะ</button>
+                    <button class="gallery-tab" onclick="switchTab('private')" id="tab-private" data-i18n="gallery.tab_private"><i class="fas fa-lock"></i> อัลบั้มส่วนตัว</button>
+                </div>
+
+                <!-- Public Tab Content -->
+                <div id="content-public" class="tab-content active">
+                    <!-- Date Toolbar -->
+                    <div class="gallery-date-toolbar">
+                        <button class="date-btn active" id="btn-all" onclick="showAll()" data-i18n="gallery.btn_all">
+                            <i class="fas fa-th"></i> ทั้งหมด
+                        </button>
+                        <label for="gallery-date-picker" data-i18n="gallery.pick_date"><i class="fas fa-calendar-alt"></i> เลือกวันที่:</label>
+                        <input type="date" id="gallery-date-picker">
+                        <button class="date-btn" id="btn-clear" onclick="showAll()" style="display:none" data-i18n="gallery.btn_clear">
+                            <i class="fas fa-times"></i> ล้าง
+                        </button>
+                    </div>
+
+                    <!-- Info label -->
+                    <div class="gallery-date-label" id="gallery-label" style="display:none"></div>
+                    <div class="gallery-count" id="gallery-count"></div>
+
+                    <!-- Gallery Grid -->
+                    <div id="public-gallery-grid" class="gallery-masonry"></div>
+
+                    <!-- No results -->
+                    <div class="gallery-no-results" id="no-results" style="display:none">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3 data-i18n="gallery.no_results_title">ไม่พบรูปภาพของวันที่นี้</h3>
+                        <p data-i18n="gallery.no_results_desc">ลองเลือกวันที่อื่น หรือกด "ทั้งหมด" เพื่อดูรูปทั้งหมด</p>
+                    </div>
+                </div>
+
+                <!-- Private Albums Tab Content -->
+                <div id="content-private" class="tab-content">
+                    <button class="btn-back-albums" id="btn-back-albums" onclick="backToAlbums()" data-i18n="gallery.btn_back_albums">
+                        <i class="fas fa-arrow-left"></i> กลับไปดูอัลบั้มทั้งหมด
+                    </button>
+                    
+                    <h2 id="private-album-title" style="display:none;text-align:center;margin-bottom:8px;color:#00d4ff"><i class="fas fa-folder-open"></i> <span id="pwd-album-name-display"></span></h2>
+                    <div class="gallery-count" id="private-gallery-count" style="display:none"></div>
+
+                    <!-- Folders Grid -->
+                    <div id="albums-grid" class="albums-grid" style="display:grid"></div>
+
+                    <!-- Private Gallery Grid (hidden initially) -->
+                    <div id="private-gallery-grid" class="gallery-masonry" style="display:none"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Password Modal -->
+    <div class="pwd-modal" id="pwd-modal">
+        <div class="pwd-box">
+            <div class="pwd-icon"><i class="fas fa-lock"></i></div>
+            <h3 id="pwd-album-name">ชื่ออัลบั้ม</h3>
+            <p data-i18n="gallery.pwd_desc">กรุณาใส่รหัสผ่านเพื่อเข้าดูรูปภาพในอัลบั้มนี้</p>
+            <input type="password" id="pwd-input" class="pwd-input" placeholder="รหัสผ่าน" data-i18n-placeholder="gallery.pwd_placeholder" onkeypress="if(event.key==='Enter') verifyPassword()">
+            <div class="pwd-error" id="pwd-error" data-i18n="gallery.pwd_error">รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่</div>
+            <div class="pwd-actions">
+                <button class="pwd-btn pwd-btn-cancel" onclick="closePwdModal()" data-i18n="gallery.btn_cancel">ยกเลิก</button>
+                <button class="pwd-btn pwd-btn-submit" onclick="verifyPassword()" id="btn-pwd-submit" data-i18n="gallery.btn_confirm">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox-overlay" id="lightbox" style="display:none;">
+        <button class="lightbox-close" id="lightbox-close"><i class="fas fa-times"></i></button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+        <div class="lightbox-content" id="lightbox-content"></div>
+        <div class="lightbox-info" id="lightbox-info">
+            <div class="lightbox-caption" id="lightbox-caption"></div>
+            <div class="lightbox-agent" id="lightbox-agent"></div>
+        </div>
+    </div>
+
+    <div id="site-footer"></div>
+    <script src="../assets/js/i18n-core.js?v=20260724a"></script>
+    <script src="../assets/js/i18n-loader.js?v=20260724a" defer></script>
+    <script src="../assets/js/components.js?v=20260724a"></script>
+    <script src="../assets/js/main.js?v=20260724a"></script>
+    <script>
+    (async function() {
+        var publicGrid = document.getElementById('public-gallery-grid');
+        var albumsGrid = document.getElementById('albums-grid');
+        var privateGrid = document.getElementById('private-gallery-grid');
+        if (!publicGrid) return;
+
+        var allPublicItems = [];
+        var displayPublicItems = [];
+        var albums = [];
+        
+        var currentAlbumId = null;
+        var currentPrivateItems = [];
+
+        function t(key, fallback) {
+            if (window.I18n && I18n.t) { var v = I18n.t(key); return (v && v !== key) ? v : (fallback || key); }
+            return fallback || key;
+        }
+        var thaiMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        function formatThaiDate(dateStr) {
+            if (!dateStr) return '';
+            var d = new Date(dateStr + 'T00:00:00');
+            var monthKey = 'gallery.month_' + (d.getMonth()+1);
+            var monthName = t(monthKey, thaiMonths[d.getMonth()]);
+            return d.getDate() + ' ' + monthName + ' ' + (d.getFullYear() + 543);
+        }
+
+        // Re-render all dynamic content with current translations
+        var dataReady = false;
+        function reRenderAll() {
+            if (!dataReady) return;
+            renderItems(displayPublicItems, publicGrid, 'gallery-count');
+            renderAlbums();
+            if (currentPrivateItems.length > 0 && privateGrid.style.display !== 'none') {
+                renderItems(currentPrivateItems, privateGrid, 'private-gallery-count', true);
+            }
+            var label = document.getElementById('gallery-label');
+            var picker = document.getElementById('gallery-date-picker');
+            if (picker && picker.value && label && label.style.display !== 'none') {
+                label.innerHTML = '<i class="fas fa-calendar-day"></i> ' + t('gallery.photos_of_date','รูปภาพวันที่') + ' ' + formatThaiDate(picker.value);
+            }
+        }
+
+        // Listen for translations applied (may fire before or after data is ready)
+        document.addEventListener('langapplied', reRenderAll);
+
+        // Load from API
+        try {
+            var r = await fetch('/api/gallery.php');
+            var d = await r.json();
+            if (d.items && d.items.length > 0) {
+                // Public items are those without a folder_id
+                allPublicItems = d.items;
+            }
+            if (d.folders && d.folders.length > 0) {
+                albums = d.folders;
+            }
+        } catch(e) {}
+
+        // If no public items from API, show empty state
+        if (allPublicItems.length === 0) {
+            document.getElementById('no-results').style.display = 'block';
+        }
+
+        displayPublicItems = allPublicItems;
+        dataReady = true;
+        renderItems(displayPublicItems, publicGrid, 'gallery-count');
+        renderAlbums();
+
+        // If page loaded with non-Thai language, re-render with translations
+        if (window.I18n && I18n.getLang && I18n.getLang() !== 'th') {
+            reRenderAll();
+            // Re-apply translations to static [data-i18n] elements (tabs, buttons, etc.)
+            if (I18n.translateNew) I18n.translateNew();
+        }
+
+        // Date picker for public tab
+        var datePicker = document.getElementById('gallery-date-picker');
+        datePicker.addEventListener('change', function() {
+            var val = this.value;
+            if (!val) { window.showAll(); return; }
+            document.getElementById('btn-all').classList.remove('active');
+            document.getElementById('btn-clear').style.display = '';
+            displayPublicItems = allPublicItems.filter(function(item) { return item.event_date === val; });
+
+            var label = document.getElementById('gallery-label');
+            label.innerHTML = '<i class="fas fa-calendar-day"></i> ' + t('gallery.photos_of_date','รูปภาพวันที่') + ' ' + formatThaiDate(val);
+            label.style.display = '';
+
+            if (displayPublicItems.length === 0) {
+                publicGrid.innerHTML = '';
+                document.getElementById('gallery-count').textContent = '';
+                document.getElementById('no-results').style.display = 'block';
+            } else {
+                document.getElementById('no-results').style.display = 'none';
+                renderItems(displayPublicItems, publicGrid, 'gallery-count');
+            }
+        });
+
+        // Show all public
+        window.showAll = function() {
+            datePicker.value = '';
+            document.getElementById('btn-all').classList.add('active');
+            document.getElementById('btn-clear').style.display = 'none';
+            document.getElementById('gallery-label').style.display = 'none';
+            document.getElementById('no-results').style.display = 'none';
+            displayPublicItems = allPublicItems;
+            renderItems(displayPublicItems, publicGrid, 'gallery-count');
+        };
+
+        // Tabs logic
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.gallery-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            document.getElementById('content-' + tabName).classList.add('active');
+        };
+
+        function renderAlbums() {
+            if (albums.length === 0) {
+                albumsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.5)"><i class="fas fa-folder-open" style="font-size:3rem;margin-bottom:16px;opacity:0.3"></i><br>' + t('gallery.no_albums','ยังไม่มีอัลบั้มส่วนตัว') + '</div>';
+                return;
+            }
+            
+            var html = '';
+            albums.forEach(function(album) {
+                html += '<div class="album-card" onclick="openPasswordPrompt(\'' + album.id + '\', \'' + album.name.replace(/'/g, "\\'") + '\')">';
+                html += '<div class="album-cover"><i class="fas fa-images"></i></div>';
+                html += '<div class="album-lock"><i class="fas fa-lock"></i></div>';
+                html += '<div class="album-info">';
+                html += '<div class="album-title">' + album.name + '</div>';
+                html += '<div class="album-meta">' + t('gallery.click_password','คลิกเพื่อใส่รหัสผ่าน') + '</div>';
+                html += '</div></div>';
+            });
+            albumsGrid.innerHTML = html;
+        }
+
+        // Password & Album logic
+        window.openPasswordPrompt = function(id, name) {
+            currentAlbumId = id;
+            document.getElementById('pwd-album-name').textContent = name;
+            document.getElementById('pwd-album-name-display').textContent = name;
+            document.getElementById('pwd-input').value = '';
+            document.getElementById('pwd-error').style.display = 'none';
+            document.getElementById('pwd-modal').classList.add('active');
+            setTimeout(() => document.getElementById('pwd-input').focus(), 100);
+        };
+
+        window.closePwdModal = function() {
+            document.getElementById('pwd-modal').classList.remove('active');
+        };
+
+        window.verifyPassword = async function() {
+            var pwd = document.getElementById('pwd-input').value;
+            if (!pwd) return;
+            
+            var btn = document.getElementById('btn-pwd-submit');
+            var errorLabel = document.getElementById('pwd-error');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            errorLabel.style.display = 'none';
+            
+            try {
+                var r = await fetch('/api/gallery-auth.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_id: currentAlbumId, password: pwd })
+                });
+                var d = await r.json();
+                
+                if (d.success) {
+                    closePwdModal();
+                    showPrivateAlbum(d.items);
+                } else {
+                    errorLabel.style.display = 'block';
+                    errorLabel.textContent = d.error || t('gallery.pwd_error','รหัสผ่านไม่ถูกต้อง');
+                }
+            } catch(e) {
+                errorLabel.style.display = 'block';
+                errorLabel.textContent = t('gallery.verify_error','เกิดข้อผิดพลาดในการตรวจสอบ');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = t('gallery.btn_confirm','ยืนยัน');
+        };
+
+        function showPrivateAlbum(items) {
+            currentPrivateItems = items;
+            
+            // Hide albums grid, show private items grid
+            document.getElementById('albums-grid').style.display = 'none';
+            document.getElementById('private-album-title').style.display = 'block';
+            document.getElementById('btn-back-albums').classList.add('active');
+            document.getElementById('private-gallery-count').style.display = 'block';
+            privateGrid.style.display = 'grid';
+            
+            if (items.length === 0) {
+                privateGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.5)">' + t('gallery.album_empty','อัลบั้มนี้ยังไม่มีรูปภาพ') + '</div>';
+                document.getElementById('private-gallery-count').textContent = '0 ' + t('gallery.photos','รูปภาพ');
+            } else {
+                renderItems(items, privateGrid, 'private-gallery-count', true);
+            }
+        }
+
+        window.backToAlbums = function() {
+            currentAlbumId = null;
+            currentPrivateItems = [];
+            
+            document.getElementById('albums-grid').style.display = 'grid';
+            document.getElementById('private-album-title').style.display = 'none';
+            document.getElementById('btn-back-albums').classList.remove('active');
+            document.getElementById('private-gallery-count').style.display = 'none';
+            privateGrid.style.display = 'none';
+            privateGrid.innerHTML = '';
+        };
+
+        function renderItems(items, targetGrid, countElId, isPrivate = false) {
+            var countEl = document.getElementById(countElId);
+            var imgCount = items.filter(function(i){ return i.type !== 'youtube'; }).length;
+            var vidCount = items.filter(function(i){ return i.type === 'youtube'; }).length;
+            var label = imgCount + ' ' + t('gallery.photos','รูปภาพ');
+            if (vidCount > 0) label += ' + ' + vidCount + ' ' + t('gallery.videos_count','วีดีโอ');
+            countEl.textContent = label;
+
+            var html = '';
+            items.forEach(function(item, i) {
+                var isYT = item.type === 'youtube';
+                html += '<div class="gallery-item fade-up" style="cursor:pointer;">';
+                html += '<div class="gallery-item-wrapper" onclick="openLightboxStatic(' + i + ', ' + isPrivate + ')" style="position:relative">';
+                html += '<img src="' + item.src + '" alt="' + (item.caption || '') + '" loading="lazy">';
+                if (isYT) {
+                    html += '<div class="gallery-yt-play"><i class="fas fa-play"></i></div>';
+                    html += '<span class="gallery-yt-badge">YouTube</span>';
+                } else {
+                    html += '<button class="gallery-dl-btn" title="' + t('gallery.download','ดาวน์โหลด') + '" onclick="event.stopPropagation();downloadImage(\'' + item.src + '\',\'' + (item.caption || 'aquathrill-gallery') + '\');"><i class="fas fa-download"></i></button>';
+                }
+                html += '</div>';
+                html += '<div style="padding:8px 0;display:flex;justify-content:space-between;align-items:center;">';
+                html += '<span style="color:rgba(255,255,255,0.7);font-size:0.85rem;">' + (item.caption || '') + '</span>';
+                html += '<span style="color:rgba(0,212,255,0.6);font-size:0.75rem;white-space:nowrap;margin-left:8px"><i class="fas fa-calendar-alt"></i> ' + formatThaiDate(item.event_date) + '</span>';
+                html += '</div></div>';
+            });
+            targetGrid.innerHTML = html;
+
+            // Fade-up
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+            }, { threshold: 0.1 });
+            targetGrid.querySelectorAll('.gallery-item.fade-up').forEach(function(el) { observer.observe(el); });
+        }
+
+        // Lightbox
+        window.openLightboxStatic = function(idx, isPrivate) {
+            window._staticLightboxIdx = idx;
+            window._staticLightboxIsPrivate = isPrivate;
+            var lb = document.getElementById('lightbox');
+            var content = document.getElementById('lightbox-content');
+            var caption = document.getElementById('lightbox-caption');
+            
+            var sourceArray = isPrivate ? currentPrivateItems : displayPublicItems;
+            var item = sourceArray[idx];
+
+            if (item.type === 'youtube') {
+                // Stop any previous video, embed new one
+                content.innerHTML = '<iframe class="lightbox-yt-iframe" src="https://www.youtube.com/embed/' + item.youtube_id + '?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+                caption.innerHTML = (item.caption || '') +
+                    '<br><small style="color:rgba(255,255,255,.5)"><i class="fas fa-calendar-alt"></i> ' + formatThaiDate(item.event_date) + '</small>' +
+                    '<br><a href="https://www.youtube.com/watch?v=' + item.youtube_id + '" target="_blank" class="lightbox-download"><i class="fab fa-youtube"></i> ' + t('gallery.watch_youtube','ดูบน YouTube') + '</a>';
+            } else {
+                content.innerHTML = '<img src="' + item.src + '" style="max-width:90vw;max-height:80vh;border-radius:12px;">';
+                caption.innerHTML = (item.caption || '') + '<br><small style="color:rgba(255,255,255,.5)"><i class="fas fa-calendar-alt"></i> ' + formatThaiDate(item.event_date) + '</small>' +
+                    '<br><button class="lightbox-download" onclick="downloadImage(\'' + item.src + '\',\'' + (item.caption || 'aquathrill-gallery') + '\');"><i class="fas fa-download"></i> ' + t('gallery.download_photo','ดาวน์โหลดรูปภาพ') + '</button>';
+            }
+            lb.style.display = 'flex';
+        };
+        document.getElementById('lightbox-close').addEventListener('click', function() {
+            // Stop YouTube video on close
+            var iframe = document.querySelector('#lightbox-content iframe');
+            if (iframe) iframe.src = '';
+            document.getElementById('lightbox').style.display = 'none';
+        });
+        document.getElementById('lightbox-prev').addEventListener('click', function() {
+            var sourceArray = window._staticLightboxIsPrivate ? currentPrivateItems : displayPublicItems;
+            var idx = (window._staticLightboxIdx - 1 + sourceArray.length) % sourceArray.length;
+            window.openLightboxStatic(idx, window._staticLightboxIsPrivate);
+        });
+        document.getElementById('lightbox-next').addEventListener('click', function() {
+            var sourceArray = window._staticLightboxIsPrivate ? currentPrivateItems : displayPublicItems;
+            var idx = (window._staticLightboxIdx + 1) % sourceArray.length;
+            window.openLightboxStatic(idx, window._staticLightboxIsPrivate);
+        });
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
+        });
+
+        // Download function
+        window.downloadImage = function(src, name) {
+            fetch(src).then(function(r) { return r.blob(); }).then(function(blob) {
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                var ext = src.split('.').pop().split('?')[0] || 'jpg';
+                a.download = name.replace(/[^a-zA-Z0-9ก-๙\s]/g, '').trim().replace(/\s+/g, '-') + '.' + ext;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }).catch(function() {
+                window.open(src, '_blank');
+            });
+        };
+    })();
+    // Safety net: re-apply translations after ALL resources loaded (fixes race condition)
+    window.addEventListener('load', function() {
+        if (window.I18n && I18n.getLang && I18n.getLang() !== 'th') {
+            setTimeout(function() {
+                if (I18n.translateNew) I18n.translateNew();
+            }, 300);
+        }
+    });
+    </script>
+</body>
+</html>

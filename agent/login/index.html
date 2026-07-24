@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../../images/favicon.png">
+    <title>Agent Login | AQUATHRILL</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/auth.css">
+    <style>
+        .pending-box{background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);border-radius:16px;padding:28px;text-align:center;margin-top:20px}
+        .pending-box i.main-icon{font-size:3rem;color:#ffc107;margin-bottom:12px;display:block}
+        .pending-box h3{color:#ffc107;margin-bottom:8px;font-size:1.15rem}
+        .pending-box p{color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:16px}
+        .btn-whatsapp{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#25D366;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;transition:.3s}
+        .btn-whatsapp:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,.3)}
+        .rejected-box{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);border-radius:16px;padding:28px;text-align:center;margin-top:20px}
+        .rejected-box i.main-icon{font-size:3rem;color:#ff5252;margin-bottom:12px;display:block}
+        .rejected-box h3{color:#ff5252;margin-bottom:8px;font-size:1.15rem}
+        .rejected-box p{color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:16px}
+        .success-box{background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.25);border-radius:16px;padding:28px;text-align:center;margin-top:20px}
+        .success-box i.main-icon{font-size:3rem;color:#00c853;margin-bottom:12px;display:block}
+        .success-box h3{color:#00c853;margin-bottom:8px;font-size:1.15rem}
+        .success-box p{color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:16px}
+        .alert-msg{padding:10px 16px;border-radius:10px;font-size:.9rem;margin-top:12px;display:none}
+        .alert-msg.error{background:rgba(255,80,80,.15);color:#ff5252;display:block}
+        .alert-msg.success{background:rgba(0,200,83,.15);color:#00c853;display:block}
+    </style>
+</head>
+<body>
+    <div id="site-header"></div>
+
+    <main class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-icon" style="background:linear-gradient(135deg, #c9a86a, #e8c98a);">
+                        <i class="fas fa-id-badge"></i>
+                    </div>
+                    <h1 data-i18n="agent.portal_title">Agent Portal</h1>
+                    <p data-i18n="agent.portal_sub">เข้าสู่ระบบตัวแทน AQUATHRILL</p>
+                </div>
+
+                <!-- Login / Register Tabs -->
+                <div class="payment-tabs" style="margin-bottom:20px;" id="auth-tabs">
+                    <button class="payment-tab active" data-tab="agent-login" data-i18n="agent.tab_login">เข้าสู่ระบบ</button>
+                    <button class="payment-tab" data-tab="agent-register" data-i18n="agent.tab_register">สมัครตัวแทน</button>
+                </div>
+
+                <!-- Login Form -->
+                <div class="agent-tab-content active" id="agent-login">
+                    <form class="auth-form" id="agent-login-form">
+                        <div class="form-group">
+                            <label for="login-email" data-i18n="agent.email"><i class="fas fa-envelope"></i> อีเมล</label>
+                            <input type="text" id="login-email" placeholder="อีเมล" data-i18n-placeholder="agent.email_ph" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password" data-i18n="agent.password"><i class="fas fa-lock"></i> รหัสผ่าน</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="login-password" placeholder="รหัสผ่าน" data-i18n-placeholder="agent.password_ph" required>
+                                <button type="button" class="toggle-password"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-auth" style="background:linear-gradient(135deg, #c9a86a, #b8944f);" data-i18n="agent.btn_login">
+                            <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+                        </button>
+                        <div class="alert-msg" id="login-alert"></div>
+                    </form>
+
+                    <!-- Pending status -->
+                    <div class="pending-box" id="login-pending" style="display:none">
+                        <i class="fas fa-hourglass-half main-icon"></i>
+                        <h3 data-i18n="agent.pending_title">รอการอนุมัติจากแอดมิน</h3>
+                        <p data-i18n="agent.pending_desc">บัญชีของคุณถูกสร้างเรียบร้อยแล้ว กรุณารอแอดมินตรวจสอบและอนุมัติ หรือติดต่อเราเพื่อเร่งดำเนินการ</p>
+                        <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp" data-i18n="agent.contact_whatsapp">
+                            <i class="fab fa-whatsapp"></i> ติดต่อทาง WhatsApp
+                        </a>
+                    </div>
+
+                    <!-- Rejected status -->
+                    <div class="rejected-box" id="login-rejected" style="display:none">
+                        <i class="fas fa-times-circle main-icon"></i>
+                        <h3 data-i18n="agent.rejected_title">ไม่ผ่านการอนุมัติ</h3>
+                        <p data-i18n="agent.rejected_desc">บัญชีของคุณไม่ผ่านการอนุมัติ หากมีข้อสงสัยกรุณาติดต่อเรา</p>
+                        <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp" data-i18n="agent.contact_whatsapp">
+                            <i class="fab fa-whatsapp"></i> ติดต่อทาง WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Register Form -->
+                <div class="agent-tab-content" id="agent-register" style="display:none;">
+                    <form class="auth-form" id="agent-register-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reg-firstname" data-i18n="agent.firstname"><i class="fas fa-user"></i> ชื่อ</label>
+                                <input type="text" id="reg-firstname" placeholder="ชื่อ" data-i18n-placeholder="agent.firstname_ph" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-lastname" data-i18n="agent.lastname"><i class="fas fa-user"></i> นามสกุล</label>
+                                <input type="text" id="reg-lastname" placeholder="นามสกุล" data-i18n-placeholder="agent.lastname_ph" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email" data-i18n="agent.email"><i class="fas fa-envelope"></i> อีเมล</label>
+                            <input type="email" id="reg-email" placeholder="agent@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-phone" data-i18n="agent.phone"><i class="fas fa-phone"></i> เบอร์โทร</label>
+                            <input type="tel" id="reg-phone" placeholder="08X-XXX-XXXX" data-i18n-placeholder="agent.phone_ph" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-company" data-i18n="agent.company"><i class="fas fa-building"></i> บริษัท / ชื่อทีม (ถ้ามี)</label>
+                            <input type="text" id="reg-company" placeholder="ชื่อบริษัทหรือทีม" data-i18n-placeholder="agent.company_ph">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password" data-i18n="agent.password"><i class="fas fa-lock"></i> รหัสผ่าน</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="reg-password" placeholder="อย่างน้อย 6 ตัวอักษร" data-i18n-placeholder="agent.password_hint" required minlength="6">
+                                <button type="button" class="toggle-password"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-auth" style="background:linear-gradient(135deg, #c9a86a, #b8944f);" data-i18n="agent.btn_register">
+                            <i class="fas fa-user-plus"></i> สมัครตัวแทน
+                        </button>
+                        <div class="alert-msg" id="register-alert"></div>
+                    </form>
+
+                    <!-- Success registration (pending) -->
+                    <div class="success-box" id="register-success" style="display:none">
+                        <i class="fas fa-check-circle main-icon"></i>
+                        <h3 data-i18n="agent.success_title">สมัครสำเร็จ!</h3>
+                        <p data-i18n="agent.success_desc">บัญชีของคุณถูกสร้างเรียบร้อยแล้ว กรุณารอแอดมินอนุมัติก่อนเข้าสู่ระบบ หรือติดต่อเราเพื่อเร่งดำเนินการ</p>
+                        <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp" data-i18n="agent.contact_whatsapp">
+                            <i class="fab fa-whatsapp"></i> ติดต่อทาง WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="site-footer"></div>
+    <script src="../../assets/js/i18n-core.js?v=20260724a"></script>
+    <script src="../../assets/js/i18n-loader.js?v=20260724a" defer></script>
+    <script src="../../assets/js/components.js?v=20260724a"></script>
+    <script>
+    const API = '/api';
+
+    // Tab switching
+    document.querySelectorAll('.payment-tab[data-tab]').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.payment-tab[data-tab]').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.agent-tab-content').forEach(c => { c.style.display = 'none'; c.classList.remove('active'); });
+            const target = document.getElementById(this.dataset.tab);
+            if (target) { target.style.display = 'block'; target.classList.add('active'); }
+        });
+    });
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+            else { input.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+        });
+    });
+
+    // ===== LOGIN =====
+    document.getElementById('agent-login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const alert = document.getElementById('login-alert');
+        alert.className = 'alert-msg';
+        document.getElementById('login-pending').style.display = 'none';
+        document.getElementById('login-rejected').style.display = 'none';
+
+        try {
+            const r = await fetch(API + '/agent-auth.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'login',
+                    email: document.getElementById('login-email').value.trim(),
+                    password: document.getElementById('login-password').value
+                }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+
+            if (d.success) {
+                // Approved — redirect to agent dashboard
+                alert.textContent = (window.I18n && I18n.t && I18n.t('agent.login_success') !== 'agent.login_success') ? I18n.t('agent.login_success') : 'เข้าสู่ระบบสำเร็จ!';
+                alert.className = 'alert-msg success';
+                // Save agent info for agent pages
+                localStorage.setItem('aquathrill_agent', JSON.stringify(d.agent));
+                setTimeout(() => { window.location.href = '../'; }, 800);
+            } else if (d.status === 'pending') {
+                this.style.display = 'none';
+                document.getElementById('login-pending').style.display = '';
+            } else if (d.status === 'rejected') {
+                this.style.display = 'none';
+                document.getElementById('login-rejected').style.display = '';
+            } else {
+                alert.textContent = d.error || ((window.I18n && I18n.t && I18n.t('agent.login_fail') !== 'agent.login_fail') ? I18n.t('agent.login_fail') : 'เข้าสู่ระบบไม่สำเร็จ');
+                alert.className = 'alert-msg error';
+            }
+        } catch(e) {
+            alert.textContent = (window.I18n && I18n.t && I18n.t('agent.server_error') !== 'agent.server_error') ? I18n.t('agent.server_error') : 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์';
+            alert.className = 'alert-msg error';
+        }
+    });
+
+    // ===== REGISTER =====
+    document.getElementById('agent-register-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const alert = document.getElementById('register-alert');
+        alert.className = 'alert-msg';
+
+        try {
+            const r = await fetch(API + '/agent-auth.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'register',
+                    first_name: document.getElementById('reg-firstname').value.trim(),
+                    last_name: document.getElementById('reg-lastname').value.trim(),
+                    email: document.getElementById('reg-email').value.trim(),
+                    phone: document.getElementById('reg-phone').value.trim(),
+                    company: document.getElementById('reg-company').value.trim(),
+                    password: document.getElementById('reg-password').value
+                }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+
+            if (d.success) {
+                this.style.display = 'none';
+                document.getElementById('register-success').style.display = '';
+                document.getElementById('auth-tabs').style.display = 'none';
+                if (window.I18n && I18n.translateNew) I18n.translateNew();
+            } else {
+                alert.textContent = d.error || ((window.I18n && I18n.t && I18n.t('agent.register_fail') !== 'agent.register_fail') ? I18n.t('agent.register_fail') : 'สมัครไม่สำเร็จ');
+                alert.className = 'alert-msg error';
+            }
+        } catch(e) {
+            alert.textContent = (window.I18n && I18n.t && I18n.t('agent.server_error') !== 'agent.server_error') ? I18n.t('agent.server_error') : 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์';
+            alert.className = 'alert-msg error';
+        }
+    });
+    </script>
+    <script src="../../assets/js/main.js?v=20260724a"></script>
+</body>
+</html>

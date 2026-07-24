@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการประเภทเรือ | AQUATHRILL Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.06);padding:24px 0;z-index:100}
+        .sidebar .brand{padding:0 24px 24px;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.6);text-decoration:none;font-size:.95rem;transition:.2s;border-left:3px solid transparent}
+        .sidebar nav a:hover,.sidebar nav a.active{background:rgba(0,212,255,.08);color:#fff;border-left-color:#00d4ff}
+        .sidebar nav a i{width:20px;text-align:center}
+        .sidebar .logout-btn{position:absolute;bottom:24px;left:24px;right:24px;padding:12px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);border-radius:12px;color:#ff5252;text-align:center;cursor:pointer;font-family:inherit;font-size:.9rem}
+        .main-content{margin-left:240px;padding:32px}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+        .top-bar h2{font-size:1.5rem}
+        .btn-add{padding:12px 24px;background:linear-gradient(135deg,#00d4ff,#0096c7);border:none;border-radius:12px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.3s}
+        .btn-add:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,180,255,.3)}
+
+        /* Boat cards */
+        .boats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:20px}
+        .boat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;transition:.3s}
+        .boat-card:hover{border-color:rgba(0,212,255,.25)}
+        .boat-card.inactive{opacity:.5}
+        .boat-card-img{position:relative;height:180px;overflow:hidden;background:#0d2847}
+        .boat-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+        .boat-card:hover .boat-card-img img{transform:scale(1.05)}
+        .boat-card-img .img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.6));pointer-events:none}
+        .boat-card-img .img-badge{position:absolute;top:10px;left:10px;background:rgba(0,212,255,.85);color:#fff;padding:4px 10px;border-radius:8px;font-size:.72rem;font-weight:600}
+        .boat-card-img .no-img{display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.2);font-size:3rem}
+        .boat-card-body{padding:18px}
+        .boat-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+        .boat-header h3{font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:8px}
+        .boat-header h3 i{color:#00d4ff}
+        .boat-id{font-size:.68rem;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:2px 8px;border-radius:6px;margin-top:4px;display:inline-block}
+        .boat-desc{font-size:.82rem;color:rgba(255,255,255,.45);margin-bottom:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .boat-actions{display:flex;gap:6px}
+        .boat-actions button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:.2s;display:flex;align-items:center;justify-content:center}
+        .boat-actions button:hover{background:rgba(0,212,255,.15);color:#fff}
+        .boat-actions button.del:hover{background:rgba(255,61,113,.2);color:#ff6b8a}
+        .boat-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+        .boat-stat{background:rgba(255,255,255,.03);border-radius:10px;padding:10px 6px;text-align:center}
+        .boat-stat .val{font-size:1.1rem;font-weight:800;line-height:1}
+        .boat-stat .lbl{font-size:.62rem;color:rgba(255,255,255,.35);margin-top:3px}
+        .stat-boats .val{color:#00d4ff}
+        .stat-price .val{color:#00c853}
+        .stat-guests .val{color:#ffd54f}
+        .stat-weight .val{color:#ff6b8a}
+        .boat-features{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+        .boat-features .feat-tag{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.15);color:rgba(255,255,255,.65);padding:3px 10px;border-radius:20px;font-size:.68rem}
+
+        /* Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,5,20,.88);display:none;align-items:center;justify-content:center;z-index:999;padding:20px;overflow-y:auto}
+        .modal-overlay.active{display:flex}
+        .modal-box{background:#0d2847;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;max-width:720px;width:100%;max-height:90vh;overflow-y:auto;margin:auto}
+        .modal-box h3{margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:10px}
+        .modal-box h3 i{color:#00d4ff}
+        .section-label{font-size:.82rem;color:#00d4ff;font-weight:600;margin:20px 0 10px;display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid rgba(0,212,255,.15)}
+        .form-group{margin-bottom:14px}
+        .form-group label{font-size:.82rem;color:rgba(255,255,255,.5);display:block;margin-bottom:6px}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;outline:none;transition:.2s;resize:vertical}
+        .form-group input:focus,.form-group textarea:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+        .form-group textarea{min-height:75px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+        /* Image upload area */
+        .img-upload-area{border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:12px}
+        .img-upload-area:hover{border-color:#00d4ff;background:rgba(0,212,255,.04)}
+        .img-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .img-upload-area .preview-img{max-width:100%;max-height:160px;border-radius:10px;margin-bottom:8px}
+        .img-upload-area .placeholder{color:rgba(255,255,255,.3);font-size:.85rem}
+        .img-upload-area .placeholder i{font-size:1.5rem;display:block;margin-bottom:6px}
+
+        /* Gallery */
+        .gallery-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:60px;align-items:flex-start}
+        .gallery-thumb{position:relative;width:80px;height:65px;border-radius:8px;overflow:hidden;border:2px solid rgba(255,255,255,.1);flex-shrink:0;transition:.2s;cursor:grab}
+        .gallery-thumb:hover{border-color:rgba(0,212,255,.5)}
+        .gallery-thumb img{width:100%;height:100%;object-fit:cover}
+        .gallery-thumb .thumb-del{position:absolute;top:2px;right:2px;width:20px;height:20px;background:rgba(255,40,60,.85);border:none;border-radius:5px;color:#fff;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s}
+        .gallery-thumb:hover .thumb-del{opacity:1}
+        .gallery-thumb .thumb-num{position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:rgba(255,255,255,.7);font-size:.55rem;padding:1px 4px;border-radius:3px}
+        .btn-add-gallery{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(0,212,255,.1);border:1px dashed rgba(0,212,255,.4);border-radius:8px;color:#00d4ff;font-family:'Kanit',sans-serif;font-size:.78rem;cursor:pointer;transition:.2s}
+        .btn-add-gallery:hover{background:rgba(0,212,255,.18)}
+
+        /* Language tabs */
+        .lang-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+        .lang-tab{padding:8px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:rgba(255,255,255,.6);font-family:'Kanit',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+        .lang-tab:hover{background:rgba(0,212,255,.1);color:#fff;border-color:rgba(0,212,255,.3)}
+        .lang-tab.active{background:#00d4ff;color:#fff;border-color:#00d4ff}
+
+        /* Specs list */
+        .spec-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+        .spec-row select{width:140px;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif,'FontAwesome';font-size:.85rem;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 10px center;background-size:12px}
+        .spec-row select:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+        .spec-row select option{background:#0d2847;color:#fff}
+        .spec-row input{flex:1;padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.85rem;outline:none;transition:.2s}
+        .spec-row input:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+        .spec-row .btn-del-row{background:rgba(255,61,113,.15);border:1px solid rgba(255,61,113,.2);color:#ff6b8a;width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+        .spec-row .btn-del-row:hover{background:rgba(255,61,113,.25);color:#fff;transform:scale(1.05)}
+
+        /* Features list */
+        .feature-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+        .feature-row select{width:140px;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif,'FontAwesome';font-size:.85rem;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 10px center;background-size:12px}
+        .feature-row select:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+        .feature-row select option{background:#0d2847;color:#fff}
+        .feature-row input{flex:1;padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.85rem;outline:none;transition:.2s}
+        .feature-row input:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+        .feature-row .btn-del-row{background:rgba(255,61,113,.15);border:1px solid rgba(255,61,113,.2);color:#ff6b8a;width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+        .feature-row .btn-del-row:hover{background:rgba(255,61,113,.25);color:#fff;transform:scale(1.05)}
+
+        .btn-add-row{font-size:.82rem;color:#00d4ff;background:none;border:1px dashed rgba(0,212,255,.3);border-radius:10px;padding:9px 16px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;margin-top:6px;transition:.2s}
+        .btn-add-row:hover{background:rgba(0,212,255,.08);border-color:#00d4ff}
+
+        .modal-actions{display:flex;gap:10px;margin-top:24px}
+        .modal-actions button{flex:1;padding:13px;border:none;border-radius:12px;font-family:'Kanit',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer}
+        .btn-cancel{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+        .btn-save{background:linear-gradient(135deg,#00d4ff,#0096c7);color:#fff}
+        .toast{position:fixed;top:24px;right:24px;background:#0d2847;border:1px solid rgba(0,200,83,.3);color:#00c853;padding:14px 22px;border-radius:14px;font-size:.88rem;display:none;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.3);align-items:center;gap:9px}
+        .toast.show{display:flex}
+
+        /* Upload modal */
+        .upload-modal{position:fixed;inset:0;background:rgba(0,5,20,.88);display:none;align-items:center;justify-content:center;z-index:9999}
+        .upload-modal.active{display:flex}
+        .upload-box{background:#0d2847;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;max-width:480px;width:95%}
+        .upload-box h3{margin-bottom:20px;font-size:1.1rem}
+        .upload-preview{width:100%;max-height:180px;object-fit:contain;border-radius:10px;margin-bottom:12px;display:none;border:1px solid rgba(255,255,255,.1)}
+        .drop-zone{border:2px dashed rgba(255,255,255,.2);border-radius:14px;padding:36px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:12px}
+        .drop-zone:hover{border-color:#00d4ff;background:rgba(0,212,255,.04)}
+        .drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .drop-zone i{font-size:1.8rem;color:rgba(255,255,255,.25);display:block;margin-bottom:8px}
+        .drop-zone p{color:rgba(255,255,255,.35);font-size:.85rem}
+        .upload-actions{display:flex;gap:10px;margin-top:4px}
+        .upload-actions button{flex:1;padding:11px;border:none;border-radius:10px;font-family:'Kanit',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer}
+        .btn-cancel-upload{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+        .btn-confirm-upload{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff}
+        .btn-confirm-upload:disabled{opacity:.4;cursor:not-allowed}
+
+        @media(max-width:768px){
+            .sidebar{width:60px}.sidebar .brand,.sidebar nav a span,.sidebar .logout-btn span{display:none}.sidebar nav a{justify-content:center;padding:12px}.main-content{margin-left:60px;padding:16px}
+            .boats-grid{grid-template-columns:1fr}
+            .form-row,.form-row-3{grid-template-columns:1fr}
+            .boat-stats{grid-template-columns:repeat(2,1fr)}
+            .lang-tabs{gap:4px}
+            .lang-tab{padding:6px 14px;font-size:.78rem}
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">AQUATHRILL</div>
+        <nav>
+            <a href="/admin/index.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="/admin/bookings.html"><i class="fas fa-calendar-check"></i> <span>การจอง</span></a>
+            <a href="/admin/availability.html"><i class="fas fa-ship"></i> <span>สถานะเรือ</span></a>
+            <a href="/admin/boat-types.html" class="active"><i class="fas fa-anchor"></i> <span>จัดการเรือ</span></a>
+            <a href="/admin/agent-pricing.html"><i class="fas fa-user-tie"></i> <span>ราคาตัวแทน</span></a>
+            <a href="/admin/promotions.html"><i class="fas fa-bullhorn"></i> <span>โปรโมชั่น</span></a>
+            <a href="/admin/gallery.html"><i class="fas fa-images"></i> <span>แกลเลอรี่</span></a>
+            <a href="/admin/reviews.html"><i class="fas fa-star"></i> <span>รีวิว Google</span></a>
+            <!-- ซ่อนเมนูชำระเงิน (ระบบ Payso ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
+            <a href="/admin/payment-settings.html"><i class="fas fa-credit-card"></i> <span>ชำระเงิน</span></a>
+            -->
+            <a href="/admin/change-password.html"><i class="fas fa-key"></i> <span>เปลี่ยนรหัสผ่าน</span></a>
+            <a href="../" target="_blank"><i class="fas fa-external-link-alt"></i> <span>ดูเว็บไซต์</span></a>
+        </nav>
+        <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span></button>
+    </aside>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2><i class="fas fa-anchor" style="color:#00d4ff"></i> จัดการประเภทเรือ</h2>
+            <button class="btn-add" onclick="openModal()"><i class="fas fa-plus"></i> เพิ่มประเภทเรือ</button>
+        </div>
+        <div class="boats-grid" id="boats-grid">
+            <div style="text-align:center;padding:40px;color:rgba(255,255,255,.3);grid-column:1/-1"><i class="fas fa-circle-notch fa-spin"></i> กำลังโหลด...</div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <h3><i class="fas fa-ship"></i> <span id="modal-title">เพิ่มประเภทเรือ</span></h3>
+
+            <!-- Zone 1: Language-independent fields -->
+            <div class="section-label"><i class="fas fa-info-circle"></i> ข้อมูลพื้นฐาน (ทุกภาษาใช้ร่วมกัน)</div>
+            <div class="form-group" id="fg-id">
+                <label><i class="fas fa-fingerprint"></i> รหัสเรือ (ภาษาอังกฤษ ไม่มีเว้นวรรค เช่น 17ft)</label>
+                <input type="text" id="f-id" placeholder="17ft" maxlength="20">
+            </div>
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label><i class="fas fa-layer-group"></i> จำนวนลำ</label>
+                    <input type="number" id="f-total" placeholder="1" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-users"></i> คนสูงสุด</label>
+                    <input type="number" id="f-guests" placeholder="3" min="1" value="3">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-weight-hanging"></i> น้ำหนักสูงสุด (kg)</label>
+                    <input type="number" id="f-weight" placeholder="200" min="0" value="200">
+                </div>
+            </div>
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> ราคาฐาน (บาท)</label>
+                    <input type="number" id="f-price" placeholder="9900" min="0" step="100" value="9900">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-sort-numeric-up"></i> ลำดับแสดง</label>
+                    <input type="number" id="f-sort" placeholder="0" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-link"></i> Book URL (WhatsApp)</label>
+                    <input type="text" id="f-book-url" placeholder="https://wa.me/66...">
+                </div>
+            </div>
+
+            <div class="section-label"><i class="fas fa-image"></i> รูปภาพ & Gallery</div>
+            <div class="form-group">
+                <label><i class="fas fa-camera"></i> รูปหลัก (แสดงเป็นหน้าปกในทุกหน้า)</label>
+                <div class="img-upload-area" id="main-img-area">
+                    <input type="file" accept="image/*" onchange="uploadMainImage(this)">
+                    <div id="main-img-placeholder" class="placeholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>คลิกเพื่ออัปโหลดรูปหลัก</p>
+                    </div>
+                    <img id="main-img-preview" class="preview-img" style="display:none" alt="preview">
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-images"></i> รูป Gallery (แสดงใน Popup — ลากเพื่อเรียงลำดับ)</label>
+                <div class="gallery-grid" id="modal-gallery"></div>
+                <button type="button" class="btn-add-gallery" onclick="openGalleryUpload()"><i class="fas fa-plus"></i> เพิ่มรูป Gallery</button>
+            </div>
+
+            <!-- Zone 2: Language tabs -->
+            <div class="section-label"><i class="fas fa-language"></i> ข้อมูลแต่ละภาษา</div>
+            <div class="lang-tabs" id="lang-tabs">
+                <button class="lang-tab active" data-lang="th" onclick="switchLang('th')">TH ไทย</button>
+                <button class="lang-tab" data-lang="en" onclick="switchLang('en')">EN English</button>
+                <button class="lang-tab" data-lang="ru" onclick="switchLang('ru')">RU Русский</button>
+                <button class="lang-tab" data-lang="zh" onclick="switchLang('zh')">ZH 中文</button>
+            </div>
+
+            <div id="i18n-fields">
+                <div class="form-group">
+                    <label><i class="fas fa-heading"></i> ชื่อเรือ (Title)</label>
+                    <input type="text" id="f-title" placeholder="SEASTORM 12 Feet">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-text-width"></i> ชื่อรอง (Subtitle)</label>
+                    <input type="text" id="f-subtitle" placeholder="Mini Speedboat — Self Drive">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> คำอธิบาย (Description)</label>
+                    <textarea id="f-desc" placeholder="คำอธิบายเรือ..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-money-bill-wave"></i> ราคาแสดง (Display Price)</label>
+                        <input type="text" id="f-display-price" placeholder="฿9,900">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-divide"></i> หน่วยราคา (Price Unit)</label>
+                        <input type="text" id="f-price-unit" placeholder="/ ลำ">
+                    </div>
+                </div>
+
+                <div class="section-label" style="margin-top:16px"><i class="fas fa-sliders-h"></i> สเปค (Specs)</div>
+                <div id="specs-list"></div>
+                <button type="button" class="btn-add-row" onclick="addSpecRow()"><i class="fas fa-plus"></i> เพิ่มสเปค</button>
+
+                <div class="section-label" style="margin-top:16px"><i class="fas fa-star"></i> จุดเด่น (Features)</div>
+                <div id="features-list"></div>
+                <button type="button" class="btn-add-row" onclick="addFeatureRow()"><i class="fas fa-plus"></i> เพิ่มจุดเด่น</button>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+                <button class="btn-save" id="btn-save" onclick="saveBoat()"><i class="fas fa-save"></i> บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Upload Modal -->
+    <div class="upload-modal" id="upload-modal">
+        <div class="upload-box">
+            <h3><i class="fas fa-image" style="color:#00d4ff"></i> เพิ่มรูปใน Gallery</h3>
+            <img class="upload-preview" id="upload-preview" alt="preview">
+            <div class="drop-zone">
+                <input type="file" id="gallery-file-input" accept="image/*" onchange="handleGalleryFile(this)">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>คลิกหรือลากไฟล์มาวาง (JPG, PNG, WebP — สูงสุด 5MB)</p>
+            </div>
+            <div class="upload-actions">
+                <button class="btn-cancel-upload" onclick="closeGalleryUpload()">ยกเลิก</button>
+                <button class="btn-confirm-upload" id="btn-confirm-gallery" onclick="confirmGalleryUpload()" disabled>
+                    <i class="fas fa-check"></i> เพิ่มรูปนี้
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
+
+    <script>
+    const API = '/api';
+    const BOAT_API = API + '/boat-types-v2.php';
+    let editId = null;
+    let allBoats = [];
+    let modalGallery = [];
+    let modalMainImage = '';
+    let pendingGalleryUrl = null;
+
+    // i18n state
+    let modalI18n = { th: {}, en: {}, ru: {}, zh: {} };
+    let currentLang = 'th';
+
+    const ICON_OPTIONS = [
+        { value: 'fas fa-check', label: '✓ ทั่วไป' },
+        { value: 'fas fa-user-tie', label: '👨‍✈️ กัปตัน' },
+        { value: 'fas fa-ship', label: '🚤 ขับเรือ' },
+        { value: 'fas fa-route', label: '📍 เส้นทาง' },
+        { value: 'fas fa-shield-halved', label: '🛡️ ปลอดภัย' },
+        { value: 'fas fa-utensils', label: '🍽️ อาหาร' },
+        { value: 'fas fa-van-shuttle', label: '🚐 รถรับส่ง' },
+        { value: 'fas fa-expand-arrows-alt', label: '↔️ กว้างขวาง' },
+        { value: 'fas fa-camera', label: '📷 ถ่ายรูป' },
+        { value: 'fas fa-star', label: '⭐ เด่น' },
+        { value: 'fas fa-water', label: '🌊 ดำน้ำ' },
+        { value: 'fas fa-users', label: '👥 คน' },
+        { value: 'fas fa-weight-hanging', label: '⚖️ น้ำหนัก' },
+        { value: 'fas fa-ruler', label: '📏 ขนาด' }
+    ];
+
+    function buildIconSelectHTML(selectedValue) {
+        return ICON_OPTIONS.map(opt =>
+            '<option value="' + opt.value + '"' + (opt.value === selectedValue ? ' selected' : '') + '>' + opt.label + '</option>'
+        ).join('');
+    }
+
+    // Auth check
+    (async () => {
+        try {
+            const r = await fetch(API + '/admin-auth.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check' }), credentials: 'include' });
+            const d = await r.json();
+            if (!d.authenticated) location.href = 'index.html';
+            else loadBoats();
+        } catch (e) {
+            location.href = 'index.html';
+        }
+    })();
+
+    async function loadBoats() {
+        try {
+            const r = await fetch(BOAT_API + '?all=1&_t=' + Date.now(), { credentials: 'include', cache: 'no-store' });
+            const d = await r.json();
+            allBoats = d.boat_types || [];
+            renderBoats(allBoats);
+        } catch (e) { console.error(e); }
+    }
+
+    function renderBoats(boats) {
+        const grid = document.getElementById('boats-grid');
+        if (!boats.length) {
+            grid.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(255,255,255,.3);grid-column:1/-1"><i class="fas fa-ship" style="font-size:2.5rem;display:block;margin-bottom:10px"></i>ยังไม่มีประเภทเรือ กดปุ่ม "เพิ่มประเภทเรือ" เพื่อเริ่ม</div>';
+            return;
+        }
+        grid.innerHTML = boats.map(b => {
+            const active = b.is_active == 1;
+            const img = b.image || (b.images && b.images[0]) || '';
+            // i18n languages indicator
+            const langs = b.i18n ? Object.keys(b.i18n).filter(k => b.i18n[k] && b.i18n[k].title).join(', ').toUpperCase() : '';
+            return '<div class="boat-card' + (active ? '' : ' inactive') + '">' +
+                '<div class="boat-card-img">' +
+                    (img ? '<img src="' + img + '" alt="' + (b.name || '') + '" onerror="this.parentElement.innerHTML=\'<div class=no-img><i class=fas fa-ship></i></div>\'">' : '<div class="no-img"><i class="fas fa-ship"></i></div>') +
+                    '<div class="img-overlay"></div>' +
+                    '<span class="img-badge">ID: ' + b.id + '</span>' +
+                '</div>' +
+                '<div class="boat-card-body">' +
+                    '<div class="boat-header">' +
+                        '<div>' +
+                            '<h3><i class="fas fa-ship"></i> ' + (b.name || b.id) + '</h3>' +
+                            (!active ? '<span style="color:#ff6b8a;font-size:.7rem"><i class="fas fa-eye-slash"></i> ปิดใช้งาน</span>' : '') +
+                        '</div>' +
+                        '<div class="boat-actions">' +
+                            '<button onclick="editBoat(\'' + b.id + '\')" title="แก้ไข"><i class="fas fa-edit"></i></button>' +
+                            '<button class="' + (active ? 'del' : '') + '" onclick="' + (active ? 'deactivateBoat(\'' + b.id + '\')' : 'activateBoat(\'' + b.id + '\')') + '" title="' + (active ? 'ปิดใช้งาน' : 'เปิดใช้งาน') + '">' +
+                                '<i class="fas fa-' + (active ? 'trash-alt' : 'undo') + '"></i>' +
+                            '</button>' +
+                        '</div>' +
+                    '</div>' +
+                    (b.description ? '<div class="boat-desc">' + b.description + '</div>' : '') +
+                    '<div class="boat-stats">' +
+                        '<div class="boat-stat stat-boats"><div class="val">' + b.total_boats + '</div><div class="lbl">จำนวนลำ</div></div>' +
+                        '<div class="boat-stat stat-price"><div class="val">฿' + Number(b.price).toLocaleString('th-TH') + '</div><div class="lbl">ราคาต่อลำ</div></div>' +
+                        '<div class="boat-stat stat-guests"><div class="val">' + b.max_guests + ' คน</div><div class="lbl">ผู้โดยสาร</div></div>' +
+                        '<div class="boat-stat stat-weight"><div class="val">' + b.max_weight + ' kg</div><div class="lbl">น้ำหนักสูงสุด</div></div>' +
+                    '</div>' +
+                    (langs ? '<div class="boat-features"><span class="feat-tag"><i class="fas fa-language" style="margin-right:4px;"></i>' + langs + '</span></div>' : '') +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    // ===== i18n HELPERS =====
+    function emptyLangData() {
+        return { title: '', subtitle: '', description: '', displayPrice: '', priceUnit: '', specs: [], features: [] };
+    }
+
+    function resetI18n() {
+        modalI18n = { th: emptyLangData(), en: emptyLangData(), ru: emptyLangData(), zh: emptyLangData() };
+    }
+
+    function saveCurrentTabFields() {
+        const data = modalI18n[currentLang];
+        data.title = document.getElementById('f-title').value;
+        data.subtitle = document.getElementById('f-subtitle').value;
+        data.description = document.getElementById('f-desc').value;
+        data.displayPrice = document.getElementById('f-display-price').value;
+        data.priceUnit = document.getElementById('f-price-unit').value;
+
+        // Collect specs
+        data.specs = [];
+        document.querySelectorAll('#specs-list .spec-row').forEach(row => {
+            const icon = row.querySelector('select').value;
+            const value = row.querySelectorAll('input')[0].value.trim();
+            const label = row.querySelectorAll('input')[1].value.trim();
+            if (value || label) data.specs.push({ icon: icon, val: value, label: label });
+        });
+
+        // Collect features
+        data.features = [];
+        document.querySelectorAll('#features-list .feature-row').forEach(row => {
+            const icon = row.querySelector('select').value;
+            const text = row.querySelector('input').value.trim();
+            if (text) data.features.push({ icon: icon, text: text });
+        });
+    }
+
+    function loadTabFields(lang) {
+        const data = modalI18n[lang] || emptyLangData();
+        document.getElementById('f-title').value = data.title || '';
+        document.getElementById('f-subtitle').value = data.subtitle || '';
+        document.getElementById('f-desc').value = data.description || '';
+        document.getElementById('f-display-price').value = data.displayPrice || '';
+        document.getElementById('f-price-unit').value = data.priceUnit || '';
+
+        // Render specs
+        renderSpecs(data.specs || []);
+
+        // Render features
+        renderFeatures(data.features || []);
+    }
+
+    function switchLang(lang) {
+        saveCurrentTabFields();
+        currentLang = lang;
+        document.querySelectorAll('.lang-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.lang === lang);
+        });
+        loadTabFields(lang);
+    }
+
+    // ===== SPECS =====
+    function renderSpecs(specs) {
+        const list = document.getElementById('specs-list');
+        list.innerHTML = '';
+        if (!specs || !specs.length) {
+            addSpecRow();
+            return;
+        }
+        specs.forEach(s => {
+            const icon = s.icon || 'fas fa-ruler';
+            const value = s.val || s.value || '';
+            const label = s.label || '';
+            const row = document.createElement('div');
+            row.className = 'spec-row';
+            row.innerHTML =
+                '<select title="ไอคอน">' + buildIconSelectHTML(icon) + '</select>' +
+                '<input type="text" value="' + escAttr(value) + '" placeholder="ค่า เช่น 12 ฟุต">' +
+                '<input type="text" value="' + escAttr(label) + '" placeholder="ป้ายกำกับ เช่น ความยาว">' +
+                '<button class="btn-del-row" onclick="this.parentElement.remove()" title="ลบ"><i class="fas fa-times"></i></button>';
+            list.appendChild(row);
+        });
+    }
+
+    function addSpecRow() {
+        const list = document.getElementById('specs-list');
+        const row = document.createElement('div');
+        row.className = 'spec-row';
+        row.innerHTML =
+            '<select title="ไอคอน">' + buildIconSelectHTML('fas fa-ruler') + '</select>' +
+            '<input type="text" placeholder="ค่า เช่น 12 ฟุต">' +
+            '<input type="text" placeholder="ป้ายกำกับ เช่น ความยาว">' +
+            '<button class="btn-del-row" onclick="this.parentElement.remove()" title="ลบ"><i class="fas fa-times"></i></button>';
+        list.appendChild(row);
+        row.querySelectorAll('input')[0].focus();
+    }
+
+    // ===== FEATURES =====
+    function renderFeatures(feats) {
+        const list = document.getElementById('features-list');
+        list.innerHTML = '';
+        if (!feats || !feats.length) {
+            addFeatureRow();
+            return;
+        }
+        feats.forEach(f => {
+            let icon = 'fas fa-check';
+            let text = '';
+            if (typeof f === 'string') { text = f; }
+            else if (typeof f === 'object') { icon = f.icon || 'fas fa-check'; text = f.text || ''; }
+            const row = document.createElement('div');
+            row.className = 'feature-row';
+            row.innerHTML =
+                '<select title="ไอคอน">' + buildIconSelectHTML(icon) + '</select>' +
+                '<input type="text" value="' + escAttr(text) + '" placeholder="เช่น ขับเองได้, มีกัปตันดูแล">' +
+                '<button class="btn-del-row" onclick="this.parentElement.remove()" title="ลบ"><i class="fas fa-times"></i></button>';
+            list.appendChild(row);
+        });
+    }
+
+    function addFeatureRow() {
+        const list = document.getElementById('features-list');
+        const row = document.createElement('div');
+        row.className = 'feature-row';
+        row.innerHTML =
+            '<select title="ไอคอน">' + buildIconSelectHTML('fas fa-check') + '</select>' +
+            '<input type="text" placeholder="เช่น ขับเองได้, มีกัปตันดูแล">' +
+            '<button class="btn-del-row" onclick="this.parentElement.remove()" title="ลบ"><i class="fas fa-times"></i></button>';
+        list.appendChild(row);
+        row.querySelector('input').focus();
+    }
+
+    function escAttr(str) {
+        return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ===== MODAL =====
+    function openModal(boat) {
+        editId = boat ? boat.id : null;
+        document.getElementById('modal-title').textContent = boat ? 'แก้ไขประเภทเรือ' : 'เพิ่มประเภทเรือ';
+        document.getElementById('fg-id').style.display = boat ? 'none' : '';
+        document.getElementById('f-id').value = boat ? boat.id : '';
+        document.getElementById('f-total').value = boat ? boat.total_boats : 1;
+        document.getElementById('f-price').value = boat ? boat.price : 9900;
+        document.getElementById('f-guests').value = boat ? boat.max_guests : 3;
+        document.getElementById('f-weight').value = boat ? boat.max_weight : 200;
+        document.getElementById('f-sort').value = boat ? (boat.sort_order || 0) : 0;
+        document.getElementById('f-book-url').value = boat ? (boat.book_url || '') : '';
+
+        // Main image
+        modalMainImage = boat ? (boat.image || '') : '';
+        const mainPrev = document.getElementById('main-img-preview');
+        const mainPlaceholder = document.getElementById('main-img-placeholder');
+        if (modalMainImage) {
+            mainPrev.src = modalMainImage;
+            mainPrev.style.display = 'block';
+            mainPlaceholder.style.display = 'none';
+        } else {
+            mainPrev.style.display = 'none';
+            mainPlaceholder.style.display = '';
+        }
+
+        // Gallery
+        modalGallery = boat && boat.images ? [...boat.images] : [];
+        renderModalGallery();
+
+        // i18n
+        resetI18n();
+        if (boat && boat.i18n) {
+            ['th', 'en', 'ru', 'zh'].forEach(lang => {
+                if (boat.i18n[lang]) {
+                    modalI18n[lang] = {
+                        title: boat.i18n[lang].title || '',
+                        subtitle: boat.i18n[lang].subtitle || '',
+                        description: boat.i18n[lang].description || '',
+                        displayPrice: boat.i18n[lang].displayPrice || '',
+                        priceUnit: boat.i18n[lang].priceUnit || '',
+                        specs: boat.i18n[lang].specs ? JSON.parse(JSON.stringify(boat.i18n[lang].specs)) : [],
+                        features: boat.i18n[lang].features ? JSON.parse(JSON.stringify(boat.i18n[lang].features)) : []
+                    };
+                }
+            });
+        } else if (boat) {
+            // Generate defaults from legacy fields
+            modalI18n.th.title = boat.name || '';
+            modalI18n.th.description = boat.description || '';
+            modalI18n.th.displayPrice = boat.price ? ('฿' + Number(boat.price).toLocaleString('th-TH')) : '';
+            modalI18n.th.priceUnit = '/ ลำ';
+            modalI18n.th.features = boat.features ? JSON.parse(JSON.stringify(boat.features)) : [];
+
+            modalI18n.en.title = boat.name || '';
+            modalI18n.en.description = boat.description || '';
+            modalI18n.en.displayPrice = boat.price ? ('฿' + Number(boat.price).toLocaleString('th-TH')) : '';
+            modalI18n.en.priceUnit = '/ boat';
+            modalI18n.en.features = boat.features ? JSON.parse(JSON.stringify(boat.features)) : [];
+        }
+
+        // Set active tab to TH
+        currentLang = 'th';
+        document.querySelectorAll('.lang-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.lang === 'th');
+        });
+        loadTabFields('th');
+
+        document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        editId = null;
+    }
+
+    async function editBoat(id) {
+        const boat = allBoats.find(b => b.id === id);
+        if (boat) openModal(boat);
+    }
+
+    // ===== MAIN IMAGE UPLOAD =====
+    async function uploadMainImage(input) {
+        if (!input.files || !input.files[0]) return;
+        const formData = new FormData();
+        formData.append('image', input.files[0]);
+        try {
+            const r = await fetch(API + '/upload.php', { method: 'POST', body: formData, credentials: 'include' });
+            const d = await r.json();
+            if (d.success) {
+                modalMainImage = d.url;
+                const prev = document.getElementById('main-img-preview');
+                prev.src = d.url;
+                prev.style.display = 'block';
+                document.getElementById('main-img-placeholder').style.display = 'none';
+                showToast('อัปโหลดรูปหลักสำเร็จ!');
+            } else {
+                showToast(d.error || 'อัปโหลดไม่สำเร็จ');
+            }
+        } catch (e) { showToast('อัปโหลดไม่สำเร็จ'); }
+        input.value = '';
+    }
+
+    // ===== GALLERY =====
+    function renderModalGallery() {
+        const grid = document.getElementById('modal-gallery');
+        grid.innerHTML = '';
+        modalGallery.forEach((url, idx) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'gallery-thumb';
+            thumb.draggable = true;
+            thumb.dataset.idx = idx;
+            thumb.innerHTML =
+                '<img src="' + url + '" alt="รูป ' + (idx + 1) + '">' +
+                '<button class="thumb-del" onclick="removeGalleryImg(' + idx + ')" title="ลบ"><i class="fas fa-times"></i></button>' +
+                '<span class="thumb-num">' + (idx + 1) + '</span>';
+            thumb.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', idx); e.dataTransfer.effectAllowed = 'move'; });
+            thumb.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; thumb.style.borderColor = '#00d4ff'; });
+            thumb.addEventListener('dragleave', () => thumb.style.borderColor = '');
+            thumb.addEventListener('drop', e => {
+                e.preventDefault();
+                thumb.style.borderColor = '';
+                const from = parseInt(e.dataTransfer.getData('text/plain'));
+                const to = idx;
+                if (from === to) return;
+                const moved = modalGallery.splice(from, 1)[0];
+                modalGallery.splice(to, 0, moved);
+                renderModalGallery();
+            });
+            grid.appendChild(thumb);
+        });
+    }
+
+    function removeGalleryImg(idx) {
+        modalGallery.splice(idx, 1);
+        renderModalGallery();
+    }
+
+    function openGalleryUpload() {
+        pendingGalleryUrl = null;
+        document.getElementById('upload-preview').style.display = 'none';
+        document.getElementById('gallery-file-input').value = '';
+        document.getElementById('btn-confirm-gallery').disabled = true;
+        document.getElementById('upload-modal').classList.add('active');
+    }
+
+    function closeGalleryUpload() {
+        document.getElementById('upload-modal').classList.remove('active');
+    }
+
+    async function handleGalleryFile(input) {
+        if (!input.files || !input.files[0]) return;
+        const formData = new FormData();
+        formData.append('image', input.files[0]);
+        try {
+            const r = await fetch(API + '/upload.php', { method: 'POST', body: formData, credentials: 'include' });
+            const d = await r.json();
+            if (d.success) {
+                pendingGalleryUrl = d.url;
+                const prev = document.getElementById('upload-preview');
+                prev.src = d.url;
+                prev.style.display = 'block';
+                document.getElementById('btn-confirm-gallery').disabled = false;
+            } else {
+                showToast(d.error || 'อัปโหลดไม่สำเร็จ');
+            }
+        } catch (e) { showToast('อัปโหลดไม่สำเร็จ'); }
+    }
+
+    function confirmGalleryUpload() {
+        if (!pendingGalleryUrl) return;
+        modalGallery.push(pendingGalleryUrl);
+        renderModalGallery();
+        closeGalleryUpload();
+        showToast('เพิ่มรูปสำเร็จ!');
+    }
+
+    // ===== SAVE =====
+    async function saveBoat() {
+        const btn = document.getElementById('btn-save');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+
+        // Save current tab first
+        saveCurrentTabFields();
+
+        // Build i18n object
+        const i18n = JSON.parse(JSON.stringify(modalI18n));
+
+        // Backward compat: set top-level name, description, features from TH
+        const thData = i18n.th || {};
+        const backCompatFeatures = (thData.features || []).map(f => {
+            if (typeof f === 'string') return { icon: 'fas fa-check', text: f };
+            return { icon: f.icon || 'fas fa-check', text: f.text || '' };
+        }).filter(f => f.text);
+
+        const data = {
+            total_boats: parseInt(document.getElementById('f-total').value) || 1,
+            price: parseInt(document.getElementById('f-price').value) || 9900,
+            max_guests: parseInt(document.getElementById('f-guests').value) || 3,
+            max_weight: parseInt(document.getElementById('f-weight').value) || 200,
+            sort_order: parseInt(document.getElementById('f-sort').value) || 0,
+            book_url: document.getElementById('f-book-url').value.trim(),
+            image: modalMainImage,
+            images: modalGallery,
+            name: thData.title || '',
+            description: thData.description || '',
+            features: backCompatFeatures,
+            i18n: i18n
+        };
+
+        if (!data.name && !i18n.en.title) {
+            showToast('กรุณากรอกชื่อเรือ (อย่างน้อยภาษาไทยหรืออังกฤษ)');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+            return;
+        }
+        if (!data.name) data.name = i18n.en.title;
+
+        try {
+            if (editId) {
+                data.id = editId;
+                const r = await fetch(BOAT_API, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), credentials: 'include', cache: 'no-store' });
+                const d = await r.json();
+                if (d.error) {
+                    showToast(d.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+                    return;
+                }
+            } else {
+                data.id = document.getElementById('f-id').value.trim();
+                if (!data.id) {
+                    showToast('กรุณากรอกรหัสเรือ');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+                    return;
+                }
+                const r = await fetch(BOAT_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), credentials: 'include', cache: 'no-store' });
+                const d = await r.json();
+                if (d.error) {
+                    showToast(d.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+                    return;
+                }
+            }
+            closeModal();
+            showToast(editId ? 'แก้ไขสำเร็จ!' : 'เพิ่มประเภทเรือสำเร็จ!');
+            loadBoats();
+        } catch (e) {
+            showToast('เกิดข้อผิดพลาด: ' + e.message);
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+    }
+
+    async function deactivateBoat(id) {
+        if (!confirm('ปิดใช้งานเรือประเภท "' + id + '"? (สามารถเปิดกลับได้)')) return;
+        await fetch(BOAT_API, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }), credentials: 'include', cache: 'no-store' });
+        showToast('ปิดใช้งานแล้ว');
+        loadBoats();
+    }
+
+    async function activateBoat(id) {
+        await fetch(BOAT_API, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, is_active: 1 }), credentials: 'include', cache: 'no-store' });
+        showToast('เปิดใช้งานแล้ว');
+        loadBoats();
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    async function doLogout() {
+        await fetch(API + '/admin-auth.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }), credentials: 'include' });
+        location.href = 'index.html';
+    }
+    </script>
+</body>
+</html>

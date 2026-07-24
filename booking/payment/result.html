@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ผลการชำระเงิน | AQUATHRILL</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/auth.css">
+    <style>
+        .result-card{max-width:520px;margin:0 auto;text-align:center;padding:48px 32px}
+        .result-icon{font-size:4rem;margin-bottom:20px}
+        .result-icon.success{color:#00c853}
+        .result-icon.pending{color:#ffc107}
+        .result-icon.failed{color:#ff5252}
+        .result-title{font-size:1.5rem;margin-bottom:8px;font-weight:700}
+        .result-desc{color:rgba(255,255,255,.6);font-size:.95rem;margin-bottom:24px;line-height:1.6}
+        .result-details{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;text-align:left;margin-bottom:24px}
+        .result-details .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+        .result-details .detail-row:last-child{border-bottom:none}
+        .result-details .label{color:rgba(255,255,255,.5);font-size:.85rem}
+        .result-details .value{font-weight:600;font-size:.9rem}
+        .btn-back{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;transition:.3s}
+        .btn-back:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,100,255,.3)}
+        .btn-whatsapp{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25D366;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;text-decoration:none;transition:.3s;margin-left:8px}
+        .btn-whatsapp:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,.3)}
+    </style>
+</head>
+<body>
+    <div id="site-header"></div>
+
+    <main class="booking-page">
+        <div class="container">
+            <div class="booking-card result-card" id="result-card">
+                <div class="result-icon pending">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <h2 class="result-title">กำลังตรวจสอบ...</h2>
+                <p class="result-desc">กรุณารอสักครู่ ระบบกำลังตรวจสอบสถานะการชำระเงิน</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="site-footer"></div>
+    <script src="../../assets/js/i18n-core.js?v=20260724a"></script>
+    <script src="../../assets/js/i18n-loader.js?v=20260724a" defer></script>
+    <script src="../../assets/js/components.js?v=20260724a"></script>
+    <script src="../../assets/js/main.js?v=20260724a"></script>
+    <script>
+    (async function() {
+        const params = new URLSearchParams(window.location.search);
+        const bookingId = params.get('booking_id');
+        const card = document.getElementById('result-card');
+
+        if (!bookingId) {
+            showResult('failed', 'fa-exclamation-circle', 'ไม่พบข้อมูลการจอง', 'ไม่พบหมายเลขการจอง กรุณาลองใหม่อีกครั้ง');
+            return;
+        }
+
+        // Wait a moment for callback to process, then check booking status
+        await new Promise(r => setTimeout(r, 2000));
+
+        try {
+            const r = await fetch('/api/bookings.php?search=' + bookingId + '&limit=1', { credentials: 'include' });
+            const d = await r.json();
+            const bookings = d.bookings || [];
+            const booking = bookings.find(b => b.booking_id === bookingId);
+
+            if (!booking) {
+                showResult('failed', 'fa-exclamation-circle', 'ไม่พบการจอง', 'ไม่พบข้อมูลการจองหมายเลข ' + bookingId);
+                return;
+            }
+
+            if (booking.status === 'confirmed') {
+                showResult('success', 'fa-check-circle', 'ชำระเงินสำเร็จ!', 'ขอบคุณที่ใช้บริการ AQUATHRILL การจองของคุณได้รับการยืนยันแล้ว', booking);
+            } else if (booking.status === 'cancelled') {
+                showResult('failed', 'fa-times-circle', 'การชำระเงินล้มเหลว', 'การชำระเงินไม่สำเร็จ กรุณาลองใหม่อีกครั้งหรือเลือกช่องทางชำระเงินอื่น', booking);
+            } else {
+                // pending — could be callback hasn't arrived yet
+                showResult('pending', 'fa-clock', 'รอการยืนยัน', 'การชำระเงินกำลังดำเนินการตรวจสอบ ระบบจะอัปเดตสถานะโดยอัตโนมัติ', booking);
+            }
+        } catch(e) {
+            showResult('failed', 'fa-exclamation-triangle', 'เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบสถานะได้ กรุณาติดต่อเรา');
+        }
+
+        function showResult(type, icon, title, desc, booking) {
+            const lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
+            const fmtPrice = (n) => {
+                const s = '฿' + Number(n || 0).toLocaleString('th-TH');
+                return s + (lang === 'th' ? ' บาท' : ' THB');
+            };
+            let html = `
+                <div class="result-icon ${type}">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <h2 class="result-title">${title}</h2>
+                <p class="result-desc">${desc}</p>`;
+
+            if (booking) {
+                html += `
+                <div class="result-details">
+                    <div class="detail-row">
+                        <span class="label">หมายเลขการจอง</span>
+                        <span class="value">${booking.booking_id || '-'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">ประเภทเรือ</span>
+                        <span class="value">${booking.boat_type || '-'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">วันที่</span>
+                        <span class="value">${booking.booking_date || '-'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">เวลา</span>
+                        <span class="value">${booking.time_slot || '-'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">ยอดชำระ</span>
+                        <span class="value" style="color:#00d4ff;">${fmtPrice(booking.total_price)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">สถานะ</span>
+                        <span class="value" style="color:${type === 'success' ? '#00c853' : type === 'pending' ? '#ffc107' : '#ff5252'}">
+                            ${booking.status === 'confirmed' ? 'ยืนยันแล้ว' : booking.status === 'pending' ? 'รอตรวจสอบ' : 'ล้มเหลว'}
+                        </span>
+                    </div>
+                </div>`;
+            }
+
+            html += `
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                    <a href="/" class="btn-back"><i class="fas fa-home"></i> กลับหน้าหลัก</a>
+                    <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> ติดต่อเรา</a>
+                </div>`;
+
+            card.innerHTML = html;
+        }
+    })();
+    </script>
+</body>
+</html>

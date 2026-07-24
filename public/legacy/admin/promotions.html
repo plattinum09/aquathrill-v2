@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรโมชั่น | AQUATHRILL Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.06);padding:24px 0;z-index:100}
+        .sidebar .brand{padding:0 24px 24px;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.6);text-decoration:none;font-size:.95rem;transition:.2s;border-left:3px solid transparent}
+        .sidebar nav a:hover,.sidebar nav a.active{background:rgba(0,212,255,.08);color:#fff;border-left-color:#00d4ff}
+        .sidebar nav a i{width:20px;text-align:center}
+        .sidebar .logout-btn{position:absolute;bottom:24px;left:24px;right:24px;padding:12px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);border-radius:12px;color:#ff5252;text-align:center;cursor:pointer;font-family:inherit;font-size:.9rem}
+        .main-content{margin-left:240px;padding:32px}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+        .top-bar h2{font-size:1.5rem}
+        .btn-add{padding:10px 20px;background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff;border:none;border-radius:10px;font-family:inherit;cursor:pointer;font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:8px;transition:.2s}
+        .btn-add:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,100,255,.3)}
+        .promo-list{display:grid;gap:16px}
+        .promo-item{display:grid;grid-template-columns:120px 1fr auto;gap:20px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;transition:.2s}
+        .promo-item:hover{border-color:rgba(0,212,255,.2)}
+        .promo-item.inactive{opacity:.5}
+        .promo-img{width:120px;height:80px;border-radius:10px;overflow:hidden;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center}
+        .promo-img img{width:100%;height:100%;object-fit:cover}
+        .promo-info h3{font-size:1.1rem;margin-bottom:4px}
+        .promo-info .sub{color:rgba(255,255,255,.5);font-size:.85rem;margin-bottom:6px}
+        .promo-info .price{color:#00d4ff;font-weight:700;font-size:1.1rem}
+        .promo-info .price .old{text-decoration:line-through;color:rgba(255,255,255,.3);font-weight:400;font-size:.9rem;margin-right:8px}
+        .promo-actions{display:flex;flex-direction:column;gap:6px}
+        .promo-actions button{padding:8px 16px;border:none;border-radius:8px;font-family:inherit;cursor:pointer;font-size:.8rem;display:flex;align-items:center;gap:6px;transition:.2s}
+        .btn-edit{background:rgba(0,212,255,.15);color:#00d4ff}
+        .btn-toggle{background:rgba(255,171,0,.15);color:#ffab00}
+        .btn-del{background:rgba(255,61,113,.15);color:#ff3d71}
+        .btn-edit:hover{background:rgba(0,212,255,.25)}
+        .btn-toggle:hover{background:rgba(255,171,0,.25)}
+        .btn-del:hover{background:rgba(255,61,113,.25)}
+        .empty-state{text-align:center;padding:60px;color:rgba(255,255,255,.4)}
+        /* Editor Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,5,20,.85);display:none;align-items:flex-start;justify-content:center;z-index:999;overflow-y:auto;padding:40px 20px}
+        .modal-overlay.active{display:flex}
+        .modal-box{background:#0d2847;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;max-width:700px;width:100%}
+        .modal-box h3{margin-bottom:24px;font-size:1.3rem}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:.85rem;color:rgba(255,255,255,.6);margin-bottom:6px}
+        .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-family:inherit;font-size:.9rem;outline:none;transition:.2s}
+        .form-group input:focus,.form-group textarea:focus{border-color:#00d4ff}
+        .form-group textarea{min-height:80px;resize:vertical}
+        .img-upload{border:2px dashed rgba(255,255,255,.15);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+        .img-upload:hover{border-color:#00d4ff;background:rgba(0,212,255,.04)}
+        .img-upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .img-upload .preview{max-width:100%;max-height:200px;border-radius:8px;margin-top:12px}
+        .img-upload p{color:rgba(255,255,255,.4);font-size:.85rem}
+        .modal-footer{display:flex;gap:12px;margin-top:24px}
+        .modal-footer button{flex:1;padding:14px;border:none;border-radius:12px;font-family:inherit;cursor:pointer;font-size:1rem;font-weight:600;transition:.2s}
+        .btn-modal-save{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff}
+        .btn-modal-cancel{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+        /* Live Preview */
+        .live-preview{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;margin-top:16px}
+        .live-preview h4{font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:12px}
+        .preview-card{background:#fff;border-radius:16px;overflow:hidden;color:#0d2847;max-width:350px}
+        .preview-card-img{height:140px;background:#e0f0ff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .preview-card-img img{width:100%;height:100%;object-fit:cover}
+        .preview-card-body{padding:16px}
+        .preview-card-body h3{font-size:1rem;margin-bottom:4px}
+        .preview-card-body .p-sub{font-size:.8rem;color:#5a6a80;margin-bottom:8px}
+        .preview-card-body .p-price{font-size:1.2rem;font-weight:700;color:#ff3366}
+        @media(max-width:768px){.sidebar{width:60px}.sidebar .brand,.sidebar nav a span,.sidebar .logout-btn span{display:none}.sidebar nav a{justify-content:center;padding:12px}.main-content{margin-left:60px;padding:16px}.promo-item{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">AQUATHRILL</div>
+        <nav>
+            <a href="/admin/index.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="/admin/bookings.html"><i class="fas fa-calendar-check"></i> <span>การจอง</span></a>
+            <a href="/admin/availability.html"><i class="fas fa-ship"></i> <span>สถานะเรือ</span></a>
+
+            <a href="/admin/boat-types.html"><i class="fas fa-anchor"></i> <span>จัดการเรือ</span></a>
+            <a href="/admin/agent-pricing.html"><i class="fas fa-user-tie"></i> <span>ราคาตัวแทน</span></a>
+            <a href="/admin/promotions.html" class="active"><i class="fas fa-bullhorn"></i> <span>โปรโมชั่น</span></a>
+            <a href="/admin/gallery.html"><i class="fas fa-images"></i> <span>แกลเลอรี่</span></a>
+            <a href="/admin/reviews.html"><i class="fas fa-star"></i> <span>รีวิว Google</span></a>
+            <!-- ซ่อนเมนูชำระเงิน (ระบบ Payso ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
+            <a href="/admin/payment-settings.html"><i class="fas fa-credit-card"></i> <span>ชำระเงิน</span></a>
+            -->
+            <a href="/admin/change-password.html"><i class="fas fa-key"></i> <span>เปลี่ยนรหัสผ่าน</span></a>
+            <a href="../" target="_blank"><i class="fas fa-external-link-alt"></i> <span>ดูเว็บไซต์</span></a>
+        </nav>
+        <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span></button>
+    </aside>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2><i class="fas fa-bullhorn" style="color:#00d4ff"></i> จัดการโปรโมชั่น</h2>
+            <div style="display:flex;gap:10px">
+                <a href="promotions-editor.html" class="btn-add" style="background:linear-gradient(135deg,#ff6b35,#ff3366);text-decoration:none"><i class="fas fa-eye"></i> Visual Editor</a>
+                <button class="btn-add" onclick="openEditor()" style="display:none"><i class="fas fa-plus"></i> เพิ่มโปรโมชั่น</button>
+            </div>
+        </div>
+        <div class="promo-list" id="promo-list">
+            <div class="empty-state"><i class="fas fa-spinner fa-spin" style="font-size:2rem;margin-bottom:12px;display:block"></i>กำลังโหลด...</div>
+        </div>
+    </div>
+
+    <!-- Editor Modal -->
+    <div class="modal-overlay" id="editor-modal">
+        <div class="modal-box">
+            <h3 id="editor-title"><i class="fas fa-edit" style="color:#00d4ff"></i> เพิ่มโปรโมชั่น</h3>
+            <input type="hidden" id="edit-id">
+            <div class="form-group">
+                <label>ชื่อโปรโมชั่น *</label>
+                <input type="text" id="ed-title" placeholder="เช่น SEASTORM 12 Feet — Special Price" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+                <label>คำอธิบายย่อ</label>
+                <input type="text" id="ed-subtitle" placeholder="รายละเอียดสั้นๆ" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+                <label>รายละเอียดเพิ่มเติม</label>
+                <textarea id="ed-desc" placeholder="รายละเอียดเต็ม..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Badge Text</label>
+                    <input type="text" id="ed-badge" placeholder="เช่น Private Boat, HOT DEAL">
+                </div>
+                <div class="form-group">
+                    <label>ข้อความปุ่ม</label>
+                    <input type="text" id="ed-btn" placeholder="จองเลย" value="จองเลย">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ราคาเดิม (ถ้ามี)</label>
+                    <input type="number" id="ed-old-price" placeholder="12900">
+                </div>
+                <div class="form-group">
+                    <label>ราคาโปรโมชั่น *</label>
+                    <input type="number" id="ed-new-price" placeholder="9900" oninput="updatePreview()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>ลิงก์ (URL)</label>
+                <input type="url" id="ed-link" placeholder="https://wa.me/66958192778?text=...">
+            </div>
+            <div class="form-group">
+                <label>ลำดับการแสดง</label>
+                <input type="number" id="ed-sort" placeholder="1" value="0">
+            </div>
+            <div class="form-group">
+                <label>รูปภาพ</label>
+                <div class="img-upload" id="img-upload-area">
+                    <input type="file" id="ed-image-file" accept="image/*" onchange="handleImageUpload(this)">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:rgba(255,255,255,.3);display:block;margin-bottom:8px"></i>
+                    <p>คลิกหรือลากรูปมาวาง</p>
+                    <img class="preview" id="img-preview" style="display:none">
+                </div>
+                <input type="hidden" id="ed-image-url">
+            </div>
+
+            <div class="live-preview">
+                <h4><i class="fas fa-eye"></i> ตัวอย่าง (Live Preview)</h4>
+                <div class="preview-card" id="preview-card">
+                    <div class="preview-card-img" id="pv-img"><i class="fas fa-image" style="font-size:2rem;color:#ccc"></i></div>
+                    <div class="preview-card-body">
+                        <h3 id="pv-title">ชื่อโปรโมชั่น</h3>
+                        <p class="p-sub" id="pv-sub">คำอธิบาย</p>
+                        <div class="p-price" id="pv-price">฿0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="closeEditor()">ยกเลิก</button>
+                <button class="btn-modal-save" onclick="savePromo()"><i class="fas fa-save"></i> บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API='/api';
+    let promos=[];
+
+    (async()=>{
+        const r=await fetch(API+'/admin-auth.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'check'}),credentials:'include'});
+        const d=await r.json();
+        if(!d.authenticated) location.href='index.html';
+        else loadPromos();
+    })();
+
+    async function loadPromos(){
+        const r=await fetch(API+'/promotions.php?all=1',{credentials:'include'});
+        const d=await r.json();
+        promos=d.promotions||[];
+        renderList();
+    }
+
+    function renderList(){
+        const el=document.getElementById('promo-list');
+        if(!promos.length){el.innerHTML='<div class="empty-state"><i class="fas fa-bullhorn" style="font-size:2rem;margin-bottom:12px;display:block"></i>ยังไม่มีโปรโมชั่น<br>คลิก "เพิ่มโปรโมชั่น" เพื่อเริ่มต้น</div>';return;}
+        el.innerHTML=promos.map(p=>{
+            const imgHtml=p.image_url?`<img src="${p.image_url}" alt="${p.title}">`:'<i class="fas fa-image" style="font-size:2rem;color:rgba(255,255,255,.2)"></i>';
+            const priceHtml=p.old_price?`<span class="old">฿${parseFloat(p.old_price).toLocaleString()}</span>`:''
+            return `<div class="promo-item${p.is_active==0?' inactive':''}">
+                <div class="promo-img">${imgHtml}</div>
+                <div class="promo-info">
+                    <h3>${p.title}${p.badge_text?` <span style="background:rgba(0,212,255,.15);color:#00d4ff;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:500">${p.badge_text}</span>`:''}</h3>
+                    <div class="sub">${p.subtitle||p.description||''}</div>
+                    <div class="price">${priceHtml}${p.new_price?'฿'+parseFloat(p.new_price).toLocaleString():''} ${p.is_active==0?'<span style="color:#ffab00;font-size:.75rem">(ซ่อนอยู่)</span>':''}</div>
+                </div>
+                <div class="promo-actions">
+                    <button class="btn-edit" onclick="editPromo(${p.id})"><i class="fas fa-edit"></i> แก้ไข</button>
+                    <button class="btn-toggle" onclick="togglePromo(${p.id},${p.is_active})"><i class="fas fa-${p.is_active==1?'eye-slash':'eye'}"></i> ${p.is_active==1?'ซ่อน':'แสดง'}</button>
+                    <button class="btn-del" onclick="deletePromo(${p.id})"><i class="fas fa-trash"></i> ลบ</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function openEditor(id){
+        document.getElementById('edit-id').value=id||'';
+        document.getElementById('editor-title').innerHTML=id?'<i class="fas fa-edit" style="color:#00d4ff"></i> แก้ไขโปรโมชั่น':'<i class="fas fa-plus" style="color:#00d4ff"></i> เพิ่มโปรโมชั่น';
+        if(id){
+            const p=promos.find(x=>x.id==id);
+            if(p){
+                document.getElementById('ed-title').value=p.title;
+                document.getElementById('ed-subtitle').value=p.subtitle||'';
+                document.getElementById('ed-desc').value=p.description||'';
+                document.getElementById('ed-badge').value=p.badge_text||'';
+                document.getElementById('ed-btn').value=p.button_text||'จองเลย';
+                document.getElementById('ed-old-price').value=p.old_price||'';
+                document.getElementById('ed-new-price').value=p.new_price||'';
+                document.getElementById('ed-link').value=p.link_url||'';
+                document.getElementById('ed-sort').value=p.sort_order||0;
+                document.getElementById('ed-image-url').value=p.image_url||'';
+                if(p.image_url){
+                    document.getElementById('img-preview').src=p.image_url;
+                    document.getElementById('img-preview').style.display='block';
+                }
+            }
+        } else {
+            ['ed-title','ed-subtitle','ed-desc','ed-badge','ed-old-price','ed-new-price','ed-link','ed-image-url'].forEach(id=>document.getElementById(id).value='');
+            document.getElementById('ed-btn').value='จองเลย';
+            document.getElementById('ed-sort').value='0';
+            document.getElementById('img-preview').style.display='none';
+        }
+        updatePreview();
+        document.getElementById('editor-modal').classList.add('active');
+    }
+
+    function closeEditor(){document.getElementById('editor-modal').classList.remove('active')}
+
+    function editPromo(id){openEditor(id)}
+
+    function updatePreview(){
+        document.getElementById('pv-title').textContent=document.getElementById('ed-title').value||'ชื่อโปรโมชั่น';
+        document.getElementById('pv-sub').textContent=document.getElementById('ed-subtitle').value||'คำอธิบาย';
+        const price=document.getElementById('ed-new-price').value;
+        document.getElementById('pv-price').textContent=price?'฿'+parseFloat(price).toLocaleString():'฿0';
+        const imgUrl=document.getElementById('ed-image-url').value;
+        const pvImg=document.getElementById('pv-img');
+        if(imgUrl){pvImg.innerHTML=`<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover">`}
+        else{pvImg.innerHTML='<i class="fas fa-image" style="font-size:2rem;color:#ccc"></i>'}
+    }
+
+    async function handleImageUpload(input){
+        if(!input.files||!input.files[0]) return;
+        const formData=new FormData();
+        formData.append('image',input.files[0]);
+        try{
+            const r=await fetch(API+'/upload.php',{method:'POST',body:formData,credentials:'include'});
+            const d=await r.json();
+            if(d.success){
+                document.getElementById('ed-image-url').value=d.url;
+                document.getElementById('img-preview').src=d.url;
+                document.getElementById('img-preview').style.display='block';
+                updatePreview();
+            } else {alert(d.error||'อัปโหลดไม่สำเร็จ');}
+        }catch(e){alert('อัปโหลดไม่สำเร็จ');}
+    }
+
+    async function savePromo(){
+        const id=document.getElementById('edit-id').value;
+        const data={
+            title:document.getElementById('ed-title').value,
+            subtitle:document.getElementById('ed-subtitle').value,
+            description:document.getElementById('ed-desc').value,
+            badge_text:document.getElementById('ed-badge').value,
+            button_text:document.getElementById('ed-btn').value,
+            old_price:document.getElementById('ed-old-price').value||null,
+            new_price:document.getElementById('ed-new-price').value||null,
+            link_url:document.getElementById('ed-link').value,
+            image_url:document.getElementById('ed-image-url').value,
+            sort_order:parseInt(document.getElementById('ed-sort').value)||0
+        };
+        if(!data.title){alert('กรุณากรอกชื่อโปรโมชั่น');return;}
+        if(id) data.id=parseInt(id);
+        const method=id?'PUT':'POST';
+        await fetch(API+'/promotions.php',{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'include'});
+        closeEditor();
+        loadPromos();
+    }
+
+    async function togglePromo(id,current){
+        await fetch(API+'/promotions.php',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,is_active:current==1?0:1}),credentials:'include'});
+        loadPromos();
+    }
+
+    async function deletePromo(id){
+        if(!confirm('ลบโปรโมชั่นนี้?')) return;
+        await fetch(API+'/promotions.php',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id}),credentials:'include'});
+        loadPromos();
+    }
+
+    async function doLogout(){
+        await fetch(API+'/admin-auth.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'}),credentials:'include'});
+        location.href='index.html';
+    }
+    </script>
+</body>
+</html>

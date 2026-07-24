@@ -1,0 +1,8 @@
+# Deny all direct access — directory เก็บ log/data ภายในระบบ
+Order allow,deny
+Deny from all
+
+# Apache 2.4+ syntax
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>

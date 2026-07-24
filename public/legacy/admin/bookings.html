@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการการจอง | AQUATHRILL Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.06);padding:24px 0;z-index:100}
+        .sidebar .brand{padding:0 24px 24px;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.6);text-decoration:none;font-size:.95rem;transition:.2s;border-left:3px solid transparent}
+        .sidebar nav a:hover,.sidebar nav a.active{background:rgba(0,212,255,.08);color:#fff;border-left-color:#00d4ff}
+        .sidebar nav a i{width:20px;text-align:center}
+        .sidebar .logout-btn{position:absolute;bottom:24px;left:24px;right:24px;padding:12px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);border-radius:12px;color:#ff5252;text-align:center;cursor:pointer;font-family:inherit;font-size:.9rem}
+        .main-content{margin-left:240px;padding:32px}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+        .top-bar h2{font-size:1.5rem}
+        .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+        .filters input,.filters select{padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-family:inherit;font-size:.9rem;outline:none}
+        .filters input:focus,.filters select:focus{border-color:#00d4ff}
+        .filters select option{background:#0d2847;color:#fff}
+        .filters button{padding:10px 20px;background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff;border:none;border-radius:10px;font-family:inherit;cursor:pointer;font-size:.9rem}
+        table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.03);border-radius:16px;overflow:hidden}
+        thead th{padding:14px 16px;text-align:left;background:rgba(255,255,255,.06);font-size:.85rem;color:rgba(255,255,255,.6);font-weight:500}
+        tbody td{padding:12px 16px;border-top:1px solid rgba(255,255,255,.04);font-size:.9rem}
+        tbody tr:hover{background:rgba(0,212,255,.04)}
+        .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600}
+        .badge-pending{background:rgba(255,171,0,.15);color:#ffab00}
+        .badge-confirmed{background:rgba(0,200,83,.15);color:#00c853}
+        .badge-cancelled{background:rgba(255,61,113,.15);color:#ff3d71}
+        .badge-type{font-size:.65rem;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:6px;vertical-align:middle}
+        .badge-type.agent{background:rgba(255,193,7,.15);color:#ffc107}
+        .badge-type.customer{background:rgba(0,212,255,.12);color:#00d4ff}
+        .action-btn{padding:6px 12px;border:none;border-radius:8px;font-family:inherit;font-size:.8rem;cursor:pointer;margin:2px}
+        .btn-confirm{background:rgba(0,200,83,.15);color:#00c853}
+        .btn-cancel{background:rgba(255,61,113,.15);color:#ff3d71}
+        .btn-confirm:hover{background:rgba(0,200,83,.3)}
+        .btn-cancel:hover{background:rgba(255,61,113,.3)}
+        .btn-delete{background:rgba(255,61,113,.12);color:#ff3d71}
+        .btn-delete:hover{background:rgba(255,61,113,.35);color:#fff}
+        .empty-state{text-align:center;padding:60px;color:rgba(255,255,255,.4)}
+        .pagination{display:flex;justify-content:center;gap:8px;margin-top:20px}
+        .pagination button{padding:8px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;cursor:pointer;font-family:inherit}
+        .pagination button.active{background:#00b4ff;border-color:#00b4ff}
+        /* Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,5,20,.85);display:none;align-items:center;justify-content:center;z-index:999}
+        .modal-overlay.active{display:flex}
+        .modal-box{background:#0d2847;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;max-width:500px;width:95%;max-height:90vh;overflow-y:auto}
+        .modal-box h3{margin-bottom:16px;font-size:1.2rem}
+        .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem}
+        .detail-row .lbl{color:rgba(255,255,255,.5)}
+        .btn-add{padding:10px 20px;background:linear-gradient(135deg,#00c853,#00a844);color:#fff;border:none;border-radius:10px;font-family:inherit;cursor:pointer;font-size:.9rem;font-weight:600;transition:.2s}
+        .btn-add:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,200,83,.3)}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .form-grid.full{grid-template-columns:1fr}
+        .form-group{display:flex;flex-direction:column;gap:4px}
+        .form-group label{font-size:.8rem;color:rgba(255,255,255,.5)}
+        .form-group input,.form-group select,.form-group textarea{padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-family:inherit;font-size:.9rem;outline:none}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#00d4ff}
+        .form-group select option{background:#0d2847;color:#fff}
+        .form-group textarea{resize:vertical;min-height:60px}
+        .btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;transition:.2s}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,100,255,.3)}
+        .btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .toast{position:fixed;top:24px;right:24px;padding:14px 24px;border-radius:12px;font-weight:600;z-index:9999;transform:translateX(400px);transition:.4s;font-size:.9rem}
+        .toast.show{transform:translateX(0)}
+        .toast.success{background:#00c853;color:#fff}
+        .toast.error{background:#ff5252;color:#fff}
+        @media(max-width:768px){.sidebar{width:60px}.sidebar .brand,.sidebar nav a span,.sidebar .logout-btn span{display:none}.sidebar nav a{justify-content:center;padding:12px}.main-content{margin-left:60px;padding:16px}table{font-size:.8rem}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">AQUATHRILL</div>
+        <nav>
+            <a href="/admin/index.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="/admin/bookings.html" class="active"><i class="fas fa-calendar-check"></i> <span>การจอง</span></a>
+            <a href="/admin/availability.html"><i class="fas fa-ship"></i> <span>สถานะเรือ</span></a>
+            <a href="/admin/boat-types.html"><i class="fas fa-anchor"></i> <span>จัดการเรือ</span></a>
+            <a href="/admin/agent-pricing.html"><i class="fas fa-user-tie"></i> <span>ราคาตัวแทน</span></a>
+            <a href="/admin/promotions.html"><i class="fas fa-bullhorn"></i> <span>โปรโมชั่น</span></a>
+            <a href="/admin/gallery.html"><i class="fas fa-images"></i> <span>แกลเลอรี่</span></a>
+            <a href="/admin/reviews.html"><i class="fas fa-star"></i> <span>รีวิว Google</span></a>
+            <!-- ซ่อนเมนูชำระเงิน (ระบบ Payso ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
+            <a href="/admin/payment-settings.html"><i class="fas fa-credit-card"></i> <span>ชำระเงิน</span></a>
+            -->
+            <a href="/admin/change-password.html"><i class="fas fa-key"></i> <span>เปลี่ยนรหัสผ่าน</span></a>
+            <a href="../" target="_blank"><i class="fas fa-external-link-alt"></i> <span>ดูเว็บไซต์</span></a>
+        </nav>
+        <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span></button>
+    </aside>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2><i class="fas fa-calendar-check" style="color:#00d4ff"></i> จัดการการจอง</h2>
+            <button class="btn-add" onclick="openCreateModal()"><i class="fas fa-plus"></i> สร้างการจอง</button>
+        </div>
+        <div class="filters">
+            <input type="text" id="f-search" placeholder="🔍 ค้นหาชื่อ/เบอร์/รหัส">
+            <select id="f-status"><option value="">ทุกสถานะ</option><option value="pending">รอยืนยัน</option><option value="confirmed">ยืนยันแล้ว</option><option value="cancelled">ยกเลิก</option></select>
+            <select id="f-boat"><option value="">ทุกรุ่นเรือ</option><option value="12ft">12 ft</option><option value="14ft">14 ft</option></select>
+            <input type="date" id="f-from" title="จากวันที่">
+            <input type="date" id="f-to" title="ถึงวันที่">
+            <button onclick="loadBookings()"><i class="fas fa-filter"></i> กรอง</button>
+        </div>
+        <div id="table-wrap">
+            <table>
+                <thead><tr><th>รหัส</th><th>เรือ</th><th>วันที่</th><th>รอบ</th><th>ลูกค้า</th><th>เบอร์โทร</th><th>ราคา</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+                <tbody id="booking-tbody"></tbody>
+            </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detail-modal">
+        <div class="modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h3><i class="fas fa-receipt" style="color:#00d4ff"></i> รายละเอียดการจอง</h3>
+                <button onclick="closeDetail()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- Create Booking Modal -->
+    <div class="modal-overlay" id="create-modal">
+        <div class="modal-box" style="max-width:560px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <h3><i class="fas fa-plus-circle" style="color:#00c853"></i> สร้างการจอง</h3>
+                <button onclick="closeCreateModal()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="create-form" onsubmit="submitCreate(event)">
+                <div class="form-grid full" style="margin-bottom:12px">
+                    <div class="form-group">
+                        <label>ประเภทลูกค้า *</label>
+                        <select id="c-type" onchange="toggleAgentField()" required>
+                            <option value="customer">ลูกค้าธรรมดา (BK-)</option>
+                            <option value="agent">Agent / ตัวแทน (AG-)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid full" id="agent-select-wrap" style="margin-bottom:12px;display:none">
+                    <div class="form-group">
+                        <label>เลือก Agent</label>
+                        <select id="c-agent">
+                            <option value="">-- เลือก Agent --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>ประเภทเรือ *</label>
+                        <select id="c-boat" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>วันที่ *</label>
+                        <input type="date" id="c-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>รอบเวลา *</label>
+                        <select id="c-slot" required>
+                            <option value="morning">รอบเช้า (09:00-13:00)</option>
+                            <option value="afternoon">รอบบ่าย (14:00-18:00)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>จำนวนผู้โดยสาร *</label>
+                        <input type="number" id="c-guests" min="1" max="20" value="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อลูกค้า *</label>
+                        <input type="text" id="c-name" placeholder="ชื่อ-นามสกุล" required>
+                    </div>
+                    <div class="form-group">
+                        <label>เบอร์โทร *</label>
+                        <input type="tel" id="c-phone" placeholder="08x-xxx-xxxx" required>
+                    </div>
+                    <div class="form-group">
+                        <label>อีเมล</label>
+                        <input type="email" id="c-email" placeholder="email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>ช่องทางชำระเงิน</label>
+                        <select id="c-payment">
+                            <option value="">ไม่ระบุ</option>
+                            <option value="cash">เงินสด</option>
+                            <option value="transfer">โอนเงิน</option>
+                            <option value="credit_card">บัตรเครดิต</option>
+                            <option value="promptpay">พร้อมเพย์</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ราคา (บาท) — ว่างเว้น = ใช้ราคาเรือ</label>
+                        <input type="number" id="c-price" min="0" placeholder="ราคาเรือตามระบบ">
+                    </div>
+                    <div class="form-group">
+                        <label>สถานะ</label>
+                        <select id="c-status">
+                            <option value="confirmed">ยืนยันแล้ว</option>
+                            <option value="pending">รอยืนยัน</option>
+                            <option value="cancelled">ยกเลิก</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid full" style="margin-top:12px">
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:rgba(255,255,255,.7);font-size:.85rem">
+                            <input type="checkbox" id="c-skip-avail" style="width:16px;height:16px;accent-color:#ffc107;cursor:pointer">
+                            ข้ามการเช็คเรือว่าง (สำหรับลงข้อมูลย้อนหลัง)
+                        </label>
+                    </div>
+                </div>
+                <div class="form-grid full" style="margin-top:4px">
+                    <div class="form-group">
+                        <label>หมายเหตุ</label>
+                        <textarea id="c-notes" placeholder="รายละเอียดเพิ่มเติม เช่น ลงข้อมูลย้อนหลัง, Agent ที่แนะนำ ฯลฯ"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" id="c-submit-btn"><i class="fas fa-save"></i> บันทึกการจอง</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const API='/api';
+    let currentPage=1;
+
+    (async()=>{
+        const r=await fetch(API+'/admin-auth.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'check'}),credentials:'include'});
+        const d=await r.json();
+        if(!d.authenticated) location.href='index.html';
+        else loadBookings();
+    })();
+
+    async function loadBookings(page){
+        currentPage=page||1;
+        const params=new URLSearchParams({page:currentPage,limit:20});
+        const search=document.getElementById('f-search').value;
+        const status=document.getElementById('f-status').value;
+        const boat=document.getElementById('f-boat').value;
+        const from=document.getElementById('f-from').value;
+        const to=document.getElementById('f-to').value;
+        if(search) params.set('search',search);
+        if(status) params.set('status',status);
+        if(boat) params.set('boat_type',boat);
+        if(from) params.set('date_from',from);
+        if(to) params.set('date_to',to);
+
+        const r=await fetch(API+'/bookings.php?'+params,{credentials:'include'});
+        const d=await r.json();
+        renderTable(d.bookings||[]);
+        renderPagination(d.pages||1,d.page||1);
+    }
+
+    function renderTable(bookings){
+        const tbody=document.getElementById('booking-tbody');
+        if(!bookings.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:rgba(255,255,255,.4)">ไม่พบข้อมูลการจอง</td></tr>';return;}
+        tbody.innerHTML=bookings.map(b=>{
+            const statusClass={'pending':'badge-pending','confirmed':'badge-confirmed','cancelled':'badge-cancelled'}[b.status]||'';
+            const statusText={'pending':'รอยืนยัน','confirmed':'ยืนยันแล้ว','cancelled':'ยกเลิก'}[b.status]||b.status;
+            const slotText=b.time_slot==='morning'?'เช้า':'บ่าย';
+            const isAgent = b.booking_id && b.booking_id.startsWith('AG-');
+            const typeBadge = isAgent
+                ? '<span class="badge-type agent">Agent</span>'
+                : '<span class="badge-type customer">ลูกค้า</span>';
+            return `<tr>
+                <td style="font-weight:600;color:#00d4ff">${b.booking_id}${typeBadge}</td>
+                <td>${b.boat_type}</td>
+                <td>${b.booking_date}</td>
+                <td>${slotText}</td>
+                <td>${b.customer_name}</td>
+                <td>${b.customer_phone}</td>
+                <td>฿${parseFloat(b.total_price).toLocaleString()}</td>
+                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                <td>
+                    <button class="action-btn btn-confirm" onclick="viewDetail(${b.id})" title="ดูรายละเอียด"><i class="fas fa-eye"></i></button>
+                    ${b.status==='pending'?`<button class="action-btn btn-confirm" onclick="updateStatus(${b.id},'confirmed')" title="ยืนยัน"><i class="fas fa-check"></i></button>`:''}
+                    ${b.status!=='cancelled'?`<button class="action-btn btn-cancel" onclick="updateStatus(${b.id},'cancelled')" title="ยกเลิก"><i class="fas fa-times"></i></button>`:''}
+                    <button class="action-btn btn-delete" onclick="deleteBooking(${b.id},'${b.booking_id}')" title="ลบการจอง"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderPagination(total,current){
+        const el=document.getElementById('pagination');
+        if(total<=1){el.innerHTML='';return;}
+        let html='';
+        for(let i=1;i<=total;i++){
+            html+=`<button class="${i===current?'active':''}" onclick="loadBookings(${i})">${i}</button>`;
+        }
+        el.innerHTML=html;
+    }
+
+    let allBookings=[];
+    async function viewDetail(id){
+        const r=await fetch(API+'/bookings.php?limit=1000',{credentials:'include'});
+        const d=await r.json();
+        const b=(d.bookings||[]).find(x=>x.id==id);
+        if(!b) return;
+        const slotText=b.time_slot==='morning'?'รอบเช้า (09:00-13:00)':'รอบบ่าย (14:00-18:00)';
+        const statusText={'pending':'รอยืนยัน','confirmed':'ยืนยันแล้ว','cancelled':'ยกเลิก'}[b.status]||b.status;
+        document.getElementById('detail-content').innerHTML=`
+            <div class="detail-row"><span class="lbl">รหัสจอง</span><span style="color:#00d4ff;font-weight:600">${b.booking_id}</span></div>
+            <div class="detail-row"><span class="lbl">เรือ</span><span>${b.boat_type}</span></div>
+            <div class="detail-row"><span class="lbl">วันที่</span><span>${b.booking_date}</span></div>
+            <div class="detail-row"><span class="lbl">เวลา</span><span>${slotText}</span></div>
+            <div class="detail-row"><span class="lbl">ผู้โดยสาร</span><span>${b.guests} คน</span></div>
+            <div class="detail-row"><span class="lbl">ชื่อลูกค้า</span><span>${b.customer_name}</span></div>
+            <div class="detail-row"><span class="lbl">เบอร์โทร</span><span>${b.customer_phone}</span></div>
+            <div class="detail-row"><span class="lbl">อีเมล</span><span>${b.customer_email||'-'}</span></div>
+            <div class="detail-row"><span class="lbl">ช่องทางชำระ</span><span>${b.payment_method||'-'}</span></div>
+            <div class="detail-row"><span class="lbl">ยอดรวม</span><span style="color:#00d4ff;font-weight:600">฿${parseFloat(b.total_price).toLocaleString()}</span></div>
+            <div class="detail-row"><span class="lbl">สถานะ</span><span>${statusText}</span></div>
+            <div class="detail-row"><span class="lbl">หมายเหตุ</span><span>${b.notes||'-'}</span></div>
+            <div class="detail-row"><span class="lbl">สร้างเมื่อ</span><span>${b.created_at}</span></div>
+        `;
+        document.getElementById('detail-modal').classList.add('active');
+    }
+
+    function closeDetail(){document.getElementById('detail-modal').classList.remove('active')}
+
+    async function updateStatus(id,status){
+        const label=status==='confirmed'?'ยืนยัน':'ยกเลิก';
+        if(!confirm(`ต้องการ${label}การจองนี้?`)) return;
+        await fetch(API+'/bookings.php',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,status}),credentials:'include'});
+        loadBookings(currentPage);
+    }
+
+    async function deleteBooking(id, bookingId){
+        if(!confirm(`⚠️ ต้องการลบการจอง ${bookingId} นี้ถาวรหรือไม่?\n\nการลบจะปลดล็อควันที่ในปฏิทินด้วย`)) return;
+        const r = await fetch(API+'/bookings.php',{
+            method:'DELETE',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({id}),
+            credentials:'include'
+        });
+        const d = await r.json();
+        if(d.success){
+            loadBookings(currentPage);
+        } else {
+            alert('ลบไม่สำเร็จ: ' + (d.error || 'เกิดข้อผิดพลาด'));
+        }
+    }
+
+    // ===== CREATE BOOKING =====
+    let agentsLoaded = false;
+
+    async function openCreateModal() {
+        // Load boat types for dropdown
+        try {
+            const r = await fetch(API + '/boat-types.php', { credentials: 'include' });
+            const d = await r.json();
+            const boats = (d.boat_types || d || []).filter(b => b.is_active == 1);
+            const sel = document.getElementById('c-boat');
+            sel.innerHTML = boats.map(b => `<option value="${b.id}">${b.name} (฿${parseInt(b.price).toLocaleString()})</option>`).join('');
+        } catch(e) {
+            document.getElementById('c-boat').innerHTML = '<option value="12ft">12 ft</option><option value="14ft">14 ft</option>';
+        }
+        // Load agents list (only once)
+        if (!agentsLoaded) {
+            try {
+                const r = await fetch(API + '/agent-manage.php?status=approved', { credentials: 'include' });
+                const d = await r.json();
+                const agents = d.agents || [];
+                const sel = document.getElementById('c-agent');
+                sel.innerHTML = '<option value="">-- เลือก Agent --</option>' +
+                    agents.map(a => `<option value="${a.id}" data-name="${a.first_name} ${a.last_name}" data-company="${a.company||''}">${a.first_name} ${a.last_name}${a.company ? ' ('+a.company+')' : ''}</option>`).join('');
+                agentsLoaded = true;
+            } catch(e) {}
+        }
+        document.getElementById('create-modal').classList.add('active');
+    }
+
+    function toggleAgentField() {
+        const isAgent = document.getElementById('c-type').value === 'agent';
+        document.getElementById('agent-select-wrap').style.display = isAgent ? '' : 'none';
+    }
+
+    function closeCreateModal() {
+        document.getElementById('create-modal').classList.remove('active');
+        document.getElementById('create-form').reset();
+    }
+
+    async function submitCreate(e) {
+        e.preventDefault();
+        const btn = document.getElementById('c-submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+
+        const bookingType = document.getElementById('c-type').value;
+        const agentSel = document.getElementById('c-agent');
+        const agentOpt = agentSel.options[agentSel.selectedIndex];
+
+        const data = {
+            admin_create: true,
+            booking_type: bookingType,
+            skip_availability: document.getElementById('c-skip-avail').checked,
+            boat_type: document.getElementById('c-boat').value,
+            booking_date: document.getElementById('c-date').value,
+            time_slot: document.getElementById('c-slot').value,
+            guests: parseInt(document.getElementById('c-guests').value),
+            customer_name: document.getElementById('c-name').value.trim(),
+            customer_phone: document.getElementById('c-phone').value.trim(),
+            customer_email: document.getElementById('c-email').value.trim(),
+            payment_method: document.getElementById('c-payment').value,
+            status: document.getElementById('c-status').value,
+            notes: document.getElementById('c-notes').value.trim()
+        };
+
+        if (bookingType === 'agent' && agentSel.value) {
+            data.agent_id = parseInt(agentSel.value);
+            data.agent_name = agentOpt.dataset.name || '';
+        }
+
+        const priceVal = document.getElementById('c-price').value;
+        if (priceVal) data.total_price = parseInt(priceVal);
+
+        try {
+            const r = await fetch(API + '/bookings.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (d.success) {
+                showToast('สร้างการจองสำเร็จ! ' + d.booking_id, 'success');
+                closeCreateModal();
+                loadBookings(1);
+            } else {
+                showToast(d.error || 'เกิดข้อผิดพลาด', 'error');
+            }
+        } catch(err) {
+            showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> บันทึกการจอง';
+    }
+
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + type + ' show';
+        setTimeout(() => { t.classList.remove('show'); }, 3500);
+    }
+
+    async function doLogout(){
+        await fetch(API+'/admin-auth.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'}),credentials:'include'});
+        location.href='index.html';
+    }
+    </script>
+</body>
+</html>

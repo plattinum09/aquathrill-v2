@@ -1,0 +1,16 @@
+<FilesMatch "^\.env$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Disable LiteSpeed Cache for API
+<IfModule LiteSpeed>
+CacheLookup off
+</IfModule>
+
+# No caching for PHP files
+<FilesMatch "\.php$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set X-LiteSpeed-Cache-Control "no-cache"
+</FilesMatch>

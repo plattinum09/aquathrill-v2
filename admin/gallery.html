@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการแกลเลอรี่ | AQUATHRILL Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.06);padding:24px 0;z-index:100}
+        .sidebar .brand{padding:0 24px 24px;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.6);text-decoration:none;font-size:.95rem;transition:.2s;border-left:3px solid transparent}
+        .sidebar nav a:hover,.sidebar nav a.active{background:rgba(0,212,255,.08);color:#fff;border-left-color:#00d4ff}
+        .sidebar nav a i{width:20px;text-align:center}
+        .sidebar .logout-btn{position:absolute;bottom:24px;left:24px;right:24px;padding:12px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);border-radius:12px;color:#ff5252;text-align:center;cursor:pointer;font-family:inherit;font-size:.9rem;transition:.2s}
+        .sidebar .logout-btn:hover{background:rgba(255,80,80,.2)}
+        .main-content{margin-left:240px;padding:32px}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+        .top-bar h2{font-size:1.6rem}
+        .btn{padding:10px 24px;border:none;border-radius:12px;font-family:inherit;font-weight:600;cursor:pointer;font-size:.9rem;transition:.3s;display:inline-flex;align-items:center;gap:8px}
+        .btn-primary{background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,100,255,.3)}
+        .btn-danger{background:rgba(255,80,80,.15);color:#ff5252;border:1px solid rgba(255,80,80,.2)}
+        .btn-danger:hover{background:rgba(255,80,80,.25)}
+        .btn-sm{padding:6px 14px;font-size:.8rem;border-radius:8px}
+
+        /* Upload Zone */
+        .upload-zone{background:rgba(255,255,255,.03);border:2px dashed rgba(0,212,255,.3);border-radius:20px;padding:40px;text-align:center;cursor:pointer;transition:.3s;margin-bottom:32px}
+        .upload-zone:hover,.upload-zone.dragover{border-color:#00d4ff;background:rgba(0,212,255,.06)}
+        .upload-zone i{font-size:3rem;color:#00d4ff;margin-bottom:12px;display:block}
+        .upload-zone h3{margin-bottom:4px;font-size:1.1rem}
+        .upload-zone p{color:rgba(255,255,255,.4);font-size:.85rem}
+
+        /* Upload Form */
+        .upload-form{display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;margin-bottom:32px}
+        .upload-form.active{display:block}
+        .upload-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px}
+        .upload-preview-item{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:#111}
+        .upload-preview-item img{width:100%;height:100%;object-fit:cover}
+        .upload-preview-item .remove-preview{position:absolute;top:6px;right:6px;width:28px;height:28px;background:rgba(255,0,0,.8);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+        .form-row{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+        .form-group{flex:1;min-width:200px}
+        .form-group label{display:block;font-size:.85rem;color:rgba(255,255,255,.6);margin-bottom:6px}
+        .form-group input,.form-group select{width:100%;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:.95rem;font-family:inherit;outline:none;transition:.3s}
+        .form-group input:focus,.form-group select:focus{border-color:#00d4ff;background:rgba(0,212,255,.08)}
+        input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1)}
+
+        /* Gallery Grid */
+        .gallery-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+        .gallery-admin-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;transition:.3s}
+        .gallery-admin-item:hover{border-color:rgba(0,212,255,.3);transform:translateY(-4px)}
+        .gallery-admin-item .item-img{aspect-ratio:1;overflow:hidden;position:relative}
+        .gallery-admin-item .item-img img{width:100%;height:100%;object-fit:cover;transition:.3s}
+        .gallery-admin-item:hover .item-img img{transform:scale(1.05)}
+        .gallery-admin-item .item-actions{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:.3s}
+        .gallery-admin-item:hover .item-actions{opacity:1}
+        .gallery-admin-item .item-info{padding:12px}
+        .gallery-admin-item .item-caption{font-size:.85rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .gallery-admin-item .item-meta{font-size:.75rem;color:rgba(255,255,255,.4);display:flex;justify-content:space-between;align-items:center}
+        .gallery-admin-item .item-date{background:rgba(0,212,255,.15);color:#00d4ff;padding:2px 8px;border-radius:6px;font-size:.7rem}
+
+        /* Stats */
+        .gallery-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+        .gallery-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;text-align:center}
+        .gallery-stat .num{font-size:1.6rem;font-weight:700;color:#00d4ff}
+        .gallery-stat .label{color:rgba(255,255,255,.5);font-size:.8rem}
+
+        /* Date filter bar */
+        .date-filter-bar{display:flex;gap:12px;margin-bottom:24px;align-items:center;flex-wrap:wrap}
+        .date-filter-bar label{color:rgba(255,255,255,.6);font-size:.9rem}
+        .date-filter-bar input[type="date"]{padding:8px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:inherit;font-size:.9rem;outline:none}
+        .date-filter-bar input:focus{border-color:#00d4ff}
+        .date-chip{padding:8px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;color:rgba(255,255,255,.6);cursor:pointer;font-family:inherit;font-size:.85rem;transition:.2s}
+        .date-chip:hover,.date-chip.active{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.3);color:#00d4ff}
+
+        /* Date groups */
+        .date-group-header{font-size:1rem;color:#00d4ff;margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px}
+        .date-group-header i{font-size:.85rem}
+        .date-group-count{font-size:.8rem;color:rgba(255,255,255,.4);margin-left:auto}
+
+        /* Toast */
+        .toast{position:fixed;top:24px;right:24px;padding:14px 24px;border-radius:12px;font-weight:600;z-index:999;transform:translateX(400px);transition:.4s;font-size:.9rem}
+        .toast.show{transform:translateX(0)}
+        .toast.success{background:#00c853;color:#fff}
+        .toast.error{background:#ff5252;color:#fff}
+
+        /* Empty State */
+        .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.4)}
+        .empty-state i{font-size:4rem;margin-bottom:16px;display:block;color:rgba(0,212,255,.3)}
+        .empty-state h3{color:rgba(255,255,255,.6);margin-bottom:8px}
+
+        /* Progress */
+        .upload-progress{display:none;margin-top:12px}
+        .upload-progress.active{display:block}
+        .progress-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#00ff88);border-radius:3px;transition:width .3s;width:0}
+        .progress-text{font-size:.8rem;color:rgba(255,255,255,.5);margin-top:6px;text-align:center}
+
+        /* YouTube modal */
+        .yt-modal{position:fixed;inset:0;background:rgba(0,5,20,.88);z-index:9999;display:none;align-items:center;justify-content:center}
+        .yt-modal.active{display:flex}
+        .yt-box{background:#0d2847;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;max-width:480px;width:95%}
+        .yt-box h3{margin-bottom:20px;font-size:1.1rem;display:flex;align-items:center;gap:8px}
+        .yt-box h3 i{color:#ff0000}
+        .yt-preview{width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;margin-bottom:14px;display:none;}
+        .yt-preview iframe{width:100%;height:100%;border:none}
+        .yt-form-row{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+        .yt-form-row label{font-size:.82rem;color:rgba(255,255,255,.5)}
+        .yt-form-row input{padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;outline:none;transition:.2s}
+        .yt-form-row input:focus{border-color:#ff0000;background:rgba(255,0,0,.05)}
+        .yt-actions{display:flex;gap:10px}
+        .yt-actions button{flex:1;padding:11px;border:none;border-radius:10px;font-family:'Kanit',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer}
+        .btn-yt-cancel{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+        .btn-yt-add{background:linear-gradient(135deg,#ff0000,#cc0000);color:#fff}
+        .btn-yt-add:disabled{opacity:.4;cursor:not-allowed}
+        /* Video badge in admin grid */
+        .item-video-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;background:rgba(255,0,0,.85);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;pointer-events:none}
+        .item-yt-banner{position:absolute;top:6px;left:6px;background:rgba(255,0,0,.85);color:#fff;font-size:.65rem;padding:2px 7px;border-radius:5px;font-weight:600;letter-spacing:.5px}
+        
+        /* Folder Management */
+        .folder-management{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;margin-bottom:32px}
+        .folder-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+        .folder-card{background:rgba(255,255,255,.04);border:1px solid rgba(0,212,255,.2);border-radius:12px;padding:16px;transition:.3s}
+        .folder-card:hover{background:rgba(0,212,255,.08);border-color:#00d4ff}
+        .folder-card h4{margin-bottom:8px;color:#00d4ff;display:flex;align-items:center;gap:8px}
+        .folder-card p{font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:12px}
+        .folder-actions{display:flex;gap:8px}
+        .folder-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.7);color:#00d4ff;font-size:.7rem;padding:2px 6px;border-radius:4px;border:1px solid #00d4ff;z-index:2}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">AQUATHRILL</div>
+        <nav>
+            <a href="/admin/index.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="/admin/bookings.html"><i class="fas fa-calendar-check"></i> <span>การจอง</span></a>
+            <a href="/admin/availability.html"><i class="fas fa-ship"></i> <span>สถานะเรือ</span></a>
+
+            <a href="/admin/boat-types.html"><i class="fas fa-anchor"></i> <span>จัดการเรือ</span></a>
+            <a href="/admin/agent-pricing.html"><i class="fas fa-user-tie"></i> <span>ราคาตัวแทน</span></a>
+            <a href="/admin/promotions.html"><i class="fas fa-bullhorn"></i> <span>โปรโมชั่น</span></a>
+            <a href="/admin/gallery.html" class="active"><i class="fas fa-images"></i> <span>แกลเลอรี่</span></a>
+            <a href="/admin/reviews.html"><i class="fas fa-star"></i> <span>รีวิว Google</span></a>
+            <!-- ซ่อนเมนูชำระเงิน (ระบบ Payso ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
+            <a href="payment-settings.html"><i class="fas fa-credit-card"></i> <span>ชำระเงิน</span></a>
+            -->
+            <a href="/admin/change-password.html"><i class="fas fa-key"></i> <span>เปลี่ยนรหัสผ่าน</span></a>
+            <a href="../" target="_blank"><i class="fas fa-external-link-alt"></i> <span>ดูเว็บไซต์</span></a>
+        </nav>
+        <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span></button>
+    </aside>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h2><i class="fas fa-images" style="color:#00d4ff"></i> จัดการแกลเลอรี่</h2>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" onclick="toggleUploadForm()"><i class="fas fa-image"></i> เพิ่มรูปภาพ</button>
+                <button class="btn" style="background:linear-gradient(135deg,#ff4444,#cc0000);color:#fff" onclick="openYoutubeModal()"><i class="fab fa-youtube"></i> เพิ่มวีดีโอ YouTube</button>
+                <a href="../gallery/" target="_blank" class="btn" style="background:rgba(255,255,255,.08);color:#fff"><i class="fas fa-eye"></i> ดูหน้าแกลเลอรี่</a>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="gallery-stats">
+            <div class="gallery-stat"><div class="num" id="stat-total">0</div><div class="label">รูปภาพทั้งหมด</div></div>
+            <div class="gallery-stat"><div class="num" id="stat-dates">0</div><div class="label">จำนวนวัน</div></div>
+            <div class="gallery-stat"><div class="num" id="stat-latest">-</div><div class="label">อัปโหลดล่าสุด</div></div>
+        </div>
+
+        <!-- Folder Management Section -->
+        <div class="folder-management">
+            <div class="folder-header">
+                <h3><i class="fas fa-folder-open" style="color:#00d4ff"></i> จัดการอัลบั้ม (โฟลเดอร์)</h3>
+                <button class="btn btn-primary btn-sm" onclick="createFolder()"><i class="fas fa-plus"></i> สร้างอัลบั้มใหม่</button>
+            </div>
+            <div class="folder-grid" id="folder-grid">
+                <!-- Folders inserted here -->
+                <div class="empty-state" style="padding:20px;grid-column:1/-1;">
+                    <p>กำลังโหลดอัลบั้ม...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="upload-zone" onclick="toggleUploadForm()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h3>อัปโหลดรูปภาพ</h3>
+            <p>คลิกหรือลากไฟล์มาวาง — รองรับ JPG, PNG, WebP, GIF (สูงสุด 10MB)</p>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="upload-form" id="upload-form">
+            <h3 style="margin-bottom:16px"><i class="fas fa-upload" style="color:#00d4ff"></i> อัปโหลดรูปภาพใหม่</h3>
+            <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+            <div class="upload-preview-grid" id="preview-grid"></div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> วันที่ถ่ายรูป</label>
+                    <input type="date" id="upload-date" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-folder"></i> อัลบั้ม (ถ้ามี)</label>
+                    <select id="upload-folder">
+                        <option value="">-- ภาพรวมสาธารณะ --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> คำอธิบาย (ถ้ามี)</label>
+                    <input type="text" id="upload-caption" placeholder="เช่น ทริปเกาะไข่ กับครอบครัว">
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="startUpload()" id="btn-upload" disabled><i class="fas fa-cloud-upload-alt"></i> อัปโหลด</button>
+                    <button class="btn btn-danger" onclick="cancelUpload()" style="margin-left:8px"><i class="fas fa-times"></i> ยกเลิก</button>
+                </div>
+            </div>
+            <div class="upload-progress" id="upload-progress">
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                <div class="progress-text" id="progress-text">กำลังอัปโหลด...</div>
+            </div>
+        </div>
+
+        <!-- Date Filter -->
+        <div class="date-filter-bar">
+            <button class="date-chip active" id="btn-show-all" onclick="filterAll()"><i class="fas fa-th"></i> ทั้งหมด</button>
+            <label><i class="fas fa-folder"></i> กรองตามอัลบั้ม:</label>
+            <select id="filter-folder" style="padding:8px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:inherit;font-size:.9rem;outline:none" onchange="filterGallery()">
+                <option value="all">ทุกอัลบั้มรวมกัน</option>
+                <option value="public">เฉพาะภาพรวมสาธารณะ</option>
+            </select>
+            <label style="margin-left:8px"><i class="fas fa-calendar-alt"></i> กรองตามวันที่:</label>
+            <input type="date" id="filter-date" onchange="filterGallery()">
+            <button class="date-chip" onclick="clearFilter()" id="btn-clear-filter" style="display:none"><i class="fas fa-times"></i> ล้างตัวกรอง</button>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div id="gallery-content"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display:none">
+            <i class="fas fa-images"></i>
+            <h3>ยังไม่มีรูปภาพ</h3>
+            <p>คลิกปุ่ม "เพิ่มรูปภาพ" เพื่อเริ่มอัปโหลด</p>
+        </div>
+    </div>
+
+    <!-- YouTube Modal -->
+    <div class="yt-modal" id="yt-modal">
+        <div class="yt-box">
+            <h3><i class="fab fa-youtube"></i> เพิ่มวีดีโอ YouTube</h3>
+            <div class="yt-preview" id="yt-preview"><iframe id="yt-iframe" src="" allowfullscreen></iframe></div>
+            <div class="yt-form-row">
+                <label><i class="fas fa-link"></i> วาง YouTube URL หรือ Shorts URL</label>
+                <input type="text" id="yt-url" placeholder="https://www.youtube.com/watch?v=..." oninput="previewYoutube(this.value)">
+            </div>
+            <div class="yt-form-row">
+                <label><i class="fas fa-folder"></i> อัลบั้ม (ถ้ามี)</label>
+                <select id="yt-folder" style="padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'Kanit',sans-serif;font-size:.9rem;outline:none;transition:.2s">
+                    <option value="">-- ภาพรวมสาธารณะ --</option>
+                </select>
+            </div>
+            <div class="yt-form-row">
+                <label><i class="fas fa-tag"></i> คำอธิบาย</label>
+                <input type="text" id="yt-caption" placeholder="เช่น ทริปเกาะไข่ สุดมันส์!">
+            </div>
+            <div class="yt-form-row">
+                <label><i class="fas fa-calendar-alt"></i> วันที่ถ่าย</label>
+                <input type="date" id="yt-date">
+            </div>
+            <div class="yt-actions">
+                <button class="btn-yt-cancel" onclick="closeYoutubeModal()">ยกเลิก</button>
+                <button class="btn-yt-add" id="btn-yt-add" onclick="addYoutube()" disabled><i class="fab fa-youtube"></i> เพิ่มวีดีโอ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const API = '/api';
+    let galleryItems = [];
+    let galleryFolders = [];
+    let pendingFiles = [];
+    let currentFilterDate = null;
+    let currentFilterFolder = 'all';
+
+    // Set default upload date to today
+    document.getElementById('upload-date').value = new Date().toISOString().split('T')[0];
+
+    // Auth check
+    (async () => {
+        try {
+            const r = await fetch(API + '/admin-auth.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'check' }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (!d.authenticated) location.href = 'index.html';
+            else loadGallery();
+        } catch(e) { location.href = 'index.html'; }
+    })();
+
+    async function doLogout() {
+        await fetch(API + '/admin-auth.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'logout' }),
+            credentials: 'include'
+        });
+        location.href = 'index.html';
+    }
+
+    // ===== LOAD GALLERY =====
+    async function loadGallery() {
+        try {
+            const r = await fetch(API + '/gallery.php?admin=1', {credentials:'include'});
+            const d = await r.json();
+            galleryItems = d.items || [];
+            galleryFolders = d.folders || [];
+            renderFolders();
+            populateFolderSelects();
+            renderGallery();
+            updateStats();
+        } catch(e) { console.error('Failed to load gallery', e); }
+    }
+
+    function formatThaiDate(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr + 'T00:00:00');
+        const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        return d.getDate() + ' ' + months[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+    }
+
+    function renderGallery() {
+        const container = document.getElementById('gallery-content');
+        const empty = document.getElementById('empty-state');
+
+        let filtered = galleryItems;
+
+        // Apply folder filter
+        if (currentFilterFolder === 'public') {
+            filtered = filtered.filter(i => !i.folder_id);
+        } else if (currentFilterFolder !== 'all') {
+            filtered = filtered.filter(i => i.folder_id === currentFilterFolder);
+        }
+
+        // Apply date filter
+        if (currentFilterDate) {
+            filtered = filtered.filter(i => i.event_date === currentFilterDate);
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = '';
+            empty.style.display = 'block';
+            if (currentFilterDate || currentFilterFolder !== 'all') {
+                empty.querySelector('h3').textContent = 'ไม่พบรูปภาพตามเงื่อนไขที่เลือก';
+                empty.querySelector('p').textContent = 'ลองเลือกล้างตัวกรอง';
+            } else {
+                empty.querySelector('h3').textContent = 'ยังไม่มีรูปภาพ';
+                empty.querySelector('p').textContent = 'คลิกปุ่ม "เพิ่มรูปภาพ" เพื่อเริ่มอัปโหลด';
+            }
+            return;
+        }
+        empty.style.display = 'none';
+
+        // Group by date
+        const groups = {};
+        filtered.forEach(item => {
+            const date = item.event_date || 'ไม่ระบุวันที่';
+            if (!groups[date]) groups[date] = [];
+            groups[date].push(item);
+        });
+
+        // Sort dates descending
+        const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+        let html = '';
+        sortedDates.forEach(date => {
+            const items = groups[date];
+            const count = items.length;
+            const imgCount = items.filter(i=>i.type!=='youtube').length;
+            const vidCount = items.filter(i=>i.type==='youtube').length;
+            let countLabel = imgCount + ' รูป';
+            if (vidCount > 0) countLabel += ' + ' + vidCount + ' วีดีโอ';
+            html += '<div class="date-group-header"><i class="fas fa-calendar-day"></i> ' + formatThaiDate(date) + ' <span class="date-group-count">' + countLabel + '</span></div>';
+            html += '<div class="gallery-admin-grid">';
+            items.forEach(item => {
+                const isYT = item.type === 'youtube';
+                const folder = galleryFolders.find(f => f.id === item.folder_id);
+                const folderBadge = folder ? `<div class="folder-badge"><i class="fas fa-folder"></i> ${folder.name}</div>` : `<div class="folder-badge" style="background:rgba(0,212,255,.2);color:#fff;border-color:transparent"><i class="fas fa-globe"></i> สาธารณะ</div>`;
+                
+                html += `
+                    <div class="gallery-admin-item" data-id="${item.id}">
+                        <div class="item-img">
+                            <img src="${item.src}" alt="${item.caption || ''}" loading="lazy" onerror="this.src='https://img.youtube.com/vi/default/hqdefault.jpg'">
+                            ${isYT ? '<div class="item-video-badge"><i class="fas fa-play"></i></div><span class="item-yt-banner">YouTube</span>' : ''}
+                            ${folderBadge}
+                            <div class="item-actions">
+                                <button class="btn btn-primary btn-sm" onclick="editItem('${item.id}')" title="แก้ไขข้อมูล"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-primary btn-sm" style="background:#00d4ff;color:#000" onclick="changeImageFolder('${item.id}')" title="ย้ายอัลบั้ม"><i class="fas fa-folder-open"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')" title="ลบภาพ"><i class="fas fa-trash"></i></button>
+                                ${isYT ? `<a href="https://www.youtube.com/watch?v=${item.youtube_id}" target="_blank" class="btn btn-sm" style="background:rgba(255,0,0,.2);color:#ff5252"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                            </div>
+                        </div>
+                        <div class="item-info">
+                            <div class="item-caption">${item.caption || 'ไม่มีคำอธิบาย'}</div>
+                            <div class="item-meta">
+                                <span class="item-date"><i class="fas fa-calendar-alt"></i> ${formatThaiDate(item.event_date)}</span>
+                                ${isYT ? '<span style="color:#ff5252;font-size:.7rem"><i class="fab fa-youtube"></i> YouTube</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        });
+
+        container.innerHTML = html;
+    }
+
+    function updateStats() {
+        document.getElementById('stat-total').textContent = galleryItems.length;
+        const dates = new Set(galleryItems.map(i => i.event_date));
+        document.getElementById('stat-dates').textContent = dates.size;
+        if (galleryItems.length > 0) {
+            const latest = galleryItems[0].uploaded_at || galleryItems[0].event_date;
+            if (latest) {
+                document.getElementById('stat-latest').textContent = formatThaiDate(latest.split(' ')[0]);
+            }
+        }
+    }
+
+    // ===== FILTER =====
+    function filterGallery() {
+        const dVal = document.getElementById('filter-date').value;
+        const fVal = document.getElementById('filter-folder').value;
+        currentFilterDate = dVal || null;
+        currentFilterFolder = fVal;
+        
+        const hasFilters = currentFilterDate !== null || currentFilterFolder !== 'all';
+        document.getElementById('btn-show-all').classList.toggle('active', !hasFilters);
+        document.getElementById('btn-clear-filter').style.display = hasFilters ? '' : 'none';
+        renderGallery();
+    }
+    
+    function filterAll() {
+        currentFilterDate = null;
+        currentFilterFolder = 'all';
+        document.getElementById('filter-date').value = '';
+        document.getElementById('filter-folder').value = 'all';
+        document.getElementById('btn-show-all').classList.add('active');
+        document.getElementById('btn-clear-filter').style.display = 'none';
+        renderGallery();
+    }
+    function clearFilter() { filterAll(); }
+
+    // ===== FOLDER MANAGEMENT =====
+    function populateFolderSelects() {
+        const uploadSelect = document.getElementById('upload-folder');
+        const ytSelect = document.getElementById('yt-folder');
+        const filterSelect = document.getElementById('filter-folder');
+        
+        let options = '<option value="">-- ภาพรวมสาธารณะ --</option>';
+        galleryFolders.forEach(f => {
+            options += `<option value="${f.id}">${f.name}</option>`;
+        });
+        
+        uploadSelect.innerHTML = options;
+        ytSelect.innerHTML = options;
+        
+        let filterOptions = '<option value="all">ทุกอัลบั้มรวมกัน</option><option value="public">เฉพาะภาพรวมสาธารณะ</option>';
+        galleryFolders.forEach(f => {
+            filterOptions += `<option value="${f.id}">โฟลเดอร์: ${f.name}</option>`;
+        });
+        filterSelect.innerHTML = filterOptions;
+        
+        // Retain current filter if it exists
+        if (currentFilterFolder) filterSelect.value = currentFilterFolder;
+    }
+
+    function renderFolders() {
+        const grid = document.getElementById('folder-grid');
+        if (galleryFolders.length === 0) {
+            grid.innerHTML = '<div class="empty-state" style="padding:20px;grid-column:1/-1;color:rgba(255,255,255,.4)"><i class="fas fa-folder-open" style="font-size:2rem;margin-bottom:8px;color:rgba(0,212,255,.3)"></i><p>ยังไม่มีอัลบั้ม</p></div>';
+            return;
+        }
+
+        let html = '';
+        galleryFolders.forEach(f => {
+            const count = galleryItems.filter(i => i.folder_id === f.id).length;
+            html += `
+                <div class="folder-card">
+                    <h4><i class="fas fa-folder"></i> ${f.name}</h4>
+                    <p>มีรูปภาพทั้งหมด ${count} รายการ<br>สร้างเมื่อ: ${formatThaiDate(f.created_at.split(' ')[0])}</p>
+                    <div class="folder-actions">
+                        <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff" onclick="editFolderPassword('${f.id}')"><i class="fas fa-key"></i> เปลี่ยนรหัสผ่าน</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteFolder('${f.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        grid.innerHTML = html;
+    }
+
+    async function createFolder() {
+        const name = prompt('ชื่ออัลบั้มใหม่:');
+        if (!name) return;
+        const password = prompt('ตั้งรหัสผ่านสำหรับเข้าดูอัลบั้มนี้:');
+        if (!password) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('action', 'create_folder');
+            formData.append('name', name);
+            formData.append('password', password);
+
+            const r = await fetch(API + '/gallery.php', { method: 'POST', body: formData, credentials: 'include' });
+            const d = await r.json();
+            if (d.success) {
+                showToast('สร้างอัลบั้มสำเร็จ', 'success');
+                loadGallery();
+            } else {
+                showToast(d.error || 'เกิดข้อผิดพลาด', 'error');
+            }
+        } catch (e) { showToast('ไม่สามารถสร้างอัลบั้มได้', 'error'); }
+    }
+
+    async function editFolderPassword(id) {
+        const newPassword = prompt('ป้อนรหัสผ่านใหม่สำหรับอัลบั้มนี้:');
+        if (!newPassword) return;
+
+        try {
+            const r = await fetch(API + '/gallery.php', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update_folder_password', id: id, password: newPassword }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (d.success) {
+                showToast('เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+            } else {
+                showToast(d.error || 'เกิดข้อผิดพลาด', 'error');
+            }
+        } catch (e) { showToast('เปลี่ยนรหัสไม่เสร็จ', 'error'); }
+    }
+
+    async function deleteFolder(id) {
+        if (!confirm('ยืนยันการลบอัลบั้มนี้? (รูปภาพข้างในจะไม่ถูกลบ แต่จะถูกย้ายไปอยู่ภาพรวมสาธารณะ)')) return;
+
+        try {
+            const r = await fetch(API + '/gallery.php', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_folder', id: id }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (d.success) {
+                showToast('ลบอัลบั้มสำเร็จ', 'success');
+                // Reset filter if we were viewing the deleted folder
+                if (currentFilterFolder === id) {
+                    currentFilterFolder = 'all';
+                    document.getElementById('filter-folder').value = 'all';
+                }
+                loadGallery();
+            } else {
+                showToast(d.error || 'เกิดข้อผิดพลาด', 'error');
+            }
+        } catch (e) { showToast('ไม่สามารถลบอัลบั้มได้', 'error'); }
+    }
+    
+    // Changing folder of an existing image
+    async function changeImageFolder(id) {
+        const item = galleryItems.find(i => i.id === id);
+        if (!item) return;
+        
+        // Build prompt text
+        let promptText = 'เลือกอัลบั้มใหม่เพื่อย้ายรูปภาพ:\n\n0: -- ภาพรวมสาธารณะ --\n';
+        galleryFolders.forEach((f, idx) => {
+            promptText += `${idx + 1}: ${f.name}\n`;
+        });
+        
+        const selection = prompt(promptText + '\nพิมพ์หมายเลข (0 - ' + galleryFolders.length + '):');
+        if (selection === null || selection === '') return;
+        
+        const selectionNum = parseInt(selection);
+        if (isNaN(selectionNum) || selectionNum < 0 || selectionNum > galleryFolders.length) {
+            alert('กรุณาเลือกหมายเลขให้ถูกต้อง');
+            return;
+        }
+        
+        const targetFolderId = selectionNum === 0 ? '' : galleryFolders[selectionNum - 1].id;
+        
+        try {
+            const r = await fetch(API + '/gallery.php', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, folder_id: targetFolderId }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (d.success) {
+                showToast('ย้ายรูปภาพสำเร็จ!', 'success');
+                loadGallery();
+            }
+        } catch (e) { showToast('ไม่สามารถย้ายรูปภาพได้', 'error'); }
+    }
+
+    // ===== UPLOAD =====
+    function toggleUploadForm() {
+        const form = document.getElementById('upload-form');
+        const zone = document.getElementById('upload-zone');
+        if (form.classList.contains('active')) {
+            cancelUpload();
+        } else {
+            form.classList.add('active');
+            zone.style.display = 'none';
+            document.getElementById('file-input').click();
+        }
+    }
+
+    function cancelUpload() {
+        document.getElementById('upload-form').classList.remove('active');
+        document.getElementById('upload-zone').style.display = '';
+        document.getElementById('preview-grid').innerHTML = '';
+        document.getElementById('upload-caption').value = '';
+        document.getElementById('upload-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('btn-upload').disabled = true;
+        pendingFiles = [];
+    }
+
+    document.getElementById('file-input').addEventListener('change', function(e) {
+        addFiles(Array.from(e.target.files));
+    });
+
+    const uploadZone = document.getElementById('upload-zone');
+    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', function() { this.classList.remove('dragover'); });
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        if (files.length) {
+            document.getElementById('upload-form').classList.add('active');
+            this.style.display = 'none';
+            addFiles(files);
+        }
+    });
+
+    function addFiles(files) {
+        files.forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            pendingFiles.push(file);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const grid = document.getElementById('preview-grid');
+                const idx = pendingFiles.indexOf(file);
+                const div = document.createElement('div');
+                div.className = 'upload-preview-item';
+                div.dataset.idx = idx;
+                div.innerHTML = `<img src="${e.target.result}"><button class="remove-preview" onclick="removeFile(${idx})"><i class="fas fa-times"></i></button>`;
+                grid.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+        document.getElementById('btn-upload').disabled = false;
+    }
+
+    function removeFile(idx) {
+        pendingFiles[idx] = null;
+        const el = document.querySelector(`.upload-preview-item[data-idx="${idx}"]`);
+        if (el) el.remove();
+        if (pendingFiles.filter(f => f).length === 0) document.getElementById('btn-upload').disabled = true;
+    }
+
+    async function startUpload() {
+        const files = pendingFiles.filter(f => f);
+        if (!files.length) return;
+
+        const eventDate = document.getElementById('upload-date').value;
+        if (!eventDate) { showToast('กรุณาเลือกวันที่', 'error'); return; }
+
+        const caption = document.getElementById('upload-caption').value.trim();
+        const btn = document.getElementById('btn-upload');
+        const progress = document.getElementById('upload-progress');
+        const fill = document.getElementById('progress-fill');
+        const text = document.getElementById('progress-text');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังอัปโหลด...';
+        progress.classList.add('active');
+
+        let success = 0;
+        for (let i = 0; i < files.length; i++) {
+            fill.style.width = ((i / files.length) * 100) + '%';
+            text.textContent = `กำลังอัปโหลด ${i + 1} / ${files.length}...`;
+
+            const formData = new FormData();
+            formData.append('image', files[i]);
+            formData.append('caption', files.length === 1 ? caption : (caption ? caption + ` (${i + 1})` : ''));
+            formData.append('event_date', eventDate);
+            formData.append('folder_id', document.getElementById('upload-folder').value);
+
+            try {
+                const r = await fetch(API + '/gallery.php', { method: 'POST', body: formData, credentials: 'include' });
+                const d = await r.json();
+                if (d.success) success++;
+            } catch(e) {}
+        }
+
+        fill.style.width = '100%';
+        text.textContent = `อัปโหลดสำเร็จ ${success} / ${files.length} รูป`;
+
+        setTimeout(() => {
+            progress.classList.remove('active');
+            fill.style.width = '0';
+            cancelUpload();
+            loadGallery();
+            showToast(`อัปโหลดสำเร็จ ${success} รูป!`, 'success');
+        }, 1000);
+    }
+
+    // ===== EDIT =====
+    function editItem(id) {
+        const item = galleryItems.find(i => i.id === id);
+        if (!item) return;
+        const newCaption = prompt('แก้ไขคำอธิบาย:', item.caption || '');
+        if (newCaption === null) return;
+        const newDate = prompt('แก้ไขวันที่ (YYYY-MM-DD):', item.event_date || '');
+        if (newDate === null) return;
+
+        fetch(API + '/gallery.php', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, caption: newCaption, event_date: newDate }),
+            credentials: 'include'
+        }).then(r => r.json()).then(d => {
+            if (d.success) { showToast('แก้ไขสำเร็จ!', 'success'); loadGallery(); }
+        });
+    }
+
+    // ===== DELETE =====
+    function deleteItem(id) {
+        if (!confirm('ต้องการลบรูปภาพนี้หรือไม่?')) return;
+        fetch(API + '/gallery.php', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id }),
+            credentials: 'include'
+        }).then(r => r.json()).then(d => {
+            if (d.success) { showToast('ลบรูปภาพสำเร็จ!', 'success'); loadGallery(); }
+        });
+    }
+
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + type + ' show';
+        setTimeout(() => { t.classList.remove('show'); }, 3000);
+    }
+
+    // ===== YOUTUBE =====
+    function extractYoutubeId(url) {
+        const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        return m ? m[1] : null;
+    }
+
+    function openYoutubeModal() {
+        document.getElementById('yt-url').value = '';
+        document.getElementById('yt-caption').value = '';
+        document.getElementById('yt-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('yt-preview').style.display = 'none';
+        document.getElementById('yt-iframe').src = '';
+        document.getElementById('btn-yt-add').disabled = true;
+        document.getElementById('yt-modal').classList.add('active');
+    }
+
+    function closeYoutubeModal() {
+        document.getElementById('yt-modal').classList.remove('active');
+        document.getElementById('yt-iframe').src = ''; // stop video
+    }
+
+    function previewYoutube(url) {
+        const id = extractYoutubeId(url.trim());
+        const preview = document.getElementById('yt-preview');
+        const btn = document.getElementById('btn-yt-add');
+        if (id) {
+            document.getElementById('yt-iframe').src = 'https://www.youtube.com/embed/' + id;
+            preview.style.display = 'block';
+            btn.disabled = false;
+        } else {
+            document.getElementById('yt-iframe').src = '';
+            preview.style.display = 'none';
+            btn.disabled = true;
+        }
+    }
+
+    async function addYoutube() {
+        const url = document.getElementById('yt-url').value.trim();
+        const caption = document.getElementById('yt-caption').value.trim();
+        const date = document.getElementById('yt-date').value;
+        const folderId = document.getElementById('yt-folder').value;
+        if (!url) return;
+        const btn = document.getElementById('btn-yt-add');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเพิ่ม...';
+        try {
+            const r = await fetch(API + '/gallery.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ youtube_url: url, caption, event_date: date, folder_id: folderId }),
+                credentials: 'include'
+            });
+            const d = await r.json();
+            if (d.success) {
+                closeYoutubeModal();
+                await loadGallery();
+                showToast('เพิ่มวีดีโอ YouTube สำเร็จ!', 'success');
+            } else {
+                showToast(d.error || 'เกิดข้อผิดพลาด', 'error');
+            }
+        } catch(e) { showToast('เพิ่มวีดีโอไม่สำเร็จ', 'error'); }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fab fa-youtube"></i> เพิ่มวีดีโอ';
+    }
+    </script>
+</body>
+</html>
