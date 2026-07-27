@@ -704,27 +704,30 @@
             <!-- ========== STEP 2: PAYMENT (deprecated — ใช้ Omise แทน) ========== -->
             <div class="modal-step" id="modal-step-2" style="display:none;">
                 <div class="modal-title"><i class="fas fa-credit-card"></i> <span data-i18n="bk.step2_title">ชำระเงิน</span></div>
-                <div class="modal-subtitle" data-i18n="bk.step2_sub">เลือกวิธีชำระเงินที่สะดวก</div>
+                <div class="modal-subtitle">ชำระเงินผ่านบัตรเครดิต/เดบิตอย่างปลอดภัยด้วย Omise</div>
 
                 <div class="m-price-box" style="margin-top:0;">
                     <div class="label" data-i18n="bk.pay_total_label">ยอดชำระทั้งสิ้น</div>
                     <div class="price" id="m-pay-amount">฿9,900</div>
                 </div>
 
-                <div class="m-pay-tabs">
+                <div class="m-pay-tabs" style="display:none;">
                     <button class="m-pay-tab active" data-method="m-credit-card" data-i18n="bk.pay_credit">
                         <i class="fas fa-credit-card"></i> บัตรเครดิต
                     </button>
-                    <button class="m-pay-tab" data-method="m-bank-transfer" data-i18n="bk.pay_transfer">
+                    <button class="m-pay-tab" data-method="m-bank-transfer" data-i18n="bk.pay_transfer" style="display:none;">
                         <i class="fas fa-university"></i> โอนเงิน
                     </button>
-                    <button class="m-pay-tab" data-method="m-qr-pay" data-i18n="bk.pay_qr">
+                    <button class="m-pay-tab" data-method="m-qr-pay" data-i18n="bk.pay_qr" style="display:none;">
                         <i class="fas fa-qrcode"></i> QR PromptPay
                     </button>
                 </div>
 
                 <!-- Credit Card -->
                 <div class="m-pay-content active" id="m-credit-card">
+                    <p style="text-align:center;color:rgba(255,255,255,0.65);font-size:0.9rem;margin-bottom:16px;">
+                        กดปุ่มด้านล่างเพื่อเปิดหน้าชำระเงินบัตรเครดิตของ Omise
+                    </p>
                     <div class="m-form-group">
                         <label data-i18n="bk.label_card_num"><i class="fas fa-credit-card"></i> หมายเลขบัตร</label>
                         <input type="text" id="m-card-num" placeholder="1234 5678 9012 3456" maxlength="19">
@@ -752,7 +755,7 @@
                 </div>
 
                 <!-- Bank Transfer -->
-                <div class="m-pay-content" id="m-bank-transfer">
+                <div class="m-pay-content" id="m-bank-transfer" style="display:none;">
                     <div class="m-bank-info">
                         <div class="m-bank-row"><span class="lbl" data-i18n="bk.bank_label">ธนาคาร</span><span class="val">กสิกรไทย (KBank)</span></div>
                         <div class="m-bank-row"><span class="lbl" data-i18n="bk.account_no">เลขที่บัญชี</span><span class="val">123-4-56789-0 <button class="m-copy-btn" onclick="navigator.clipboard.writeText('1234567890')"><i class="fas fa-copy"></i></button></span></div>
@@ -775,7 +778,7 @@
                 </div>
 
                 <!-- QR PromptPay -->
-                <div class="m-pay-content" id="m-qr-pay">
+                <div class="m-pay-content" id="m-qr-pay" style="display:none;">
                     <div class="m-qr-wrap">
                         <canvas id="m-qr-canvas" width="170" height="170"></canvas>
                         <div class="m-qr-amount" id="m-qr-amt">฿9,900</div>
@@ -1360,21 +1363,7 @@
             }
         }
 
-        async function goToOmise(btn, method) {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('bk.processing','กำลังดำเนินการ...');
-            try {
-                var apiData = await createBookingForPayment(method);
-                window.location.href = '/api/omise-payment.php?go=1&booking_id=' + encodeURIComponent(apiData.booking_id);
-            } catch(e) {
-                alert(t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
-                btn.disabled = false;
-            }
-        }
-
         document.getElementById('m-btn-pay-card').addEventListener('click', function() { payByCreditCard(this); });
-        document.getElementById('m-btn-pay-transfer').addEventListener('click', function() { goToOmise(this, 'omise'); });
-        document.getElementById('m-btn-pay-qr').addEventListener('click', function() { goToOmise(this, 'omise'); });
 
         // Download Receipt
         document.getElementById('m-btn-download').addEventListener('click', function() {

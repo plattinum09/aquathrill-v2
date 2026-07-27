@@ -133,51 +133,7 @@ async function createOmiseCardCharge(params: {
 }
 
 async function startOmisePayment(request: NextRequest) {
-  const url = new URL(request.url);
-  const bookingId = url.searchParams.get("booking_id");
-  if (!bookingId) return new Response("Missing booking_id", { status: 400 });
-
-  const booking = (await query<any>("SELECT id,booking_id,total_price,customer_email,customer_name,customer_phone,status FROM bookings WHERE booking_id=$1", [bookingId])).rows[0];
-  if (!booking) return new Response("Booking not found", { status: 404 });
-  if (booking.status === "confirmed") return Response.redirect(`${url.origin}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}`, 303);
-
-  const amount = satang(booking.total_price);
-  if (amount <= 0) return new Response("Invalid payment amount", { status: 400 });
-
-  const baseUrl = paymentBaseUrl(request);
-  const returnUri = `${baseUrl}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}`;
-  const sourceType = url.searchParams.get("source_type") || omiseDefaultSourceType();
-  let charge: any;
-  try {
-    charge = await createOmiseCharge({
-      amount,
-      bookingId: booking.booking_id,
-      customerName: booking.customer_name || "",
-      customerPhone: booking.customer_phone || "",
-      description: `AQUATHRILL Booking ${booking.booking_id}`,
-      returnUri,
-      sourceType,
-    });
-  } catch (error) {
-    return paymentErrorPage(error instanceof Error ? error.message : "Omise payment failed", 500);
-  }
-
-  await query(
-    "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,'omise',$3,$4,$5::jsonb)",
-    [booking.booking_id, charge.id || null, booking.total_price, charge.status || "pending", JSON.stringify(charge)]
-  );
-  await query("UPDATE bookings SET payment_method='omise' WHERE booking_id=$1 AND status!='confirmed'", [booking.booking_id]);
-
-  const qrUrl = charge.source?.scannable_code?.image?.download_uri;
-  if (qrUrl) return omiseQrPage({ amount: booking.total_price, bookingId: booking.booking_id, expiresAt: charge.expires_at, qrUrl, returnUri });
-
-  const authorizeUri = charge.authorize_uri || charge.authorizeUri;
-  if (authorizeUri) return Response.redirect(authorizeUri, 303);
-
-  return new Response(
-    `<!doctype html><html lang="th"><meta charset="utf-8"><title>Omise Payment</title><style>body{margin:0;font-family:sans-serif;background:#0a1628;color:#fff;display:grid;place-items:center;min-height:100vh;text-align:center;padding:24px}.card{max-width:520px}.btn{display:inline-block;margin-top:18px;background:#00b4ff;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px}</style><div class="card"><h2>สร้างรายการชำระเงิน Omise แล้ว</h2><p>สถานะ: ${escape(charge.status || "pending")}</p><p>หากเป็นวิธีชำระเงินที่ไม่ต้อง redirect กรุณารอ webhook จาก Omise หรือกลับไปตรวจสอบสถานะการจอง</p><a class="btn" href="${escape(returnUri)}">กลับไปหน้าผลการชำระเงิน</a></div></html>`,
-    { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
-  );
+  return paymentErrorPage("ระบบนี้รับชำระผ่านบัตรเครดิตเท่านั้น กรุณากลับไปหน้าจองแล้วกดชำระเงินด้วยบัตรเครดิต", 400);
 }
 
 function verifyOmiseSignature(rawBody: string, signature: string) {
@@ -256,9 +212,7 @@ export async function omisePayment(request: NextRequest) {
       redirect_url: charge.authorize_uri || charge.authorizeUri || returnUri,
     });
   }
-  const baseUrl = paymentBaseUrl(request);
-  const redirectUrl = `${baseUrl}/api/omise-payment.php?go=1&booking_id=${encodeURIComponent(input.booking_id)}${input.source_type ? `&source_type=${encodeURIComponent(input.source_type)}` : ""}`;
-  return json({ success: true, redirect_url: redirectUrl });
+  return json({ error: "Credit card token is required" }, 400);
 }
 
 export async function omiseConfig() {
