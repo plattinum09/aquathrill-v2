@@ -728,24 +728,6 @@
                     <p style="text-align:center;color:rgba(255,255,255,0.65);font-size:0.9rem;margin-bottom:16px;">
                         กดปุ่มด้านล่างเพื่อเปิดหน้าชำระเงินบัตรเครดิตของ Omise
                     </p>
-                    <div class="m-form-group">
-                        <label data-i18n="bk.label_card_num"><i class="fas fa-credit-card"></i> หมายเลขบัตร</label>
-                        <input type="text" id="m-card-num" placeholder="1234 5678 9012 3456" maxlength="19">
-                    </div>
-                    <div class="m-form-group">
-                        <label data-i18n="bk.label_card_name"><i class="fas fa-user"></i> ชื่อบนบัตร</label>
-                        <input type="text" id="m-card-name" placeholder="JOHN DOE">
-                    </div>
-                    <div class="m-form-row">
-                        <div class="m-form-group">
-                            <label data-i18n="bk.label_card_exp"><i class="fas fa-calendar"></i> วันหมดอายุ</label>
-                            <input type="text" id="m-card-exp" placeholder="MM/YY" maxlength="5">
-                        </div>
-                        <div class="m-form-group">
-                            <label><i class="fas fa-lock"></i> CVV</label>
-                            <input type="text" id="m-card-cvv" placeholder="123" maxlength="4">
-                        </div>
-                    </div>
                     <button class="m-btn-primary" id="m-btn-pay-card" data-i18n="bk.btn_pay_secure">
                         <i class="fas fa-lock"></i> ชำระเงินอย่างปลอดภัย
                     </button>
@@ -1189,15 +1171,12 @@
             document.querySelectorAll('.m-pay-content').forEach(function(c,i) {
                 c.classList.toggle('active', i===0);
             });
-            document.getElementById('m-card-num').value = '';
-            document.getElementById('m-card-name').value = '';
-            document.getElementById('m-card-exp').value = '';
-            document.getElementById('m-card-cvv').value = '';
             document.getElementById('m-slip-upload').style.display = '';
             document.getElementById('m-slip-preview').style.display = 'none';
             // Reset buttons
             ['m-btn-pay-card','m-btn-pay-transfer','m-btn-pay-qr'].forEach(function(id) {
                 var b = document.getElementById(id);
+                if (!b) return;
                 b.disabled = false;
                 if (id === 'm-btn-pay-card') b.innerHTML = '<i class="fas fa-lock"></i> ' + t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย');
                 if (id === 'm-btn-pay-transfer') b.innerHTML = '<i class="fas fa-paper-plane"></i> ' + t('bk.btn_send_slip','ส่งหลักฐานการโอนเงิน');
@@ -1279,20 +1258,6 @@
             });
         });
 
-        // Card formatting
-        document.getElementById('m-card-num').addEventListener('input', function() {
-            var v = this.value.replace(/\D/g,'').substring(0,16);
-            this.value = v.replace(/(.{4})/g,'$1 ').trim();
-        });
-        document.getElementById('m-card-exp').addEventListener('input', function() {
-            var v = this.value.replace(/\D/g,'').substring(0,4);
-            if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2);
-            this.value = v;
-        });
-        document.getElementById('m-card-cvv').addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g,'').substring(0,4);
-        });
-
         // Slip upload
         var slipUpload = document.getElementById('m-slip-upload');
         var slipFile = document.getElementById('m-slip-file');
@@ -1362,7 +1327,7 @@
                 var cfgRes = await fetch('/api/omise-config.php', { credentials: 'include' });
                 var cfg = await cfgRes.json();
                 if (!cfg.public_key) throw new Error('Missing Omise public key');
-                OmiseCard.configure({ publicKey: cfg.public_key, currency: 'THB', frameLabel: 'AQUATHRILL PHUKET', submitLabel: t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย') });
+                OmiseCard.configure({ publicKey: cfg.public_key, currency: 'THB', frameLabel: 'AQUATHRILL PHUKET', submitLabel: 'ชำระเงิน' });
                 OmiseCard.open({
                     amount: Math.round(Number(apiData.total_price || modalData.price || 0) * 100),
                     onCreateTokenSuccess: async function(token) {
