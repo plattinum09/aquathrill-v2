@@ -111,6 +111,27 @@ async function createOmiseCharge(params: {
   });
 }
 
+async function createOmiseCardCharge(params: {
+  amount: number;
+  bookingId: string;
+  cardToken: string;
+  customerName?: string;
+  customerPhone?: string;
+  description: string;
+  returnUri: string;
+}) {
+  return omisePost("/charges", {
+    amount: params.amount,
+    currency: "thb",
+    description: params.description,
+    return_uri: params.returnUri,
+    card: params.cardToken,
+    "metadata[booking_id]": params.bookingId,
+    "metadata[customer_name]": params.customerName || "",
+    "metadata[customer_phone]": params.customerPhone || "",
+  });
+}
+
 async function startOmisePayment(request: NextRequest) {
   const url = new URL(request.url);
   const bookingId = url.searchParams.get("booking_id");
@@ -196,9 +217,54 @@ export async function omisePayment(request: NextRequest) {
   if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
   const input = await body(request);
   if (!input.booking_id) return json({ error: "Missing booking_id" }, 400);
+  if (input.omise_token) {
+    const booking = (await query<any>("SELECT booking_id,total_price,customer_name,customer_phone,status FROM bookings WHERE booking_id=$1", [input.booking_id])).rows[0];
+    if (!booking) return json({ error: "Booking not found" }, 404);
+    if (booking.status === "confirmed") return json({ success: true, redirect_url: `${paymentBaseUrl(request)}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}` });
+
+    const baseUrl = paymentBaseUrl(request);
+    const returnUri = `${baseUrl}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}`;
+    const amount = satang(booking.total_price);
+    if (amount <= 0) return json({ error: "Invalid payment amount" }, 400);
+
+    let charge: any;
+    try {
+      charge = await createOmiseCardCharge({
+        amount,
+        bookingId: booking.booking_id,
+        cardToken: String(input.omise_token),
+        customerName: booking.customer_name || "",
+        customerPhone: booking.customer_phone || "",
+        description: `AQUATHRILL Booking ${booking.booking_id}`,
+        returnUri,
+      });
+    } catch (error) {
+      return json({ error: error instanceof Error ? error.message : "Omise card charge failed" }, 500);
+    }
+
+    const completed = charge.status === "successful" || charge.paid === true;
+    await query(
+      "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,'omise_card',$3,$4,$5::jsonb)",
+      [booking.booking_id, charge.id || null, booking.total_price, completed ? "completed" : charge.status || "pending", JSON.stringify(charge)]
+    );
+    if (completed) await query("UPDATE bookings SET status='confirmed',payment_method='omise_card' WHERE booking_id=$1", [booking.booking_id]);
+    else await query("UPDATE bookings SET payment_method='omise_card' WHERE booking_id=$1 AND status!='confirmed'", [booking.booking_id]);
+
+    return json({
+      success: true,
+      status: completed ? "confirmed" : charge.status || "pending",
+      redirect_url: charge.authorize_uri || charge.authorizeUri || returnUri,
+    });
+  }
   const baseUrl = paymentBaseUrl(request);
   const redirectUrl = `${baseUrl}/api/omise-payment.php?go=1&booking_id=${encodeURIComponent(input.booking_id)}${input.source_type ? `&source_type=${encodeURIComponent(input.source_type)}` : ""}`;
   return json({ success: true, redirect_url: redirectUrl });
+}
+
+export async function omiseConfig() {
+  return json({
+    public_key: process.env.OMISE_PUBLIC_KEY || process.env.NEXT_PUBLIC_OMISE_PUBLIC_KEY || "",
+  });
 }
 
 export async function omiseWebhook(request: NextRequest) {

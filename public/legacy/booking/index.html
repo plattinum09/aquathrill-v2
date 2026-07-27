@@ -28,6 +28,7 @@
     <meta name="twitter:image:alt" content="AQUATHRILL เช็ควันว่างจอง Mini Speedboat">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.omise.co/omise.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         /* ===== BOOKING CALENDAR STYLES ===== */
@@ -1226,8 +1227,7 @@
             modalData.time = document.getElementById('m-time').value;
             modalData.timeValue = document.getElementById('m-time').value;
             modalData.timeName = document.getElementById('m-time').options[document.getElementById('m-time').selectedIndex].text;
-            // ส่งตรงไป Omise
-            goToOmise(this, 'omise');
+            showModalStep(2);
         });
 
         // Back to step 1
@@ -1297,43 +1297,75 @@
             drawCorner(0,0); drawCorner(100,0); drawCorner(0,100);
         }
 
-        // Pay buttons
-        // ทุกปุ่ม pay → สร้าง booking + redirect ตรงไป Omise
+        async function createBookingForPayment(method) {
+            var apiDate = modalData.year + '-' + String(modalData.month+1).padStart(2,'0') + '-' + String(modalData.day).padStart(2,'0');
+            var apiRes = await fetch('/api/bookings.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    boat_type: modalData.boatValue || '12ft',
+                    booking_date: apiDate,
+                    time_slot: modalData.timeValue || 'morning',
+                    guests: modalData.guests || 2,
+                    customer_name: modalData.name,
+                    customer_phone: modalData.phone,
+                    customer_email: modalData.email || '',
+                    payment_method: method,
+                    notes: ''
+                })
+            });
+            var apiData = await apiRes.json();
+            if (!apiRes.ok || !apiData.booking_id) throw new Error(apiData.error || 'Booking creation failed');
+            return apiData;
+        }
+
+        async function payByCreditCard(btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('bk.processing','กำลังดำเนินการ...');
+            try {
+                if (!window.OmiseCard) throw new Error('OmiseCard is not loaded');
+                var apiData = await createBookingForPayment('omise_card');
+                var cfgRes = await fetch('/api/omise-config.php', { credentials: 'include' });
+                var cfg = await cfgRes.json();
+                if (!cfg.public_key) throw new Error('Missing Omise public key');
+                OmiseCard.configure({ publicKey: cfg.public_key, currency: 'THB', frameLabel: 'AQUATHRILL PHUKET', submitLabel: t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย') });
+                OmiseCard.open({
+                    amount: Math.round(Number(apiData.total_price || modalData.price || 0) * 100),
+                    onCreateTokenSuccess: async function(token) {
+                        var payRes = await fetch('/api/omise-payment.php', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ booking_id: apiData.booking_id, omise_token: token })
+                        });
+                        var payData = await payRes.json();
+                        if (payData.success && payData.redirect_url) window.location.href = payData.redirect_url;
+                        else alert(payData.error || t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
+                    },
+                    onFormClosed: function() {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-lock"></i> ' + t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย');
+                    }
+                });
+            } catch(e) {
+                alert(t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> ' + t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย');
+            }
+        }
+
         async function goToOmise(btn, method) {
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('bk.processing','กำลังดำเนินการ...');
-
-            var apiDate = modalData.year + '-' + String(modalData.month+1).padStart(2,'0') + '-' + String(modalData.day).padStart(2,'0');
-
             try {
-                var apiRes = await fetch('/api/bookings.php', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        boat_type: modalData.boatValue || '12ft',
-                        booking_date: apiDate,
-                        time_slot: modalData.timeValue || 'morning',
-                        guests: modalData.guests || 2,
-                        customer_name: modalData.name,
-                        customer_phone: modalData.phone,
-                        customer_email: modalData.email || '',
-                        payment_method: method,
-                        notes: ''
-                    })
-                });
-                var apiData = await apiRes.json();
-                if (apiData.booking_id) {
-                    window.location.href = '/api/omise-payment.php?go=1&booking_id=' + encodeURIComponent(apiData.booking_id);
-                    return;
-                }
-                throw new Error(apiData.error || 'Booking creation failed');
+                var apiData = await createBookingForPayment(method);
+                window.location.href = '/api/omise-payment.php?go=1&booking_id=' + encodeURIComponent(apiData.booking_id);
             } catch(e) {
                 alert(t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
                 btn.disabled = false;
             }
         }
 
-        document.getElementById('m-btn-pay-card').addEventListener('click', function() { goToOmise(this, 'omise'); });
+        document.getElementById('m-btn-pay-card').addEventListener('click', function() { payByCreditCard(this); });
         document.getElementById('m-btn-pay-transfer').addEventListener('click', function() { goToOmise(this, 'omise'); });
         document.getElementById('m-btn-pay-qr').addEventListener('click', function() { goToOmise(this, 'omise'); });
 
