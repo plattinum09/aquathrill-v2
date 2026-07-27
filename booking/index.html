@@ -683,7 +683,7 @@
                 <div class="m-form-row">
                     <div class="m-form-group">
                         <label data-i18n="bk.label_phone"><i class="fas fa-phone"></i> เบอร์โทร</label>
-                        <input type="tel" id="m-phone" placeholder="08X-XXX-XXXX">
+                        <input type="tel" id="m-phone" placeholder="08xxxxxxxx" inputmode="numeric" pattern="[0-9]*" autocomplete="tel">
                     </div>
                     <div class="m-form-group">
                         <label data-i18n="bk.label_email"><i class="fas fa-envelope"></i> อีเมล</label>
@@ -1150,6 +1150,15 @@
             document.getElementById('m-qr-amt').textContent = f;
         }
 
+        function digitsOnly(value) {
+            return String(value || '').replace(/\D/g, '');
+        }
+
+        document.getElementById('m-phone').addEventListener('input', function() {
+            const cleaned = digitsOnly(this.value);
+            if (this.value !== cleaned) this.value = cleaned;
+        });
+
         // Open Modal
         window.openBookingModal = function(day, month, year, status) {
             modalData = { day, month, year, status, price: 9900 };
@@ -1225,7 +1234,9 @@
         // Step 1 → 2
         document.getElementById('m-btn-to-pay').addEventListener('click', function() {
             const name = document.getElementById('m-name').value.trim();
-            const phone = document.getElementById('m-phone').value.trim();
+            const phoneInput = document.getElementById('m-phone');
+            const phone = digitsOnly(phoneInput.value);
+            phoneInput.value = phone;
             const email = document.getElementById('m-email').value.trim();
             if (!name) { alert(t('bk.alert_name','กรุณากรอกชื่อ-นามสกุล')); return; }
             if (!phone) { alert(t('bk.alert_phone','กรุณากรอกเบอร์โทร')); return; }

@@ -13,7 +13,7 @@
         .booking-page{min-height:calc(100vh - 96px);display:flex;align-items:center}
         .booking-page .container{width:100%}
         .result-card{max-width:720px;min-height:420px;margin:0 auto;text-align:center;padding:56px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-        .result-card.loading{gap:18px}
+        .result-card.loading{gap:18px;text-align:center!important}
         .result-icon{font-size:4rem;margin-bottom:20px}
         .result-card.loading .result-icon{position:relative;width:96px;height:96px;margin:0 0 10px;display:grid;place-items:center;border-radius:999px;background:rgba(255,193,7,.08);box-shadow:0 0 48px rgba(255,193,7,.18)}
         .result-card.loading .result-icon:before{content:"";position:absolute;inset:10px;border-radius:999px;border:3px solid rgba(255,193,7,.18);border-top-color:#ffc107;animation:spin 1s linear infinite}
@@ -22,13 +22,17 @@
         .result-icon.success{color:#00c853}
         .result-icon.pending{color:#ffc107}
         .result-icon.failed{color:#ff5252}
-        .result-title{width:100%;text-align:center;font-size:1.8rem;margin:0 0 10px;font-weight:800}
-        .result-desc{width:100%;text-align:center;color:rgba(255,255,255,.66);font-size:1rem;margin:0 0 24px;line-height:1.6}
+        .result-title{width:100%;align-self:center!important;text-align:center!important;font-size:1.8rem;margin:0 auto 10px!important;font-weight:800}
+        .result-desc{width:100%;align-self:center!important;text-align:center!important;color:rgba(255,255,255,.66);font-size:1rem;margin:0 auto 24px!important;line-height:1.6}
         .result-details{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;text-align:left;margin-bottom:24px}
         .result-details .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
         .result-details .detail-row:last-child{border-bottom:none}
-        .result-details .label{color:rgba(255,255,255,.5);font-size:.85rem}
-        .result-details .value{font-weight:600;font-size:.9rem}
+        .result-details .label{color:rgba(255,255,255,.78)!important;font-size:.85rem}
+        .result-details .value{color:#fff!important;font-weight:700;font-size:.9rem}
+        .result-details .value.amount{color:#00d4ff!important}
+        .result-details .value.status-success{color:#00c853!important}
+        .result-details .value.status-pending{color:#ffc107!important}
+        .result-details .value.status-failed{color:#ff5252!important}
         .btn-back{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:linear-gradient(135deg,#00b4ff,#0066cc);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;transition:.3s}
         .btn-back:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,100,255,.3)}
         .btn-whatsapp{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25D366;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;text-decoration:none;transition:.3s;margin-left:8px}
@@ -138,11 +142,11 @@
                     </div>
                     <div class="detail-row">
                         <span class="label">ยอดชำระ</span>
-                        <span class="value" style="color:#00d4ff;">${fmtPrice(booking.total_price)}</span>
+                        <span class="value amount">${fmtPrice(booking.total_price)}</span>
                     </div>
                     <div class="detail-row">
                         <span class="label">สถานะ</span>
-                        <span class="value" style="color:${type === 'success' ? '#00c853' : type === 'pending' ? '#ffc107' : '#ff5252'}">
+                        <span class="value ${type === 'success' ? 'status-success' : type === 'pending' ? 'status-pending' : 'status-failed'}">
                             ${booking.status === 'confirmed' ? 'ชำระเงินสำเร็จ' : booking.status === 'pending' ? 'รอตรวจสอบ' : 'ล้มเหลว'}
                         </span>
                     </div>
