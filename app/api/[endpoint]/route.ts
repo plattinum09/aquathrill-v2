@@ -4,7 +4,7 @@ import { agentAuth } from "@/lib/api/agent-auth";
 import { availability, bookings } from "@/lib/api/booking-handlers";
 import { agentBooking, agentPricing, agentSlip } from "@/lib/api/agent-handlers";
 import { gallery, galleryAuth } from "@/lib/api/gallery-handlers";
-import { omiseConfig, omisePayment, omiseWebhook, paysolutionsCallback, paysolutionsPayment } from "@/lib/api/payment-handlers";
+import { omiseConfig, omisePayment, omiseSyncStatus, omiseWebhook, paysolutionsCallback, paysolutionsPayment } from "@/lib/api/payment-handlers";
 import { reviews } from "@/lib/api/review-handlers";
 import { agentManage, boatPricing, boatTypes, pageContent, paymentSettings, promotions, upload } from "@/lib/api/core-handlers";
 import { errorResponse, json } from "@/lib/api/http";
@@ -36,6 +36,7 @@ async function dispatch(request:NextRequest,context:Context){
       case "gallery-auth":return galleryAuth(request);
       case "omise-payment":return omisePayment(request);
       case "omise-config":return omiseConfig();
+      case "omise-sync-status":return omiseSyncStatus(request);
       case "omise-webhook":return omiseWebhook(request);
       case "paysolutions-payment":return paysolutionsPayment(request);
       case "paysolutions-callback":return paysolutionsCallback(request);

@@ -59,10 +59,11 @@
             return;
         }
 
-        // Wait a moment for callback to process, then check booking status
+        // Wait a moment for callback to process, then sync/check booking status
         await new Promise(r => setTimeout(r, 2000));
 
         try {
+            await fetch('/api/omise-sync-status.php?booking_id=' + encodeURIComponent(bookingId), { credentials: 'include', cache: 'no-store' }).catch(function(){});
             const r = await fetch('/api/bookings.php?search=' + bookingId + '&limit=1', { credentials: 'include' });
             const d = await r.json();
             const bookings = d.bookings || [];

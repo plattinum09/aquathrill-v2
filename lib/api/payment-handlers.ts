@@ -85,6 +85,31 @@ async function omisePost(path: string, params: Record<string, any>) {
   return data;
 }
 
+async function omiseGet(path: string) {
+  const secret = omiseSecretKey();
+  if (!secret) throw new Error("Omise is not configured: missing OMISE_SECRET_KEY");
+
+  const response = await fetch(`https://api.omise.co${path}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${secret}:`).toString("base64")}`,
+    },
+    cache: "no-store",
+  });
+  const text = await response.text();
+  let data: any = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+  if (!response.ok) {
+    const message = data?.message || data?.error_description || data?.code || data?.raw || `Omise request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return data;
+}
+
 async function createOmiseCharge(params: {
   amount: number;
   bookingId: string;
@@ -165,6 +190,51 @@ async function handleOmiseEvent(data: any) {
   return { success: true, booking_id: bookingId, charge_id: charge.id, status };
 }
 
+async function syncOmiseBooking(bookingId: string) {
+  const booking = (await query<any>(
+    "SELECT booking_id,status,payment_method FROM bookings WHERE booking_id=$1 LIMIT 1",
+    [bookingId]
+  )).rows[0];
+  if (!booking) return { error: "Booking not found", statusCode: 404 };
+
+  if (booking.status === "confirmed") {
+    return { success: true, booking_id: bookingId, status: "confirmed", synced: false };
+  }
+
+  const paidLog = (await query<any>(
+    "SELECT transaction_id,status FROM payment_logs WHERE booking_id=$1 AND payment_method IN ('omise','omise_card') AND status IN ('completed','successful','paid') ORDER BY id DESC LIMIT 1",
+    [bookingId]
+  )).rows[0];
+  if (paidLog) {
+    await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN 'omise_card' ELSE payment_method END WHERE booking_id=$1", [bookingId]);
+    return { success: true, booking_id: bookingId, status: "confirmed", synced: true, source: "payment_log" };
+  }
+
+  const latestLog = (await query<any>(
+    "SELECT transaction_id,payment_method FROM payment_logs WHERE booking_id=$1 AND payment_method IN ('omise','omise_card') AND COALESCE(transaction_id,'')<>'' ORDER BY id DESC LIMIT 1",
+    [bookingId]
+  )).rows[0];
+  const chargeId = latestLog?.transaction_id ? String(latestLog.transaction_id) : "";
+  if (!chargeId.startsWith("chrg_")) {
+    return { success: true, booking_id: bookingId, status: booking.status || "pending", synced: false };
+  }
+
+  const charge = await omiseGet(`/charges/${encodeURIComponent(chargeId)}`);
+  const status = String(charge.status || "");
+  const completed = status === "successful" || charge.paid === true;
+  const failed = ["failed", "expired", "reversed"].includes(status);
+  await query(
+    "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,$3,$4,$5,$6::jsonb)",
+    [bookingId, charge.id || chargeId, latestLog.payment_method || "omise_card", Number(charge.amount || 0) / 100, completed ? "completed" : failed ? "failed" : status || "pending", JSON.stringify(charge)]
+  );
+  if (completed) {
+    await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN 'omise_card' ELSE payment_method END WHERE booking_id=$1", [bookingId]);
+    return { success: true, booking_id: bookingId, status: "confirmed", synced: true, source: "omise_charge" };
+  }
+  if (failed) await query("UPDATE bookings SET status='cancelled' WHERE booking_id=$1 AND status='pending'", [bookingId]);
+  return { success: true, booking_id: bookingId, status: failed ? "cancelled" : booking.status || "pending", synced: false, charge_status: status };
+}
+
 export async function omisePayment(request: NextRequest) {
   const url = new URL(request.url);
   if (request.method === "GET" && url.searchParams.has("go")) {
@@ -219,6 +289,17 @@ export async function omiseConfig() {
   return json({
     public_key: process.env.OMISE_PUBLIC_KEY || process.env.NEXT_PUBLIC_OMISE_PUBLIC_KEY || "",
   });
+}
+
+export async function omiseSyncStatus(request: NextRequest) {
+  if (request.method !== "GET" && request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  const url = new URL(request.url);
+  const input = request.method === "POST" ? await body(request) : {};
+  const bookingId = String(input.booking_id || url.searchParams.get("booking_id") || "").trim();
+  if (!/^[A-Za-z0-9-]{6,30}$/.test(bookingId)) return json({ error: "Invalid booking_id" }, 400);
+  const result = await syncOmiseBooking(bookingId);
+  if ("error" in result) return json({ error: result.error }, result.statusCode || 500);
+  return json(result);
 }
 
 export async function omiseWebhook(request: NextRequest) {
