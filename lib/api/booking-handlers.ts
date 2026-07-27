@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { readSession } from "./auth";
 import { query } from "./db";
-import { body, json } from "./http";
+import { body, json, publicJson } from "./http";
 
 export async function availability(request:NextRequest){
   if(request.method==="POST"){
@@ -18,7 +18,7 @@ export async function availability(request:NextRequest){
   const overrideMap=new Map(overrides.map((x:any)=>[`${x.slot_date.slice(0,10)}|${x.boat_type}|${x.time_slot}`,x]));const countMap=new Map(counts.map((x:any)=>[`${x.booking_date.slice(0,10)}|${x.boat_type}|${x.time_slot}`,Number(x.cnt)]));
   const details:Record<string,any>={};const calendar:Record<string,string>={};const pastDates:string[]=[];const today=new Date().toISOString().slice(0,10);const days=new Date(year,month,0).getDate();
   for(let day=1;day<=days;day++){const date=`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;details[date]={};let availableSum=0,capacitySum=0;if(date<today)pastDates.push(date);for(const boat of targets){details[date][boat.id]={};for(const slot of ["morning","afternoon"]){const key=`${date}|${boat.id}|${slot}`;const over:any=overrideMap.get(key);const total=Number(over?.total_boats??boat.total_boats??1);const blocked=over?.status==="blocked"?total:Number(over?.blocked_boats||0);const booked=Number(countMap.get(key)||0);const available=Math.max(0,total-booked-blocked);details[date][boat.id][slot]={total,booked,blocked,available};availableSum+=available;capacitySum+=total;}}calendar[date]=!capacitySum||!availableSum?"booked":availableSum<capacitySum?"limited":"available";}
-  return json({month,year,calendar,details,pastDates});
+  return publicJson({month,year,calendar,details,pastDates},200,"public, max-age=15, s-maxage=120, stale-while-revalidate=600");
 }
 
 function bookingId(prefix="BK",date=new Date().toISOString().slice(0,10)){return `${prefix}-${date.replaceAll("-","")}-${String(Math.floor(Math.random()*999)+1).padStart(3,"0")}`;}

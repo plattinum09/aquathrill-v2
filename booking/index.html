@@ -832,9 +832,13 @@
                 opt.textContent = name + ' (' + cap + ', ' + weight + 'kg) \u2014 ' + formatPriceDisplay(price);
             }
         }
-        // Load boat types dynamically
-        fetch('/api/boat-types-v2.php').then(function(r){return r.json();}).then(function(d){
+        // Load boat types dynamically once and reuse it across selector/dropdown/day detail
+        let allBoatTypes = [];
+        let boatTypesLoaded = false;
+        let boatTypesPromise = fetch('/api/boat-types-v2.php', { cache: 'force-cache' }).then(function(r){return r.json();}).then(function(d){
             var boatTypes = d.boat_types || [];
+            allBoatTypes = boatTypes;
+            boatTypesLoaded = true;
 
             // Build boat selector tabs dynamically
             var selectorEl = document.getElementById('boat-selector');
@@ -870,7 +874,7 @@
                 sel.appendChild(opt);
             });
             // Also fetch actual pricing for overrides
-            return fetch('/api/boat-pricing.php');
+            return fetch('/api/boat-pricing.php', { cache: 'force-cache' });
         }).then(function(r){return r.json();}).then(function(d){
             var p = d.prices || {};
             var sel = document.getElementById('m-boat');
@@ -880,7 +884,7 @@
                 if (p[opt.value]) opt.dataset.price = p[opt.value];
             }
             updateBoatOptions();
-        }).catch(function(){});
+        }).catch(function(){ boatTypesLoaded = true; });
 
         // ===== Calendar State =====
         const today = new Date();
@@ -910,6 +914,9 @@
         let calendarData = {};
         let publicPastSet = new Set();
         let publicDetailsData = {};
+        const availabilityMemory = new Map();
+        const availabilityInflight = new Map();
+        const availabilityTtlMs = 60 * 1000;
 
         function getStatusLabel(status) {
             switch(status) {
@@ -924,12 +931,37 @@
         async function loadAvailability() {
             const month = currentMonth + 1;
             const boat = selectedBoat;
-            try {
-                const r = await fetch('/api/availability.php?month=' + month + '&year=' + currentYear + '&boat=' + boat);
-                const d = await r.json();
+            const key = currentYear + '-' + month + '-' + boat;
+            const storageKey = 'aq_availability_' + key;
+            const applyAvailability = function(d) {
                 calendarData = d.calendar || {};
                 publicPastSet = new Set(d.pastDates || []);
                 publicDetailsData = d.details || {};
+            };
+            const cached = availabilityMemory.get(key);
+            if (cached && Date.now() - cached.time < availabilityTtlMs) {
+                applyAvailability(cached.data);
+                renderCalendar();
+                return;
+            }
+            try {
+                const stored = JSON.parse(sessionStorage.getItem(storageKey) || 'null');
+                if (stored && Date.now() - stored.time < availabilityTtlMs) {
+                    availabilityMemory.set(key, stored);
+                    applyAvailability(stored.data);
+                    renderCalendar();
+                    return;
+                }
+            } catch(e) {}
+            try {
+                if (!availabilityInflight.has(key)) {
+                    availabilityInflight.set(key, fetch('/api/availability.php?month=' + month + '&year=' + currentYear + '&boat=' + boat, { cache: 'force-cache' }).then(function(r){ return r.json(); }).finally(function(){ availabilityInflight.delete(key); }));
+                }
+                const d = await availabilityInflight.get(key);
+                const entry = { time: Date.now(), data: d };
+                availabilityMemory.set(key, entry);
+                try { sessionStorage.setItem(storageKey, JSON.stringify(entry)); } catch(e) {}
+                applyAvailability(d);
             } catch(e) {
                 console.warn('API unavailable, using empty calendar');
                 calendarData = {};
@@ -1007,13 +1039,6 @@
         // ============================================
         // DAY DETAIL POPUP
         // ============================================
-        let allBoatTypes = [];
-        let boatTypesLoaded = false;
-        let boatTypesPromise = fetch('/api/boat-types-v2.php').then(r=>r.json()).then(d=>{
-            allBoatTypes = d.boat_types || [];
-            boatTypesLoaded = true;
-        }).catch(()=>{ boatTypesLoaded = true; });
-
         function getSlots() {
             return [
                 {id: 'morning', label: t('bk.time_morning','รอบเช้า (09:00-13:00) รับ 07:30')},
@@ -1107,13 +1132,13 @@
 
         // Re-render calendar when language changes (i18n loads async)
         document.addEventListener('langchange', function() {
-            loadAvailability();
+            renderCalendar();
         });
         // Also re-render once when i18n finishes initial load
         var _i18nRetry = setInterval(function() {
             if (window.I18n && I18n.t && I18n.t('bk.status_available') !== 'bk.status_available') {
                 clearInterval(_i18nRetry);
-                loadAvailability();
+                renderCalendar();
             }
         }, 200);
         setTimeout(function() { clearInterval(_i18nRetry); }, 5000);
