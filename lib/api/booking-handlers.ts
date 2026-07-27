@@ -39,7 +39,7 @@ export async function bookings(request:NextRequest){
     await query("INSERT INTO bookings(booking_id,boat_type,booking_date,time_slot,guests,customer_name,customer_phone,customer_email,payment_method,total_price,status,notes,agent_id) VALUES($1,$2,$3::date,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",[id,input.boat_type,input.booking_date,input.time_slot,Number(input.guests),input.customer_name,input.customer_phone,input.customer_email||"",input.payment_method||"",price,status,input.notes||"",input.agent_id||null]);return json({success:true,booking_id:id,total_price:price},201);
   }
   if(!admin)return json({error:"Unauthorized"},401);
-  if(request.method==="PUT"){if(!["pending","confirmed","cancelled"].includes(input.status))return json({error:"Invalid status"},400);const r=await query("UPDATE bookings SET status=$1,notes=COALESCE($2,notes) WHERE id=$3",[input.status,input.notes??null,input.id]);return r.rowCount?json({success:true}):json({error:"Booking not found"},404);}
+  if(request.method==="PUT"){if(!["pending","confirmed","cancelled"].includes(input.status))return json({error:"Invalid status"},400);const r=await query("UPDATE bookings SET status=$1,notes=COALESCE($2,notes),payment_method=CASE WHEN $1='confirmed' AND COALESCE(payment_method,'')='' THEN 'bank_transfer' WHEN $1='cancelled' THEN COALESCE(payment_method,'') ELSE payment_method END WHERE id=$3",[input.status,input.notes??null,input.id]);return r.rowCount?json({success:true}):json({error:"Booking not found"},404);}
   if(request.method==="DELETE"){const r=await query("DELETE FROM bookings WHERE id=$1",[input.id]);return r.rowCount?json({success:true,message:"ลบการจองเรียบร้อยแล้ว"}):json({error:"ไม่พบการจอง"},404);}
   return json({error:"Method not allowed"},405);
 }

@@ -35,6 +35,23 @@ function paymentErrorPage(message: string, status = 500) {
   );
 }
 
+function omiseQrPage(params: {
+  amount: unknown;
+  bookingId: string;
+  expiresAt?: string;
+  qrUrl: string;
+  returnUri: string;
+}) {
+  const expires = params.expiresAt ? new Date(params.expiresAt) : null;
+  const expiresText = expires && !Number.isNaN(expires.getTime())
+    ? expires.toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok" })
+    : "";
+  return new Response(
+    `<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ชำระเงิน PromptPay | AQUATHRILL</title><style>body{margin:0;font-family:Kanit,system-ui,sans-serif;background:#071426;color:#fff;display:grid;place-items:center;min-height:100vh;padding:24px}.card{width:min(520px,100%);background:#102746;border:1px solid rgba(0,212,255,.25);border-radius:24px;padding:28px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.35)}h1{margin:0 0 8px;font-size:1.8rem}.muted{color:#a9c8df;line-height:1.6}.amount{font-size:2rem;font-weight:800;color:#00d4ff;margin:12px 0}.qr{background:#fff;border-radius:20px;padding:18px;margin:20px auto;width:min(300px,90%)}.qr img{display:block;width:100%;height:auto}.btn{display:inline-flex;align-items:center;justify-content:center;margin:10px 6px 0;background:#00b4ff;color:#fff;text-decoration:none;padding:13px 20px;border-radius:14px;font-weight:700}.btn.secondary{background:#243a5d}</style><main class="card"><h1>สแกนจ่าย PromptPay</h1><p class="muted">หมายเลขการจอง ${escape(params.bookingId)}</p><div class="amount">฿${Number(params.amount || 0).toLocaleString("th-TH")}</div><div class="qr"><img src="${escape(params.qrUrl)}" alt="PromptPay QR"></div><p class="muted">หลังชำระเงินแล้ว ระบบจะอัปเดตสถานะโดยอัตโนมัติ${expiresText ? `<br>QR หมดอายุ: ${escape(expiresText)}` : ""}</p><a class="btn" href="${escape(params.returnUri)}">ตรวจสอบสถานะ</a><a class="btn secondary" href="/booking">กลับหน้าจอง</a></main></html>`,
+    { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
+  );
+}
+
 async function omisePost(path: string, params: Record<string, any>) {
   const secret = omiseSecretKey();
   if (!secret) throw new Error("Omise is not configured: missing OMISE_SECRET_KEY");
@@ -129,6 +146,9 @@ async function startOmisePayment(request: NextRequest) {
     [booking.booking_id, charge.id || null, booking.total_price, charge.status || "pending", JSON.stringify(charge)]
   );
   await query("UPDATE bookings SET payment_method='omise' WHERE booking_id=$1 AND status!='confirmed'", [booking.booking_id]);
+
+  const qrUrl = charge.source?.scannable_code?.image?.download_uri;
+  if (qrUrl) return omiseQrPage({ amount: booking.total_price, bookingId: booking.booking_id, expiresAt: charge.expires_at, qrUrl, returnUri });
 
   const authorizeUri = charge.authorize_uri || charge.authorizeUri;
   if (authorizeUri) return Response.redirect(authorizeUri, 303);

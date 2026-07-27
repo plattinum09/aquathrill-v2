@@ -134,7 +134,7 @@
                     <div class="detail-row">
                         <span class="label">สถานะ</span>
                         <span class="value" style="color:${type === 'success' ? '#00c853' : type === 'pending' ? '#ffc107' : '#ff5252'}">
-                            ${booking.status === 'confirmed' ? 'ยืนยันแล้ว' : booking.status === 'pending' ? 'รอตรวจสอบ' : 'ล้มเหลว'}
+                            ${booking.status === 'confirmed' ? 'ชำระเงินสำเร็จ' : booking.status === 'pending' ? 'รอตรวจสอบ' : 'ล้มเหลว'}
                         </span>
                     </div>
                 </div>`;
@@ -142,7 +142,6 @@
 
             html += `
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                    ${type === 'pending' && booking ? `<a href="/api/omise-payment.php?go=1&booking_id=${encodeURIComponent(booking.booking_id)}" class="btn-back" style="background:linear-gradient(135deg,#00d4ff,#00a3d9)"><i class="fas fa-credit-card"></i> ชำระเงินต่อผ่าน Omise</a>` : ''}
                     <a href="/" class="btn-back"><i class="fas fa-home"></i> กลับหน้าหลัก</a>
                     <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> ติดต่อเรา</a>
                 </div>`;

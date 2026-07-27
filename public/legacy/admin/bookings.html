@@ -263,7 +263,7 @@
         if(!bookings.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:rgba(255,255,255,.4)">ไม่พบข้อมูลการจอง</td></tr>';return;}
         tbody.innerHTML=bookings.map(b=>{
             const statusClass={'pending':'badge-pending','confirmed':'badge-confirmed','cancelled':'badge-cancelled'}[b.status]||'';
-            const statusText={'pending':'รอยืนยัน','confirmed':'ยืนยันแล้ว','cancelled':'ยกเลิก'}[b.status]||b.status;
+            const statusText={'pending':'รอยืนยัน','confirmed':'ชำระเงินสำเร็จ','cancelled':'ยกเลิก'}[b.status]||b.status;
             const slotText=b.time_slot==='morning'?'เช้า':'บ่าย';
             const isAgent = b.booking_id && b.booking_id.startsWith('AG-');
             const typeBadge = isAgent
@@ -305,7 +305,7 @@
         const b=(d.bookings||[]).find(x=>x.id==id);
         if(!b) return;
         const slotText=b.time_slot==='morning'?'รอบเช้า (09:00-13:00)':'รอบบ่าย (14:00-18:00)';
-        const statusText={'pending':'รอยืนยัน','confirmed':'ยืนยันแล้ว','cancelled':'ยกเลิก'}[b.status]||b.status;
+        const statusText={'pending':'รอยืนยัน','confirmed':'ชำระเงินสำเร็จ','cancelled':'ยกเลิก'}[b.status]||b.status;
         document.getElementById('detail-content').innerHTML=`
             <div class="detail-row"><span class="lbl">รหัสจอง</span><span style="color:#00d4ff;font-weight:600">${b.booking_id}</span></div>
             <div class="detail-row"><span class="lbl">เรือ</span><span>${b.boat_type}</span></div>
