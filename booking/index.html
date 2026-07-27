@@ -1026,9 +1026,11 @@
         // DAY DETAIL POPUP
         // ============================================
         let allBoatTypes = [];
-        fetch('/api/boat-types-v2.php?_t=' + Date.now()).then(r=>r.json()).then(d=>{
+        let boatTypesLoaded = false;
+        let boatTypesPromise = fetch('/api/boat-types-v2.php').then(r=>r.json()).then(d=>{
             allBoatTypes = d.boat_types || [];
-        }).catch(()=>{});
+            boatTypesLoaded = true;
+        }).catch(()=>{ boatTypesLoaded = true; });
 
         function getSlots() {
             return [
@@ -1037,7 +1039,7 @@
             ];
         }
 
-        window.showDayDetail = function(dateStr) {
+        window.showDayDetail = async function(dateStr) {
             var overlay = document.getElementById('q-detail-overlay');
             var dateEl = document.getElementById('q-detail-date');
             var badgeWrap = document.getElementById('q-detail-badge-wrap');
@@ -1047,10 +1049,20 @@
             var parts = dateStr.split('-');
             dateEl.textContent = parseInt(parts[2]) + ' ' + getMonthName(parseInt(parts[1])-1) + ' ค.ศ ' + parts[0];
             badgeWrap.innerHTML = '<span class="q-detail-badge ' + dayStatus + '">' + getStatusLabel(dayStatus) + '</span>';
+            if (!boatTypesLoaded && boatTypesPromise) {
+                tbody.innerHTML = '<div class="q-slot-card" style="text-align:center;color:rgba(255,255,255,.65)"><i class="fas fa-spinner fa-spin"></i> กำลังโหลดรายการเรือ...</div>';
+                overlay.classList.add('active');
+                try { await boatTypesPromise; } catch(e) {}
+            }
 
             var detail = publicDetailsData[dateStr] || {};
             var boatList = selectedBoat === 'all' ? allBoatTypes : allBoatTypes.filter(function(b){ return b.id === selectedBoat; });
             var html = '';
+            if (!boatList.length) {
+                tbody.innerHTML = '<div class="q-slot-card" style="text-align:center;color:rgba(255,255,255,.65)">ไม่พบรายการเรือ กรุณาลองใหม่อีกครั้ง</div>';
+                overlay.classList.add('active');
+                return;
+            }
 
             var slotsArr = getSlots();
             boatList.forEach(function(boat) {

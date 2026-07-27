@@ -851,9 +851,12 @@
             }
         }
         // Load boat types dynamically
-        fetch('/api/boat-types-v2.php').then(function(r){return r.json();}).then(function(d){
+        let allBoatTypes = [];
+        let boatTypesLoaded = false;
+        let boatTypesPromise = fetch('/api/boat-types-v2.php').then(function(r){return r.json();}).then(function(d){
             var boatTypes = d.boat_types || [];
             allBoatTypes = boatTypes;
+            boatTypesLoaded = true;
 
             // Build boat selector tabs dynamically
             var selectorEl = document.getElementById('boat-selector');
@@ -889,7 +892,7 @@
                 sel.appendChild(opt);
             });
             updateBoatOptions();
-        }).catch(function(){});
+        }).catch(function(){ boatTypesLoaded = true; });
 
         // ===== Calendar State =====
         const today = new Date();
@@ -1016,8 +1019,6 @@
         // ============================================
         // DAY DETAIL POPUP
         // ============================================
-        let allBoatTypes = [];
-
         function getSlots() {
             return [
                 {id: 'morning', label: t('bk.time_morning','รอบเช้า (09:00-13:00) รับ 07:30')},
@@ -1025,7 +1026,7 @@
             ];
         }
 
-        window.showDayDetail = function(dateStr) {
+        window.showDayDetail = async function(dateStr) {
             var overlay = document.getElementById('q-detail-overlay');
             var dateEl = document.getElementById('q-detail-date');
             var badgeWrap = document.getElementById('q-detail-badge-wrap');
@@ -1035,10 +1036,20 @@
             var parts = dateStr.split('-');
             dateEl.textContent = parseInt(parts[2]) + ' ' + getMonthName(parseInt(parts[1])-1) + ' ค.ศ ' + parts[0];
             badgeWrap.innerHTML = '<span class="q-detail-badge ' + dayStatus + '">' + getStatusLabel(dayStatus) + '</span>';
+            if (!boatTypesLoaded && boatTypesPromise) {
+                tbody.innerHTML = '<div class="q-slot-card" style="text-align:center;color:rgba(255,255,255,.65)"><i class="fas fa-spinner fa-spin"></i> กำลังโหลดรายการเรือ...</div>';
+                overlay.classList.add('active');
+                try { await boatTypesPromise; } catch(e) {}
+            }
 
             var detail = publicDetailsData[dateStr] || {};
             var boatList = selectedBoat === 'all' ? allBoatTypes : allBoatTypes.filter(function(b){ return b.id === selectedBoat; });
             var html = '';
+            if (!boatList.length) {
+                tbody.innerHTML = '<div class="q-slot-card" style="text-align:center;color:rgba(255,255,255,.65)">ไม่พบรายการเรือ กรุณาลองใหม่อีกครั้ง</div>';
+                overlay.classList.add('active');
+                return;
+            }
 
             var slotsArr = getSlots();
             boatList.forEach(function(boat) {
