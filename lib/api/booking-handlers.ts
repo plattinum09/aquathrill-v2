@@ -12,9 +12,24 @@ export async function availability(request:NextRequest){
   if(request.method!=="GET")return json({error:"Method not allowed"},405);
   const url=new URL(request.url);const now=new Date();const month=Number(url.searchParams.get("month")||now.getMonth()+1);const year=Number(url.searchParams.get("year")||now.getFullYear());const selected=url.searchParams.get("boat")||"all";
   const start=`${year}-${String(month).padStart(2,"0")}-01`;const end=new Date(Date.UTC(year,month,0)).toISOString().slice(0,10);
-  const boats=(await query<any>("SELECT id,total_boats FROM boat_types WHERE is_active=1 ORDER BY sort_order,id")).rows as Array<{id:string;total_boats:number}>;const targets=selected==="all"?boats:boats.filter((x:{id:string})=>x.id===selected);
-  const overrides=(await query<any>("SELECT boat_type,slot_date::text,time_slot,status,total_boats,blocked_boats FROM boat_availability WHERE slot_date BETWEEN $1::date AND $2::date AND ($3='all' OR boat_type=$3)",[start,end,selected])).rows;
-  const counts=(await query<any>("SELECT boat_type,booking_date::text,time_slot,COUNT(*)::int cnt FROM bookings WHERE booking_date BETWEEN $1::date AND $2::date AND status!='cancelled' AND ($3='all' OR boat_type=$3) GROUP BY boat_type,booking_date,time_slot",[start,end,selected])).rows;
+  const boats=(await query<any>(
+    selected==="all"
+      ? "SELECT id,total_boats FROM boat_types WHERE is_active=1 ORDER BY sort_order,id"
+      : "SELECT id,total_boats FROM boat_types WHERE is_active=1 AND id=$1 ORDER BY sort_order,id",
+    selected==="all"?[]:[selected]
+  )).rows as Array<{id:string;total_boats:number}>;const targets=boats;
+  const overrides=(await query<any>(
+    selected==="all"
+      ? "SELECT boat_type,slot_date::text,time_slot,status,total_boats,blocked_boats FROM boat_availability WHERE slot_date BETWEEN $1::date AND $2::date"
+      : "SELECT boat_type,slot_date::text,time_slot,status,total_boats,blocked_boats FROM boat_availability WHERE boat_type=$1 AND slot_date BETWEEN $2::date AND $3::date",
+    selected==="all"?[start,end]:[selected,start,end]
+  )).rows;
+  const counts=(await query<any>(
+    selected==="all"
+      ? "SELECT boat_type,booking_date::text,time_slot,COUNT(*)::int cnt FROM bookings WHERE booking_date BETWEEN $1::date AND $2::date AND status!='cancelled' GROUP BY boat_type,booking_date,time_slot"
+      : "SELECT boat_type,booking_date::text,time_slot,COUNT(*)::int cnt FROM bookings WHERE boat_type=$1 AND booking_date BETWEEN $2::date AND $3::date AND status!='cancelled' GROUP BY boat_type,booking_date,time_slot",
+    selected==="all"?[start,end]:[selected,start,end]
+  )).rows;
   const overrideMap=new Map(overrides.map((x:any)=>[`${x.slot_date.slice(0,10)}|${x.boat_type}|${x.time_slot}`,x]));const countMap=new Map(counts.map((x:any)=>[`${x.booking_date.slice(0,10)}|${x.boat_type}|${x.time_slot}`,Number(x.cnt)]));
   const details:Record<string,any>={};const calendar:Record<string,string>={};const pastDates:string[]=[];const today=new Date().toISOString().slice(0,10);const days=new Date(year,month,0).getDate();
   for(let day=1;day<=days;day++){const date=`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;details[date]={};let availableSum=0,capacitySum=0;if(date<today)pastDates.push(date);for(const boat of targets){details[date][boat.id]={};for(const slot of ["morning","afternoon"]){const key=`${date}|${boat.id}|${slot}`;const over:any=overrideMap.get(key);const total=Number(over?.total_boats??boat.total_boats??1);const blocked=over?.status==="blocked"?total:Number(over?.blocked_boats||0);const booked=Number(countMap.get(key)||0);const available=Math.max(0,total-booked-blocked);details[date][boat.id][slot]={total,booked,blocked,available};availableSum+=available;capacitySum+=total;}}calendar[date]=!capacitySum||!availableSum?"booked":availableSum<capacitySum?"limited":"available";}

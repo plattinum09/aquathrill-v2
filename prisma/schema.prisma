@@ -73,6 +73,8 @@ model Booking {
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
 
   @@index([bookingDate, timeSlot, boatType, status], map: "idx_availability")
+  @@index([boatType, bookingDate, timeSlot, status], map: "idx_bookings_boat_date_slot_status")
+  @@index([bookingDate, status], map: "idx_bookings_date_status")
   @@index([status], map: "idx_bookings_status")
   @@index([agentId], map: "idx_agent_id")
   @@map("bookings")
@@ -87,6 +89,8 @@ model BoatAvailability {
   blockedBoats Int      @default(0) @map("blocked_boats")
 
   @@id([boatType, slotDate, timeSlot])
+  @@index([slotDate], map: "idx_boat_availability_slot_date")
+  @@index([slotDate, boatType, timeSlot], map: "idx_boat_availability_date_boat_slot")
   @@map("boat_availability")
 }
 
@@ -119,6 +123,7 @@ model PaymentLog {
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamp(6)
 
   @@index([bookingId], map: "idx_payment_logs_booking_id")
+  @@index([bookingId, paymentMethod, status, id], map: "idx_payment_logs_booking_method_status_id")
   @@index([transactionId], map: "idx_payment_logs_transaction")
   @@map("payment_logs")
 }

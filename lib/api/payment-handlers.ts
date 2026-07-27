@@ -211,7 +211,7 @@ async function syncOmiseBooking(bookingId: string) {
   }
 
   const latestLog = (await query<any>(
-    "SELECT transaction_id,payment_method FROM payment_logs WHERE booking_id=$1 AND payment_method IN ('omise','omise_card') AND COALESCE(transaction_id,'')<>'' ORDER BY id DESC LIMIT 1",
+    "SELECT transaction_id,payment_method FROM payment_logs WHERE booking_id=$1 AND payment_method IN ('omise','omise_card') AND transaction_id IS NOT NULL ORDER BY id DESC LIMIT 1",
     [bookingId]
   )).rows[0];
   const chargeId = latestLog?.transaction_id ? String(latestLog.transaction_id) : "";
