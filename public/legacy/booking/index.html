@@ -178,6 +178,20 @@
             white-space: nowrap;
             max-width: 100%;
         }
+        .cal-day.skeleton {
+            overflow: hidden;
+            background: rgba(255,255,255,0.055);
+            border: 1px solid rgba(255,255,255,0.055);
+        }
+        .cal-day.skeleton::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+            transform: translateX(-100%);
+            animation: calShimmer 1.2s infinite;
+        }
+        @keyframes calShimmer { to { transform: translateX(100%); } }
         .cal-day {
             overflow: hidden;
         }
@@ -943,6 +957,7 @@
                     return;
                 }
             } catch(e) {}
+            renderCalendarSkeleton();
             try {
                 if (!availabilityInflight.has(key)) {
                     availabilityInflight.set(key, fetch('/api/availability.php?month=' + month + '&year=' + currentYear + '&boat=' + boat, { cache: 'force-cache' }).then(function(r){ return r.json(); }).finally(function(){ availabilityInflight.delete(key); }));
@@ -959,6 +974,16 @@
                 publicDetailsData = {};
             }
             renderCalendar();
+        }
+
+        function renderCalendarSkeleton() {
+            const grid = document.getElementById('cal-grid');
+            const label = document.getElementById('month-label');
+            if (label) label.textContent = getMonthName(currentMonth) + ' ค.ศ ' + currentYear;
+            if (!grid) return;
+            let html = '';
+            for (let i = 0; i < 35; i++) html += '<div class="cal-day skeleton"></div>';
+            grid.innerHTML = html;
         }
 
         // ===== Render Calendar =====
