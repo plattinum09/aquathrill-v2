@@ -635,7 +635,7 @@
         <div class="modal-card">
             <button class="modal-close" id="modal-close-btn"><i class="fas fa-times"></i></button>
 
-            <!-- Step Dots (hidden — flow ใหม่มี step เดียว → Payso) -->
+            <!-- Step Dots (hidden — flow ใหม่มี step เดียว → Omise) -->
             <div class="modal-steps" style="display:none;">
                 <div class="modal-step-dot active" data-step="1"></div>
                 <div class="modal-step-dot" data-step="2"></div>
@@ -700,7 +700,7 @@
                 </button>
             </div>
 
-            <!-- ========== STEP 2: PAYMENT (deprecated — ใช้ Payso แทน) ========== -->
+            <!-- ========== STEP 2: PAYMENT (deprecated — ใช้ Omise แทน) ========== -->
             <div class="modal-step" id="modal-step-2" style="display:none;">
                 <div class="modal-title"><i class="fas fa-credit-card"></i> <span data-i18n="bk.step2_title">ชำระเงิน</span></div>
                 <div class="modal-subtitle" data-i18n="bk.step2_sub">เลือกวิธีชำระเงินที่สะดวก</div>
@@ -790,7 +790,7 @@
                 </button>
             </div>
 
-            <!-- ========== STEP 3: CONFIRMATION (deprecated — Payso redirect ไป result.html แทน) ========== -->
+            <!-- ========== STEP 3: CONFIRMATION (deprecated — Omise redirect ไป result.html แทน) ========== -->
             <div class="modal-step" id="modal-step-3" style="display:none;">
                 <div style="text-align:center;">
                     <div class="m-success-icon"><i class="fas fa-check"></i></div>
@@ -1238,8 +1238,8 @@
             modalData.time = document.getElementById('m-time').value;
             modalData.timeValue = document.getElementById('m-time').value;
             modalData.timeName = document.getElementById('m-time').options[document.getElementById('m-time').selectedIndex].text;
-            // ส่งตรงไป Payso (ไม่ผ่าน step 2 เลือกวิธีจ่ายของเรา — Payso มี UI ให้เลือกอยู่แล้ว)
-            goToPayso(this, 'payso');
+            // ส่งตรงไป Omise (ไม่ผ่าน step 2 เลือกวิธีจ่ายของเรา — Omise มี UI ให้เลือกอยู่แล้ว)
+            goToOmise(this, 'omise');
         });
 
         // Back to step 1
@@ -1310,8 +1310,8 @@
         }
 
         // Pay buttons
-        // ทุกปุ่ม pay → สร้าง booking + redirect ตรงไป Payso (Payso จะให้เลือกวิธีจ่ายเอง: บัตร/QR/Banking/วอลเล็ท/ผ่อน)
-        async function goToPayso(btn, method) {
+        // ทุกปุ่ม pay → สร้าง booking + redirect ตรงไป Omise (Omise จะให้เลือกวิธีจ่ายเอง: บัตร/QR/Banking/วอลเล็ท/ผ่อน)
+        async function goToOmise(btn, method) {
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('bk.processing','กำลังดำเนินการ...');
 
@@ -1335,7 +1335,7 @@
                 });
                 var apiData = await apiRes.json();
                 if (apiData.booking_id) {
-                    window.location.href = '/api/paysolutions-payment.php?go=1&booking_id=' + encodeURIComponent(apiData.booking_id);
+                    window.location.href = '/api/omise-payment.php?go=1&booking_id=' + encodeURIComponent(apiData.booking_id);
                     return;
                 }
                 throw new Error(apiData.error || 'Booking creation failed');
@@ -1345,9 +1345,9 @@
             }
         }
 
-        document.getElementById('m-btn-pay-card').addEventListener('click', function() { goToPayso(this, 'payso'); });
-        document.getElementById('m-btn-pay-transfer').addEventListener('click', function() { goToPayso(this, 'payso'); });
-        document.getElementById('m-btn-pay-qr').addEventListener('click', function() { goToPayso(this, 'payso'); });
+        document.getElementById('m-btn-pay-card').addEventListener('click', function() { goToOmise(this, 'omise'); });
+        document.getElementById('m-btn-pay-transfer').addEventListener('click', function() { goToOmise(this, 'omise'); });
+        document.getElementById('m-btn-pay-qr').addEventListener('click', function() { goToOmise(this, 'omise'); });
 
         // Download Receipt
         document.getElementById('m-btn-download').addEventListener('click', function() {

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <!-- บล็อกการเข้าถึงหน้านี้: ระบบ payment ใช้ Payso แล้ว ไม่ใช้หน้าตั้งค่าโอน/พร้อมเพย์นี้
+    <!-- บล็อกการเข้าถึงหน้านี้: ระบบ payment ใช้ Omise แล้ว ไม่ใช้หน้าตั้งค่าโอน/พร้อมเพย์นี้
          redirect ทุกคน (รวม admin) กลับ dashboard ทันทีก่อนหน้า render
          เปิดคืนได้โดยลบแท็ก script redirect บรรทัดล่างนี้ออก -->
     <script>window.location.replace('index.html');</script>
@@ -102,7 +102,7 @@
             <a href="/admin/promotions.html"><i class="fas fa-bullhorn"></i> <span>โปรโมชั่น</span></a>
             <a href="/admin/gallery.html"><i class="fas fa-images"></i> <span>แกลเลอรี่</span></a>
             <a href="/admin/reviews.html"><i class="fas fa-star"></i> <span>รีวิว Google</span></a>
-            <!-- ซ่อนเมนูชำระเงิน (ระบบ Payso ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
+            <!-- ซ่อนเมนูชำระเงิน (ระบบ Omise ตั้งค่าเสร็จแล้ว) — เปิดคืนได้โดยลบ comment ออก:
             <a href="payment-settings.html" class="active"><i class="fas fa-credit-card"></i> <span>ชำระเงิน</span></a>
             -->
             <a href="../" target="_blank"><i class="fas fa-external-link-alt"></i> <span>ดูเว็บไซต์</span></a>
@@ -177,8 +177,8 @@
             <h3><i class="fas fa-toggle-on"></i> เปิด/ปิดช่องทางชำระเงิน</h3>
             <div class="toggle-row">
                 <div>
-                    <div class="toggle-label"><i class="fas fa-bolt" style="color:#00d4ff"></i> ชำระออนไลน์ (Payso)</div>
-                    <div class="toggle-desc">บัตรเครดิต/เดบิต, QR PromptPay, Internet Banking, ผ่อน 0%, e-Wallet — ผ่าน Payso Gateway</div>
+                    <div class="toggle-label"><i class="fas fa-bolt" style="color:#00d4ff"></i> ชำระออนไลน์ (Omise)</div>
+                    <div class="toggle-desc">บัตรเครดิต/เดบิต, QR PromptPay, Internet Banking, ผ่อน 0%, e-Wallet — ผ่าน Omise Gateway</div>
                 </div>
                 <label class="toggle-switch">
                     <input type="checkbox" id="toggle-credit" checked>

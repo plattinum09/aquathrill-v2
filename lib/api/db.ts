@@ -1,30 +1,21 @@
-import { Pool, type QueryResultRow } from "pg";
+import { prisma } from "./prisma";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var aquathrillPool: Pool | undefined;
+export type QueryResultRow = Record<string, any>;
+
+function expectsRows(sql: string) {
+  const normalized = sql.trim().toLowerCase();
+  return (
+    normalized.startsWith("select") ||
+    normalized.startsWith("with") ||
+    normalized.includes(" returning ")
+  );
 }
-
-function poolConfig() {
-  if (process.env.DATABASE_URL) {
-    return {
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.DB_SSL === "false" ? false : { rejectUnauthorized: false },
-    };
-  }
-  return {
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT || 5432),
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
-  };
-}
-
-export const db = global.aquathrillPool ?? new Pool(poolConfig());
-if (process.env.NODE_ENV !== "production") global.aquathrillPool = db;
 
 export async function query<T extends QueryResultRow = QueryResultRow>(text: string, values: unknown[] = []) {
-  return db.query<T>(text, values);
+  if (expectsRows(text)) {
+    const rows = await prisma.$queryRawUnsafe<T[]>(text, ...values);
+    return { rows, rowCount: rows.length };
+  }
+  const rowCount = await prisma.$executeRawUnsafe(text, ...values);
+  return { rows: [] as T[], rowCount };
 }

@@ -91,6 +91,16 @@
                 const s = '฿' + Number(n || 0).toLocaleString('th-TH');
                 return s + (lang === 'th' ? ' บาท' : ' THB');
             };
+            const fmtDate = (value) => {
+                if (!value) return '-';
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return value;
+                return date.toLocaleDateString(lang === 'th' ? 'th-TH' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+            };
+            const fmtSlot = (value) => ({
+                morning: lang === 'th' ? 'รอบเช้า' : 'Morning',
+                afternoon: lang === 'th' ? 'รอบบ่าย' : 'Afternoon'
+            }[value] || value || '-');
             let html = `
                 <div class="result-icon ${type}">
                     <i class="fas ${icon}"></i>
@@ -111,11 +121,11 @@
                     </div>
                     <div class="detail-row">
                         <span class="label">วันที่</span>
-                        <span class="value">${booking.booking_date || '-'}</span>
+                        <span class="value">${fmtDate(booking.booking_date)}</span>
                     </div>
                     <div class="detail-row">
                         <span class="label">เวลา</span>
-                        <span class="value">${booking.time_slot || '-'}</span>
+                        <span class="value">${fmtSlot(booking.time_slot)}</span>
                     </div>
                     <div class="detail-row">
                         <span class="label">ยอดชำระ</span>
@@ -132,6 +142,7 @@
 
             html += `
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                    ${type === 'pending' && booking ? `<a href="/api/omise-payment.php?go=1&booking_id=${encodeURIComponent(booking.booking_id)}" class="btn-back" style="background:linear-gradient(135deg,#00d4ff,#00a3d9)"><i class="fas fa-credit-card"></i> ชำระเงินต่อผ่าน Omise</a>` : ''}
                     <a href="/" class="btn-back"><i class="fas fa-home"></i> กลับหน้าหลัก</a>
                     <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> ติดต่อเรา</a>
                 </div>`;

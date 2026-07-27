@@ -124,7 +124,7 @@
     // Fetch boat data from API
     (function fetchBoatData() {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api/boat-types-v2.php?_t=' + Date.now(), true);
+        xhr.open('GET', '/api/boat-types-v2.php', true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {

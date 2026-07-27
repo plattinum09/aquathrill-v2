@@ -4,13 +4,14 @@ import { agentAuth } from "@/lib/api/agent-auth";
 import { availability, bookings } from "@/lib/api/booking-handlers";
 import { agentBooking, agentPricing, agentSlip } from "@/lib/api/agent-handlers";
 import { gallery, galleryAuth } from "@/lib/api/gallery-handlers";
-import { paysolutionsCallback, paysolutionsPayment } from "@/lib/api/payment-handlers";
+import { omisePayment, omiseWebhook, paysolutionsCallback, paysolutionsPayment } from "@/lib/api/payment-handlers";
 import { reviews } from "@/lib/api/review-handlers";
 import { agentManage, boatPricing, boatTypes, pageContent, paymentSettings, promotions, upload } from "@/lib/api/core-handlers";
 import { errorResponse, json } from "@/lib/api/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const preferredRegion = "sin1";
 
 type Context={params:Promise<{endpoint:string}>};
 async function dispatch(request:NextRequest,context:Context){
@@ -33,6 +34,8 @@ async function dispatch(request:NextRequest,context:Context){
       case "upload":return upload(request);
       case "gallery":return gallery(request);
       case "gallery-auth":return galleryAuth(request);
+      case "omise-payment":return omisePayment(request);
+      case "omise-webhook":return omiseWebhook(request);
       case "paysolutions-payment":return paysolutionsPayment(request);
       case "paysolutions-callback":return paysolutionsCallback(request);
       case "google-reviews":return reviews(request);

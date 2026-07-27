@@ -172,24 +172,25 @@
     <div class="toast" id="toast"></div>
 
     <script>
-    const API = '/api';
-    let editMode = false;
-    let hasChanges = false;
-    let currentImgTarget = null;
-    let pendingImgUrl = null;
-    let iframeDoc = null;
+    var API = '/api';
+    var editMode = false;
+    var hasChanges = false;
+    var currentImgTarget = null;
+    var pendingImgUrl = null;
+    var iframeDoc = null;
+    var draftContent = null;
     // Restore language from last session (persists across F5 refresh)
-    let currentEditorLang = (function(){
+    var currentEditorLang = (function(){
         try { return sessionStorage.getItem('editor-lang') || 'th'; } catch(e){ return 'th'; }
     })();
 
     // Wait for iframe to load
-    const iframe = document.getElementById('page-iframe');
+    var iframe = document.getElementById('page-iframe');
 
     // Set initial iframe src based on restored language
     (function(){
         const baseSrc = '../promotions/';
-        iframe.src = baseSrc + '?lang=' + currentEditorLang;
+        iframe.src = baseSrc + '?editor=1&lang=' + currentEditorLang;
         // Restore active lang button UI
         document.querySelectorAll('.lang-switcher .lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === currentEditorLang);
@@ -213,9 +214,11 @@
             patchIframeLang(currentEditorLang);
             loadSavedContent();            // Run #1: populate savedBoatModalData early
             setTimeout(loadSavedContent, 700); // Run #2: override after i18n-loader finishes
+            setTimeout(loadSavedContent, 1600); // Run #3: final DB override after inline page scripts settle
             // Auto-enter edit mode — always start in edit mode, no separate view mode
             setTimeout(function() {
                 if (!editMode) toggleEditMode();
+                else enableEditing();
             }, 800);
         } catch(e) {
             console.error('Cannot access iframe:', e);
@@ -321,7 +324,7 @@
         }
     });
 
-    const sectionLabels = {
+    var sectionLabels = {
         hero: 'Hero Banner',
         trip: 'ทริปเที่ยวเกาะ',
         schedule: 'ตารางเวลา',
@@ -338,7 +341,7 @@
 
         try {
             const pageKey = currentEditorLang === 'th' ? 'promotions' : 'promotions_' + currentEditorLang;
-            const r = await fetch(API + '/page-content.php?page=' + pageKey);
+            const r = await fetch(API + '/page-content.php?page=' + pageKey + '&admin=1', { credentials: 'include', cache: 'no-store' });
             const d = await r.json();
             let content = d.content || {};
 
@@ -349,12 +352,16 @@
             }
 
             // Save updated content back
-            await fetch(API + '/page-content.php', {
+            const saveRes = await fetch(API + '/page-content.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ page: pageKey, content: Object.keys(content).length ? content : null }),
                 credentials: 'include'
             });
+            const saveData = await saveRes.json().catch(() => ({}));
+            if (!saveRes.ok || !saveData.success) throw new Error(saveData.error || 'บันทึกไม่สำเร็จ');
+            if (!saveData.content) throw new Error('API ไม่ได้ส่งข้อมูลที่บันทึกกลับมา');
+            applyContent(saveData.content);
 
             // Turn off edit mode before reload
             if (editMode) {
@@ -421,6 +428,7 @@
         ];
 
         function addImageEditButtons() {
+            if (!iframeDoc || !iframeDoc.defaultView) return;
             imgSelectors.forEach(sel => {
                 iframeDoc.querySelectorAll(sel).forEach(img => {
                     if (img.dataset.editBtnAdded) return;
@@ -440,7 +448,9 @@
                     });
 
                     const parent = img.parentElement;
-                    if (iframeDoc.defaultView.getComputedStyle(parent).position === 'static') {
+                    if (!parent) return;
+                    const view = iframeDoc.defaultView;
+                    if (view && view.getComputedStyle(parent).position === 'static') {
                         parent.style.position = 'relative';
                     }
                     parent.appendChild(btn);
@@ -449,6 +459,7 @@
         }
         // Ensure image parents don't clip the edit button
         function fixOverflow() {
+            if (!iframeDoc || !iframeDoc.defaultView) return;
             imgSelectors.forEach(sel => {
                 iframeDoc.querySelectorAll(sel).forEach(img => {
                     var p = img.parentElement;
@@ -507,12 +518,25 @@
     }
 
     function markChanged() {
+        const latest = collectContentFromIframe();
+        if (latest) draftContent = latest;
         hasChanges = true;
         document.getElementById('btn-save').disabled = false;
     }
 
+    function getEditorDoc() {
+        const frame = document.getElementById('page-iframe');
+        try {
+            const currentDoc = frame ? (frame.contentDocument || frame.contentWindow.document) : null;
+            if (currentDoc && currentDoc.querySelector) iframeDoc = currentDoc;
+        } catch(e) {
+            iframeDoc = null;
+        }
+        return iframeDoc;
+    }
+
     // ===== IMAGE MODAL (both images) =====
-    const imgTargets = {
+    var imgTargets = {
         hero: { sel: '.promo-hero-img img', previewId: 'img-preview-hero', statusId: 'img-status-hero' },
         trip: { sel: '.trip-img-side img', previewId: 'img-preview-trip', statusId: 'img-status-trip' }
     };
@@ -550,6 +574,15 @@
                 // Update iframe image
                 const iframeImg = iframeDoc ? iframeDoc.querySelector(cfg.sel) : null;
                 if (iframeImg) iframeImg.src = d.url;
+                const latest = collectContentFromIframe();
+                draftContent = latest || draftContent || createEmptyContent();
+                if (slot === 'hero') {
+                    draftContent.hero = draftContent.hero || {};
+                    draftContent.hero.image = d.url;
+                } else if (slot === 'trip') {
+                    draftContent.trip = draftContent.trip || {};
+                    draftContent.trip.image = d.url;
+                }
                 markChanged();
                 if (status) { status.textContent = '✅ เปลี่ยนรูปสำเร็จ!'; status.style.color = '#00c853'; }
                 showToast('เปลี่ยนรูป ' + (slot === 'hero' ? 'Hero' : 'Trip') + ' สำเร็จ!', 'success');
@@ -563,13 +596,29 @@
     }
 
     // ===== SAVE/LOAD CONTENT =====
-    async function saveContent() {
-        if (!iframeDoc) return;
-        const btn = document.getElementById('btn-save');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
-        btn.disabled = true;
+    function createEmptyContent() {
+        return {
+            hero: {},
+            trip: { islands: [], includes: [] },
+            schedule: [],
+            cta: {},
+            terms: [],
+            boatModals: {}
+        };
+    }
 
-        // Extract all editable content
+    function cloneContent(content) {
+        try {
+            return JSON.parse(JSON.stringify(content || createEmptyContent()));
+        } catch(e) {
+            return createEmptyContent();
+        }
+    }
+
+    function collectContentFromIframe() {
+        const doc = getEditorDoc();
+        if (!doc) return null;
+
         const content = {
             hero: {
                 badge: getText('.promo-hero-text .hero-badge span'),
@@ -622,20 +671,51 @@
             });
         });
 
+        return content;
+    }
+
+    async function saveContent() {
+        const doc = getEditorDoc();
+        if (doc && doc.activeElement && doc.activeElement.blur) doc.activeElement.blur();
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        const freshContent = collectContentFromIframe();
+        if (freshContent) draftContent = freshContent;
+        const content = cloneContent(draftContent || freshContent);
+        if (!content || (!content.hero && !content.trip)) {
+            showToast('ยังไม่พบข้อมูลสำหรับบันทึก กรุณารอให้ preview โหลดเสร็จแล้วลองอีกครั้ง', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-save');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+        btn.disabled = true;
+
         try {
             const pageKey = currentEditorLang === 'th' ? 'promotions' : 'promotions_' + currentEditorLang;
-            await fetch(API + '/page-content.php', {
+            const saveRes = await fetch(API + '/page-content.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ page: pageKey, content }),
                 credentials: 'include'
             });
+            const saveData = await saveRes.json().catch(() => ({}));
+            if (!saveRes.ok || !saveData.success) throw new Error(saveData.error || 'บันทึกไม่สำเร็จ');
+            if (!saveData.content) throw new Error('API ไม่ได้ส่งข้อมูลที่บันทึกกลับมา');
+            draftContent = cloneContent(saveData.content);
 
             hasChanges = false;
             btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
             document.getElementById('status-badge').textContent = '✅ บันทึกสำเร็จ!';
             document.getElementById('status-badge').className = 'status saved';
             showToast('บันทึกเนื้อหาสำเร็จ! อัปเดตทุกหน้าแล้ว', 'success');
+            try {
+                const currentSrc = new URL(iframe.src, window.location.href);
+                currentSrc.searchParams.set('saved', Date.now().toString());
+                editMode = false;
+                iframeDoc = null;
+                iframe.src = currentSrc.toString();
+            } catch(e) {}
 
             setTimeout(() => {
                 if (!hasChanges) {
@@ -646,15 +726,16 @@
         } catch(e) {
             btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
             btn.disabled = false;
-            showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
+            showToast(e.message || 'เกิดข้อผิดพลาดในการบันทึก', 'error');
         }
     }
 
 
     async function loadSavedContent() {
         try {
+            if (!getEditorDoc()) return;
             const pageKey = currentEditorLang === 'th' ? 'promotions' : 'promotions_' + currentEditorLang;
-            const r = await fetch(API + '/page-content.php?page=' + pageKey);
+            const r = await fetch(API + '/page-content.php?page=' + pageKey + '&admin=1', { credentials: 'include', cache: 'no-store' });
             const d = await r.json();
             if (d.content) {
                 applyContent(d.content);
@@ -665,7 +746,8 @@
     }
 
     function applyContent(c) {
-        if (!iframeDoc || !c) return;
+        if (!getEditorDoc() || !c) return;
+        draftContent = cloneContent(c);
 
         // Hero
         if (c.hero) {
@@ -739,6 +821,42 @@
         setTimeout(() => { t.classList.remove('show'); }, 3000);
     }
 
+    function bindEditorButtons() {
+        const bind = (selector, handler) => {
+            const el = document.querySelector(selector);
+            if (!el || el.dataset.bound === '1') return;
+            el.dataset.bound = '1';
+            el.removeAttribute('onclick');
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                handler(e);
+            });
+        };
+        bind('#btn-save', saveContent);
+        bind('.btn-edit-mode', openImgModal);
+        bind('.btn-reset', toggleResetMenu);
+        document.querySelectorAll('.lang-switcher .lang-btn').forEach(btn => {
+            if (btn.dataset.bound === '1') return;
+            btn.dataset.bound = '1';
+            btn.removeAttribute('onclick');
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchEditorLang(this.dataset.lang);
+            });
+        });
+        document.querySelectorAll('#reset-menu button').forEach(btn => {
+            if (btn.dataset.bound === '1') return;
+            btn.dataset.bound = '1';
+            const match = (btn.getAttribute('onclick') || '').match(/resetSection\('([^']+)'\)/);
+            if (!match) return;
+            btn.removeAttribute('onclick');
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                resetSection(match[1]);
+            });
+        });
+    }
+
     // Auth check
     (async () => {
         const r = await fetch(API + '/admin-auth.php', {
@@ -782,13 +900,20 @@
         // script both pick up the correct language from URL.
         document.getElementById('loading').classList.remove('hidden');
         const baseSrc = '../promotions/';
-        iframe.src = baseSrc + '?lang=' + lang;
+        iframe.src = baseSrc + '?editor=1&lang=' + lang;
 
         // Update status
         const langNames = { th: 'ไทย', en: 'English', ru: 'Русский', zh: '中文' };
         showToast('เปลี่ยนเป็นภาษา: ' + langNames[lang], 'success');
     }
     window.switchEditorLang = switchEditorLang;
+    window.toggleResetMenu = toggleResetMenu;
+    window.resetSection = resetSection;
+    window.openImgModal = openImgModal;
+    window.closeImgModal = closeImgModal;
+    window.handleImgSlot = handleImgSlot;
+    window.saveContent = saveContent;
+    bindEditorButtons();
 
     // Warn before leaving with unsaved changes
     window.addEventListener('beforeunload', function(e) {

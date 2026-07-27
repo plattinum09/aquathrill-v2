@@ -120,7 +120,7 @@
         .modal-actions button{flex:1;padding:13px;border:none;border-radius:12px;font-family:'Kanit',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer}
         .btn-cancel{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
         .btn-save{background:linear-gradient(135deg,#00d4ff,#0096c7);color:#fff}
-        .toast{position:fixed;top:24px;right:24px;background:#0d2847;border:1px solid rgba(0,200,83,.3);color:#00c853;padding:14px 22px;border-radius:14px;font-size:.88rem;display:none;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.3);align-items:center;gap:9px}
+        .toast{position:fixed;top:24px;right:24px;background:#0d2847;border:1px solid rgba(0,200,83,.3);color:#00c853;padding:14px 22px;border-radius:14px;font-size:.88rem;display:none;z-index:20000;box-shadow:0 8px 32px rgba(0,0,0,.3);align-items:center;gap:9px}
         .toast.show{display:flex}
 
         /* Upload modal */
@@ -310,19 +310,19 @@
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
 
     <script>
-    const API = '/api';
-    const BOAT_API = API + '/boat-types-v2.php';
-    let editId = null;
-    let allBoats = [];
-    let modalGallery = [];
-    let modalMainImage = '';
-    let pendingGalleryUrl = null;
+    var API = '/api';
+    var BOAT_API = API + '/boat-types-v2.php';
+    var editId = null;
+    var allBoats = [];
+    var modalGallery = [];
+    var modalMainImage = '';
+    var pendingGalleryUrl = null;
 
     // i18n state
-    let modalI18n = { th: {}, en: {}, ru: {}, zh: {} };
-    let currentLang = 'th';
+    var modalI18n = { th: {}, en: {}, ru: {}, zh: {} };
+    var currentLang = 'th';
 
-    const ICON_OPTIONS = [
+    var ICON_OPTIONS = [
         { value: 'fas fa-check', label: '✓ ทั่วไป' },
         { value: 'fas fa-user-tie', label: '👨‍✈️ กัปตัน' },
         { value: 'fas fa-ship', label: '🚤 ขับเรือ' },
@@ -721,6 +721,25 @@
     }
 
     // ===== SAVE =====
+    async function saveBoatRequest(method, data) {
+        const r = await fetch(BOAT_API, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            credentials: 'include',
+            cache: 'no-store'
+        });
+        const text = await r.text();
+        let d = {};
+        try { d = text ? JSON.parse(text) : {}; } catch (e) {
+            throw new Error('API ตอบกลับไม่ใช่ JSON: ' + text.slice(0, 160));
+        }
+        if (!r.ok || d.error || d.success === false) {
+            throw new Error(d.error || ('บันทึกไม่สำเร็จ HTTP ' + r.status));
+        }
+        return d;
+    }
+
     async function saveBoat() {
         const btn = document.getElementById('btn-save');
         btn.disabled = true;
@@ -765,14 +784,7 @@
         try {
             if (editId) {
                 data.id = editId;
-                const r = await fetch(BOAT_API, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), credentials: 'include', cache: 'no-store' });
-                const d = await r.json();
-                if (d.error) {
-                    showToast(d.error);
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
-                    return;
-                }
+                await saveBoatRequest('PUT', data);
             } else {
                 data.id = document.getElementById('f-id').value.trim();
                 if (!data.id) {
@@ -781,24 +793,17 @@
                     btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
                     return;
                 }
-                const r = await fetch(BOAT_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), credentials: 'include', cache: 'no-store' });
-                const d = await r.json();
-                if (d.error) {
-                    showToast(d.error);
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
-                    return;
-                }
+                await saveBoatRequest('POST', data);
             }
             closeModal();
             showToast(editId ? 'แก้ไขสำเร็จ!' : 'เพิ่มประเภทเรือสำเร็จ!');
             loadBoats();
         } catch (e) {
             showToast('เกิดข้อผิดพลาด: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
         }
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
     }
 
     async function deactivateBoat(id) {

@@ -844,8 +844,12 @@
             // It already handles ?lang= URL param > localStorage > default priority
             var lang = (window.I18n && window.I18n.getLang) ? window.I18n.getLang() : 'th';
 
+            var isEditorPreview = new URLSearchParams(window.location.search).has('editor');
+            var fetchOptions = isEditorPreview ? { credentials: 'include', cache: 'no-store' } : undefined;
+            var adminSuffix = isEditorPreview ? '&admin=1' : '';
+
             // Load Thai (default) content first (for images)
-            var r = await fetch('/api/page-content.php?page=promotions');
+            var r = await fetch('/api/page-content.php?page=promotions' + adminSuffix, fetchOptions);
             var d = await r.json();
             var baseCont = d.content || null;
 
@@ -865,7 +869,7 @@
             var imagesOnly = false;
             if (lang !== 'th') {
                 // Try to load language-specific content from admin editor
-                var r2 = await fetch('/api/page-content.php?page=promotions_' + lang);
+                var r2 = await fetch('/api/page-content.php?page=promotions_' + lang + adminSuffix, fetchOptions);
                 var d2 = await r2.json();
                 if (d2.content) {
                     // Use language-specific content (text + images)

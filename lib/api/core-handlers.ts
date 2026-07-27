@@ -1,18 +1,22 @@
 import { put } from "@vercel/blob";
 import type { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { readSession } from "./auth";
-import { query } from "./db";
-import { body, json } from "./http";
+import { body, json, publicJson } from "./http";
+import { prisma } from "./prisma";
 
 async function admin(request: NextRequest) {
-  const session = await readSession(request, "admin");
-  return session || null;
+  return (await readSession(request, "admin")) || null;
 }
 
 const parseJson = (value: any, fallback: any) => {
   if (value == null || value === "") return fallback;
   if (typeof value !== "string") return value;
-  try { return JSON.parse(value); } catch { return fallback; }
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 };
 
 function fallbackBoatImage(id: string) {
@@ -23,72 +27,431 @@ function fallbackBoatImage(id: string) {
 
 function normalizeBoatImage(value: unknown, id: string) {
   const image = typeof value === "string" ? value.trim() : "";
-  // These paths came from the old writable PHP server. The files are not part of
-  // the repository and cannot exist on Vercel's immutable filesystem.
   if (!image || /^\/images\/promotions\/promo-/i.test(image)) return fallbackBoatImage(id);
   return image;
 }
 
+let boatTypesTableReady = false;
+async function ensureBoatTypesTable() {
+  if (boatTypesTableReady) return;
+  await prisma.$executeRaw`
+    CREATE TABLE IF NOT EXISTS boat_types (
+      id VARCHAR(20) PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      total_boats INT NOT NULL DEFAULT 1,
+      max_guests INT NOT NULL DEFAULT 3,
+      max_weight INT NOT NULL DEFAULT 200,
+      price INT NOT NULL DEFAULT 9900,
+      description TEXT,
+      image VARCHAR(500),
+      images TEXT,
+      features TEXT,
+      i18n TEXT,
+      book_url VARCHAR(500) DEFAULT '',
+      sort_order INT NOT NULL DEFAULT 0,
+      is_active SMALLINT NOT NULL DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS description TEXT`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS image VARCHAR(500)`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS images TEXT`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS features TEXT`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS i18n TEXT`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS book_url VARCHAR(500) DEFAULT ''`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS sort_order INT NOT NULL DEFAULT 0`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS is_active SMALLINT NOT NULL DEFAULT 1`;
+  await prisma.$executeRaw`ALTER TABLE boat_types ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`;
+  boatTypesTableReady = true;
+}
+
+function boatRow(row: any) {
+  const totalBoats = row.totalBoats ?? row.total_boats;
+  const maxGuests = row.maxGuests ?? row.max_guests;
+  const maxWeight = row.maxWeight ?? row.max_weight;
+  const bookUrl = row.bookUrl ?? row.book_url;
+  const sortOrder = row.sortOrder ?? row.sort_order;
+  const isActive = row.isActive ?? row.is_active;
+  const createdAt = row.createdAt ?? row.created_at;
+  const images = parseJson(row.images, []).map((image: unknown) => normalizeBoatImage(image, row.id));
+  const image = normalizeBoatImage(row.image || images[0], row.id);
+  return {
+    id: row.id,
+    name: row.name,
+    total_boats: Number(totalBoats),
+    max_guests: Number(maxGuests),
+    max_weight: Number(maxWeight),
+    price: Number(row.price),
+    description: row.description || "",
+    image,
+    images: images.length ? images : [image],
+    features: parseJson(row.features, []),
+    i18n: parseJson(row.i18n, null),
+    book_url: bookUrl || "",
+    sort_order: Number(sortOrder),
+    is_active: Number(isActive),
+    created_at: createdAt,
+  };
+}
+
+function promotionRow(row: any) {
+  return {
+    id: row.id,
+    title: row.title,
+    subtitle: row.subtitle || "",
+    description: row.description || "",
+    image_url: row.imageUrl || "",
+    badge_text: row.badgeText || "",
+    old_price: row.oldPrice == null ? null : Number(row.oldPrice),
+    new_price: row.newPrice == null ? null : Number(row.newPrice),
+    link_url: row.linkUrl || "",
+    button_text: row.buttonText,
+    sort_order: row.sortOrder,
+    is_active: row.isActive,
+  };
+}
+
+function pageContentSettingKey(page: string) {
+  return `page_content:${page}`;
+}
+
+let tableReady = false;
+async function ensureEditableTables() {
+  if (tableReady) return;
+  await prisma.$executeRaw`
+    CREATE TABLE IF NOT EXISTS page_content (
+      page_key VARCHAR(50) PRIMARY KEY,
+      content JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  await prisma.$executeRaw`
+    CREATE TABLE IF NOT EXISTS site_settings (
+      setting_key VARCHAR(100) PRIMARY KEY,
+      setting_value TEXT NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  tableReady = true;
+}
+
+async function readPageContent(page: string) {
+  try {
+    await ensureEditableTables();
+    const row = await prisma.pageContent.findUnique({ where: { pageKey: page } });
+    if (row) return { content: row.content, updated_at: row.updatedAt, source: "page_content" };
+  } catch (error) {
+    console.warn("page_content primary read failed; falling back to site_settings", error);
+  }
+  await ensureEditableTables();
+  const fallback = await prisma.siteSetting.findUnique({ where: { settingKey: pageContentSettingKey(page) } });
+  if (!fallback) return { content: null, updated_at: null, source: "none" };
+  return { content: parseJson(fallback.settingValue, null), updated_at: fallback.updatedAt, source: "site_settings" };
+}
+
+async function writePageContent(page: string, content: unknown) {
+  const cleanContent = (content ?? {}) as Prisma.InputJsonValue;
+  const serialized = JSON.stringify(content ?? {});
+  let primaryError: unknown = null;
+  try {
+    await ensureEditableTables();
+    const row = await prisma.pageContent.upsert({
+      where: { pageKey: page },
+      create: { pageKey: page, content: cleanContent },
+      update: { content: cleanContent },
+    });
+    await prisma.siteSetting.upsert({
+      where: { settingKey: pageContentSettingKey(page) },
+      create: { settingKey: pageContentSettingKey(page), settingValue: serialized },
+      update: { settingValue: serialized },
+    });
+    return { page: row.pageKey, content: row.content, updated_at: row.updatedAt, source: "page_content" };
+  } catch (error) {
+    primaryError = error;
+    console.warn("page_content primary write failed; falling back to site_settings", error);
+  }
+  try {
+    await ensureEditableTables();
+    const row = await prisma.siteSetting.upsert({
+      where: { settingKey: pageContentSettingKey(page) },
+      create: { settingKey: pageContentSettingKey(page), settingValue: serialized },
+      update: { settingValue: serialized },
+    });
+    return {
+      page,
+      content: parseJson(row.settingValue, content ?? {}),
+      updated_at: row.updatedAt,
+      source: "site_settings",
+      primary_error: primaryError instanceof Error ? primaryError.message : "primary write failed",
+    };
+  } catch (fallbackError) {
+    console.error("page_content fallback write failed", fallbackError);
+    throw primaryError ?? fallbackError;
+  }
+}
+
 export async function boatTypes(request: NextRequest) {
+  await ensureBoatTypesTable();
   if (request.method === "GET") {
     const all = new URL(request.url).searchParams.has("all");
-    const result = await query<any>(`SELECT * FROM boat_types ${all ? "" : "WHERE is_active=1"} ORDER BY sort_order,id`);
-    const types = result.rows.map((row:any) => {
-      const images = parseJson(row.images, []).map((image: unknown) => normalizeBoatImage(image, row.id));
-      const image = normalizeBoatImage(row.image || images[0], row.id);
-      return { ...row, image, price:Number(row.price), total_boats:Number(row.total_boats), max_guests:Number(row.max_guests), max_weight:Number(row.max_weight), images: images.length ? images : [image], features:parseJson(row.features,[]), i18n:parseJson(row.i18n,null) };
+    if (all && !(await admin(request))) return json({ error: "Unauthorized" }, 401);
+    const rows = all
+      ? await prisma.$queryRawUnsafe<any[]>("SELECT * FROM boat_types ORDER BY sort_order,id")
+      : await prisma.$queryRawUnsafe<any[]>("SELECT * FROM boat_types WHERE is_active=1 ORDER BY sort_order,id");
+    const types = rows.map(boatRow);
+    const prices: Record<string, number> = {};
+    const boats: Record<string, any> = {};
+    for (const row of types) {
+      prices[row.id] = row.price;
+      boats[row.id] = { name: row.name, image: row.image || row.images[0] || "", images: row.images, desc: row.description || "" };
+    }
+    return all ? json({ boat_types: types, prices, boats, _v: "next-prisma-1.0" }) : publicJson({ boat_types: types, prices, boats, _v: "next-prisma-1.0" });
+  }
+  if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
+  const input = await body(request);
+  if (request.method === "POST") {
+    if (!input.id || !input.name) return json({ error: "Missing required fields: id, name" }, 400);
+    const id = String(input.id).toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (id.length < 2 || id.length > 20) return json({ error: "ID must be 2-20 alphanumeric characters" }, 400);
+    const existing = await prisma.$queryRawUnsafe<any[]>("SELECT id FROM boat_types WHERE id=$1 LIMIT 1", id);
+    if (existing.length) return json({ error: "Boat type ID already exists" }, 409);
+    try {
+      await prisma.$executeRawUnsafe(
+        "INSERT INTO boat_types(id,name,total_boats,max_guests,max_weight,price,description,image,images,features,i18n,book_url,sort_order,is_active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,1)",
+        id,
+        String(input.name).trim(),
+        Number(input.total_boats || 1),
+        Number(input.max_guests || 3),
+        Number(input.max_weight || 200),
+        Number(input.price || 9900),
+        String(input.description || "").trim(),
+        String(input.image || "").trim(),
+        JSON.stringify(input.images || []),
+        JSON.stringify(input.features || []),
+        JSON.stringify(input.i18n || {}),
+        String(input.book_url || "").trim(),
+        Number(input.sort_order || 0)
+      );
+    } catch (error: any) {
+      if (error.code === "P2002" || error.code === "23505") return json({ error: "Boat type ID already exists" }, 409);
+      throw error;
+    }
+    return json({ success: true, id }, 201);
+  }
+  if (request.method === "PUT") {
+    if (!input.id) return json({ error: "Missing boat type id" }, 400);
+    const oldRows = await prisma.$queryRawUnsafe<any[]>("SELECT * FROM boat_types WHERE id=$1 LIMIT 1", input.id);
+    const old = oldRows[0];
+    if (!old) return json({ error: "Boat type not found" }, 404);
+    const next = {
+      name: Object.hasOwn(input, "name") ? String(input.name).trim() : old.name,
+      total_boats: Object.hasOwn(input, "total_boats") ? Number(input.total_boats) : Number(old.total_boats),
+      max_guests: Object.hasOwn(input, "max_guests") ? Number(input.max_guests) : Number(old.max_guests),
+      max_weight: Object.hasOwn(input, "max_weight") ? Number(input.max_weight) : Number(old.max_weight),
+      price: Object.hasOwn(input, "price") ? Number(input.price) : Number(old.price),
+      description: Object.hasOwn(input, "description") ? String(input.description || "").trim() : old.description,
+      image: Object.hasOwn(input, "image") ? String(input.image || "").trim() : old.image,
+      images: Object.hasOwn(input, "images") ? JSON.stringify(input.images || []) : old.images,
+      features: Object.hasOwn(input, "features") ? JSON.stringify(input.features || []) : old.features,
+      i18n: Object.hasOwn(input, "i18n") ? JSON.stringify(input.i18n || {}) : old.i18n,
+      book_url: Object.hasOwn(input, "book_url") ? String(input.book_url || "").trim() : old.book_url,
+      sort_order: Object.hasOwn(input, "sort_order") ? Number(input.sort_order) : Number(old.sort_order),
+      is_active: Object.hasOwn(input, "is_active") ? Number(input.is_active) : Number(old.is_active),
+    };
+    await prisma.$executeRawUnsafe(
+      "UPDATE boat_types SET name=$1,total_boats=$2,max_guests=$3,max_weight=$4,price=$5,description=$6,image=$7,images=$8,features=$9,i18n=$10,book_url=$11,sort_order=$12,is_active=$13 WHERE id=$14",
+      next.name,
+      next.total_boats,
+      next.max_guests,
+      next.max_weight,
+      next.price,
+      next.description,
+      next.image,
+      next.images,
+      next.features,
+      next.i18n,
+      next.book_url,
+      next.sort_order,
+      next.is_active,
+      input.id
+    );
+    return json({ success: true, _v: "next-prisma-1.0" });
+  }
+  if (request.method === "DELETE") {
+    if (!input.id) return json({ error: "Missing boat type id" }, 400);
+    await prisma.$executeRawUnsafe("UPDATE boat_types SET is_active=0 WHERE id=$1", input.id);
+    return json({ success: true });
+  }
+  return json({ error: "Method not allowed" }, 405);
+}
+
+export async function boatPricing(request: NextRequest) {
+  await ensureBoatTypesTable();
+  if (request.method === "POST") {
+    if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
+    const input = await body(request);
+    for (const [id, item] of Object.entries<any>(input.boats || {})) {
+      if (item.price != null) await prisma.$executeRawUnsafe("UPDATE boat_types SET price=$1 WHERE id=$2", Number(item.price), id);
+      if (item.image != null) await prisma.$executeRawUnsafe("UPDATE boat_types SET image=$1 WHERE id=$2", item.image, id);
+      if (item.images) await prisma.$executeRawUnsafe("UPDATE boat_types SET images=$1 WHERE id=$2", JSON.stringify(item.images), id);
+    }
+    for (const [id, price] of Object.entries(input.prices || {})) await prisma.$executeRawUnsafe("UPDATE boat_types SET price=$1 WHERE id=$2", Number(price), id);
+  } else if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
+  const rows = await prisma.$queryRawUnsafe<any[]>("SELECT * FROM boat_types WHERE is_active=1 ORDER BY sort_order,id");
+  const prices: Record<string, number> = {};
+  const boats: Record<string, any> = {};
+  for (const row of rows.map(boatRow)) {
+    prices[row.id] = row.price;
+    boats[row.id] = {
+      price: row.price,
+      name: row.name,
+      desc: row.description || "",
+      badge: `2-${row.max_guests} คน / ${row.max_weight}kg`,
+      image: row.image,
+      images: row.images,
+      bookUrl: row.book_url || `https://wa.me/66958192778?text=${encodeURIComponent("สนใจจอง " + row.name)}`,
+    };
+  }
+  return request.method === "GET" ? publicJson({ prices, boats }) : json({ success: true, prices, boats });
+}
+
+export async function promotions(request: NextRequest) {
+  const input = request.method === "GET" ? {} : await body(request);
+  const url = new URL(request.url);
+  if (request.method === "GET") {
+    const all = url.searchParams.has("all");
+    if (all && !(await admin(request))) return json({ error: "Unauthorized" }, 401);
+    const rows = await prisma.promotion.findMany({
+      where: all ? undefined : { isActive: 1 },
+      orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
     });
-    const prices:Record<string,number>={}; const boats:Record<string,any>={};
-    for(const row of types){ prices[row.id]=row.price; boats[row.id]={name:row.name,image:row.image||row.images[0]||"",images:row.images,desc:row.description||""}; }
-    return json({boat_types:types,prices,boats,_v:"next-1.0"});
+    const payload = { promotions: rows.map(promotionRow) };
+    return all ? json(payload) : publicJson(payload);
   }
-  if (!(await admin(request))) return json({error:"Unauthorized"},401);
-  const input=await body(request);
-  if(request.method==="POST"){
-    if(!input.id||!input.name)return json({error:"Missing required fields: id, name"},400);
-    const id=String(input.id).toLowerCase().replace(/[^a-z0-9]/g,"");
-    try { await query(`INSERT INTO boat_types(id,name,total_boats,max_guests,max_weight,price,description,image,images,features,i18n,book_url,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,[id,input.name,Number(input.total_boats||1),Number(input.max_guests||3),Number(input.max_weight||200),Number(input.price||9900),input.description||"",input.image||"",JSON.stringify(input.images||[]),JSON.stringify(input.features||[]),JSON.stringify(input.i18n||{}),input.book_url||"",Number(input.sort_order||0)]); }
-    catch(error:any){ if(error.code==="23505")return json({error:"Boat type ID already exists"},409); throw error; }
-    return json({success:true,id},201);
+  if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
+  if (request.method === "POST") {
+    if (!input.title) return json({ error: "Title is required" }, 400);
+    const row = await prisma.promotion.create({
+      data: {
+        title: input.title,
+        subtitle: input.subtitle || "",
+        description: input.description || "",
+        imageUrl: input.image_url || "",
+        badgeText: input.badge_text || "",
+        oldPrice: input.old_price === "" ? null : input.old_price ?? null,
+        newPrice: input.new_price === "" ? null : input.new_price ?? null,
+        linkUrl: input.link_url || "",
+        buttonText: input.button_text || "จองเลย",
+        sortOrder: Number(input.sort_order || 0),
+        isActive: Number(input.is_active ?? 1),
+      },
+    });
+    return json({ success: true, id: row.id }, 201);
   }
-  if(request.method==="PUT"){
-    if(!input.id)return json({error:"Missing boat type id"},400);
-    const fields=["name","total_boats","max_guests","max_weight","price","description","image","book_url","sort_order","is_active","images","features","i18n"];
-    const updates:string[]=[]; const values:any[]=[];
-    for(const field of fields) if(Object.prototype.hasOwnProperty.call(input,field)){ values.push(["images","features","i18n"].includes(field)?JSON.stringify(input[field]):input[field]); updates.push(`${field}=$${values.length}`); }
-    if(!updates.length)return json({error:"No fields to update"},400); values.push(input.id);
-    await query(`UPDATE boat_types SET ${updates.join(",")} WHERE id=$${values.length}`,values); return json({success:true,_v:"next-1.0"});
+  if (request.method === "DELETE") {
+    await prisma.promotion.delete({ where: { id: Number(input.id) } });
+    return json({ success: true });
   }
-  if(request.method==="DELETE") { if(!input.id)return json({error:"Missing boat type id"},400); await query("DELETE FROM boat_types WHERE id=$1",[input.id]); return json({success:true}); }
-  return json({error:"Method not allowed"},405);
+  if (request.method === "PUT") {
+    const data: any = {};
+    const map: Record<string, string> = {
+      title: "title",
+      subtitle: "subtitle",
+      description: "description",
+      image_url: "imageUrl",
+      badge_text: "badgeText",
+      old_price: "oldPrice",
+      new_price: "newPrice",
+      link_url: "linkUrl",
+      button_text: "buttonText",
+      sort_order: "sortOrder",
+      is_active: "isActive",
+    };
+    for (const [incoming, field] of Object.entries(map)) if (Object.hasOwn(input, incoming)) data[field] = input[incoming] === "" && ["old_price", "new_price"].includes(incoming) ? null : input[incoming];
+    if (!Object.keys(data).length) return json({ error: "No fields to update" }, 400);
+    await prisma.promotion.update({ where: { id: Number(input.id) }, data });
+    return json({ success: true });
+  }
+  return json({ error: "Method not allowed" }, 405);
 }
 
-export async function boatPricing(request: NextRequest){
-  if(request.method==="POST"){
-    if(!(await admin(request)))return json({error:"Unauthorized"},401); const input=await body(request);
-    for(const [id,item] of Object.entries<any>(input.boats||{})){ await query("UPDATE boat_types SET price=COALESCE($1,price),image=COALESCE($2,image),images=COALESCE($3,images) WHERE id=$4",[item.price??null,item.image??null,item.images?JSON.stringify(item.images):null,id]); }
-    for(const [id,price] of Object.entries(input.prices||{}))await query("UPDATE boat_types SET price=$1 WHERE id=$2",[price,id]);
-  } else if(request.method!=="GET") return json({error:"Method not allowed"},405);
-  const result=await query<any>("SELECT * FROM boat_types WHERE is_active=1 ORDER BY sort_order,id"); const prices:Record<string,number>={}; const boats:Record<string,any>={};
-  for(const row of result.rows){const parsedImages=parseJson(row.images,[]).map((image:unknown)=>normalizeBoatImage(image,row.id));const image=normalizeBoatImage(row.image||parsedImages[0],row.id);const images=parsedImages.length?parsedImages:[image];prices[row.id]=Number(row.price); boats[row.id]={price:Number(row.price),name:row.name,desc:row.description||"",badge:`2-${row.max_guests} คน / ${row.max_weight}kg`,image,images,bookUrl:row.book_url||`https://wa.me/66958192778?text=${encodeURIComponent("สนใจจอง "+row.name)}`};}
-  return json({...(request.method==="POST"?{success:true}:{}),prices,boats});
+export async function agentManage(request: NextRequest) {
+  if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
+  if (request.method === "GET") {
+    const status = new URL(request.url).searchParams.get("status");
+    const agents = await prisma.agent.findMany({
+      where: status ? { status } : undefined,
+      orderBy: { createdAt: "desc" },
+      select: { id: true, firstName: true, lastName: true, email: true, phone: true, company: true, status: true, createdAt: true, approvedAt: true },
+    });
+    const grouped = await prisma.agent.groupBy({ by: ["status"], _count: { status: true } });
+    return json({
+      agents: agents.map((x) => ({ id: x.id, first_name: x.firstName, last_name: x.lastName, email: x.email, phone: x.phone, company: x.company, status: x.status, created_at: x.createdAt, approved_at: x.approvedAt })),
+      counts: Object.fromEntries(grouped.map((x) => [x.status, x._count.status])),
+    });
+  }
+  if (request.method === "PUT") {
+    const input = await body(request);
+    if (!["approved", "rejected"].includes(input.status)) return json({ error: "Status must be approved or rejected" }, 400);
+    try {
+      await prisma.agent.update({ where: { id: Number(input.id) }, data: { status: input.status, approvedAt: input.status === "approved" ? new Date() : null } });
+      return json({ success: true, message: "อัปเดตสถานะสำเร็จ" });
+    } catch (error: any) {
+      if (error.code === "P2025") return json({ error: "Agent not found" }, 404);
+      throw error;
+    }
+  }
+  return json({ error: "Method not allowed" }, 405);
 }
 
-export async function promotions(request:NextRequest){
-  const input=request.method==="GET"?{}:await body(request); const url=new URL(request.url);
-  if(request.method==="GET"){const all=url.searchParams.has("all"); if(all&&!(await admin(request)))return json({error:"Unauthorized"},401); const r=await query<any>(`SELECT * FROM promotions ${all?"":"WHERE is_active=1"} ORDER BY sort_order,id`); return json({promotions:r.rows});}
-  if(!(await admin(request)))return json({error:"Unauthorized"},401);
-  if(request.method==="POST"){if(!input.title)return json({error:"Title is required"},400); const r=await query<any>("INSERT INTO promotions(title,subtitle,description,image_url,badge_text,old_price,new_price,link_url,button_text,sort_order,is_active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id",[input.title,input.subtitle||"",input.description||"",input.image_url||"",input.badge_text||"",input.old_price||null,input.new_price||null,input.link_url||"",input.button_text||"จองเลย",Number(input.sort_order||0),Number(input.is_active??1)]);return json({success:true,id:r.rows[0].id},201);}
-  if(request.method==="DELETE"){await query("DELETE FROM promotions WHERE id=$1",[input.id]);return json({success:true});}
-  if(request.method==="PUT"){const allowed=["title","subtitle","description","image_url","badge_text","old_price","new_price","link_url","button_text","sort_order","is_active"];const values:any[]=[];const fields:string[]=[];for(const f of allowed)if(Object.hasOwn(input,f)){values.push(input[f]===""&&["old_price","new_price"].includes(f)?null:input[f]);fields.push(`${f}=$${values.length}`)}if(!fields.length)return json({error:"No fields to update"},400);values.push(input.id);await query(`UPDATE promotions SET ${fields.join(",")} WHERE id=$${values.length}`,values);return json({success:true});}
-  return json({error:"Method not allowed"},405);
+export async function pageContent(request: NextRequest) {
+  const url = new URL(request.url);
+  if (request.method === "GET") {
+    const isAdmin = url.searchParams.has("admin");
+    if (isAdmin && !(await admin(request))) return json({ error: "Unauthorized" }, 401);
+    const page = url.searchParams.get("page") || "promotions";
+    const result = await readPageContent(page);
+    return json({ page, content: result.content, updated_at: result.updated_at, source: result.source });
+  }
+  if (request.method === "POST") {
+    if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
+    const input = await body(request);
+    const page = String(input.page || "promotions");
+    const content = input.content ?? {};
+    const result = await writePageContent(page, content);
+    return json({ success: true, ...result });
+  }
+  return json({ error: "Method not allowed" }, 405);
 }
 
-export async function agentManage(request:NextRequest){if(!(await admin(request)))return json({error:"Unauthorized"},401);if(request.method==="GET"){const status=new URL(request.url).searchParams.get("status");const r=await query<any>(`SELECT id,first_name,last_name,email,phone,company,status,created_at,approved_at FROM agents ${status?"WHERE status=$1":""} ORDER BY created_at DESC`,status?[status]:[]);const c=await query<any>("SELECT status,COUNT(*)::int cnt FROM agents GROUP BY status");return json({agents:r.rows,counts:Object.fromEntries(c.rows.map((x:any)=>[x.status,x.cnt]))});}if(request.method==="PUT"){const input=await body(request);if(!["approved","rejected"].includes(input.status))return json({error:"Status must be approved or rejected"},400);const r=await query("UPDATE agents SET status=$1,approved_at=CASE WHEN $1='approved' THEN NOW() ELSE NULL END WHERE id=$2",[input.status,input.id]);return r.rowCount?json({success:true,message:"อัปเดตสถานะสำเร็จ"}):json({error:"Agent not found"},404);}return json({error:"Method not allowed"},405);}
+const defaultPayments = { bank_name: "กสิกรไทย (KBank)", account_number: "", account_name: "AQUATHRILL", promptpay_number: "", promptpay_name: "AQUATHRILL", credit_card_enabled: true, bank_transfer_enabled: true, promptpay_enabled: true, payment_note: "" };
+export async function paymentSettings(request: NextRequest) {
+  if (request.method === "GET") {
+    const row = await prisma.siteSetting.findUnique({ where: { settingKey: "payment_settings" } });
+    return json({ settings: row ? parseJson(row.settingValue, defaultPayments) : defaultPayments });
+  }
+  if (request.method === "POST") {
+    if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
+    const input = await body(request);
+    const settings = { ...defaultPayments, ...input, updated_at: new Date().toISOString() };
+    await prisma.siteSetting.upsert({
+      where: { settingKey: "payment_settings" },
+      create: { settingKey: "payment_settings", settingValue: JSON.stringify(settings) },
+      update: { settingValue: JSON.stringify(settings) },
+    });
+    return json({ success: true, settings });
+  }
+  return json({ error: "Method not allowed" }, 405);
+}
 
-export async function pageContent(request:NextRequest){const url=new URL(request.url);if(request.method==="GET"){const r=await query<any>("SELECT content FROM page_content WHERE page_key=$1",[url.searchParams.get("page")||"promotions"]);return json({content:r.rows[0]?.content??null});}if(request.method==="POST"){if(!(await admin(request)))return json({error:"Unauthorized"},401);const input=await body(request);await query("INSERT INTO page_content(page_key,content) VALUES($1,$2::jsonb) ON CONFLICT(page_key) DO UPDATE SET content=EXCLUDED.content,updated_at=NOW()",[input.page||"promotions",JSON.stringify(input.content||{})]);return json({success:true});}return json({error:"Method not allowed"},405);}
-
-const defaultPayments={bank_name:"กสิกรไทย (KBank)",account_number:"",account_name:"AQUATHRILL",promptpay_number:"",promptpay_name:"AQUATHRILL",credit_card_enabled:true,bank_transfer_enabled:true,promptpay_enabled:true,payment_note:""};
-export async function paymentSettings(request:NextRequest){if(request.method==="GET"){const r=await query<any>("SELECT setting_value FROM site_settings WHERE setting_key='payment_settings'");return json({settings:r.rows[0]?parseJson(r.rows[0].setting_value,defaultPayments):defaultPayments});}if(request.method==="POST"){if(!(await admin(request)))return json({error:"Unauthorized"},401);const input=await body(request);const settings={...defaultPayments,...input,updated_at:new Date().toISOString()};await query("INSERT INTO site_settings(setting_key,setting_value) VALUES('payment_settings',$1) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=NOW()",[JSON.stringify(settings)]);return json({success:true,settings});}return json({error:"Method not allowed"},405);}
-
-export async function upload(request:NextRequest){if(request.method!=="POST")return json({error:"Method not allowed"},405);if(!(await admin(request)))return json({error:"Unauthorized"},401);const form=await request.formData();const file=form.get("image");if(!(file instanceof File))return json({error:"No file uploaded"},400);if(!["image/jpeg","image/png","image/webp","image/gif"].includes(file.type))return json({error:"Invalid file type"},400);if(file.size>5*1024*1024)return json({error:"File too large. Max 5MB"},400);const blob=await put(`images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"-")}`,file,{access:"public",addRandomSuffix:true});return json({success:true,url:blob.url,filename:blob.pathname});}
+export async function upload(request: NextRequest) {
+  if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
+  const form = await request.formData();
+  const file = form.get("image");
+  if (!(file instanceof File)) return json({ error: "No file uploaded" }, 400);
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) return json({ error: "Invalid file type" }, 400);
+  if (file.size > 5 * 1024 * 1024) return json({ error: "File too large. Max 5MB" }, 400);
+  const blob = await put(`images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`, file, { access: "public", addRandomSuffix: true });
+  return json({ success: true, url: blob.url, filename: blob.pathname });
+}

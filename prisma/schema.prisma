@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique @db.VarChar(100)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("admin_users")
+}
+
+model BoatType {
+  id          String   @id @db.VarChar(20)
+  name        String   @db.VarChar(100)
+  totalBoats  Int      @default(1) @map("total_boats")
+  maxGuests   Int      @default(3) @map("max_guests")
+  maxWeight   Int      @default(200) @map("max_weight")
+  price       Int      @default(9900)
+  description String?  @db.Text
+  image       String?  @db.VarChar(500)
+  images      String?  @db.Text
+  features    String?  @db.Text
+  i18n        String?  @db.Text
+  bookUrl     String   @default("") @map("book_url") @db.VarChar(500)
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Int      @default(1) @map("is_active") @db.SmallInt
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([isActive, sortOrder], map: "idx_active_sort")
+  @@map("boat_types")
+}
+
+model Agent {
+  id           Int       @id @default(autoincrement())
+  firstName    String    @map("first_name") @db.VarChar(100)
+  lastName     String    @map("last_name") @db.VarChar(100)
+  email        String    @unique @db.VarChar(255)
+  phone        String?   @db.VarChar(20)
+  company      String?   @db.VarChar(200)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  status       String    @default("pending") @db.VarChar(20)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  approvedAt   DateTime? @map("approved_at") @db.Timestamp(6)
+
+  @@index([status], map: "idx_agents_status")
+  @@map("agents")
+}
+
+model Booking {
+  id            Int       @id @default(autoincrement())
+  bookingId     String    @unique @map("booking_id") @db.VarChar(30)
+  boatType      String    @map("boat_type") @db.VarChar(20)
+  bookingDate   DateTime  @map("booking_date") @db.Date
+  timeSlot      String    @map("time_slot") @db.VarChar(20)
+  guests        Int
+  customerName  String    @map("customer_name") @db.VarChar(255)
+  customerPhone String    @map("customer_phone") @db.VarChar(20)
+  customerEmail String?   @map("customer_email") @db.VarChar(255)
+  paymentMethod String?   @map("payment_method") @db.VarChar(50)
+  totalPrice    Decimal   @map("total_price") @db.Decimal(10, 2)
+  status        String    @default("pending") @db.VarChar(20)
+  notes         String?   @db.Text
+  agentId       Int?      @map("agent_id")
+  agentPrice    Decimal?  @map("agent_price") @db.Decimal(10, 2)
+  source        String    @default("direct") @db.VarChar(20)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([bookingDate, timeSlot, boatType, status], map: "idx_availability")
+  @@index([status], map: "idx_bookings_status")
+  @@index([agentId], map: "idx_agent_id")
+  @@map("bookings")
+}
+
+model BoatAvailability {
+  boatType     String   @map("boat_type") @db.VarChar(20)
+  slotDate     DateTime @map("slot_date") @db.Date
+  timeSlot     String   @map("time_slot") @db.VarChar(20)
+  status       String   @db.VarChar(20)
+  totalBoats   Int?     @map("total_boats")
+  blockedBoats Int      @default(0) @map("blocked_boats")
+
+  @@id([boatType, slotDate, timeSlot])
+  @@map("boat_availability")
+}
+
+model AgentPaymentSlip {
+  id        Int      @id @default(autoincrement())
+  bookingId String   @map("booking_id") @db.VarChar(30)
+  agentId   Int      @map("agent_id")
+  slipUrl   String   @map("slip_url") @db.VarChar(500)
+  amount    Decimal? @db.Decimal(10, 2)
+  status    String   @default("pending") @db.VarChar(20)
+  adminNote String?  @map("admin_note") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([bookingId], map: "idx_agent_slips_booking")
+  @@index([agentId], map: "idx_agent_payment_slips_agent_id")
+  @@index([status], map: "idx_agent_payment_slips_status")
+  @@map("agent_payment_slips")
+}
+
+model PaymentLog {
+  id              Int      @id @default(autoincrement())
+  bookingId       String   @map("booking_id") @db.VarChar(30)
+  transactionId   String?  @map("transaction_id") @db.VarChar(50)
+  paymentMethod   String   @default("pending") @map("payment_method") @db.VarChar(20)
+  amount          Decimal  @db.Decimal(10, 2)
+  currency        String   @default("THB") @db.VarChar(3)
+  status          String   @default("pending") @db.VarChar(20)
+  gatewayResponse Json?    @map("gateway_response")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([bookingId], map: "idx_payment_logs_booking_id")
+  @@index([transactionId], map: "idx_payment_logs_transaction")
+  @@map("payment_logs")
+}
+
+model SiteSetting {
+  settingKey   String   @id @map("setting_key") @db.VarChar(100)
+  settingValue String   @map("setting_value") @db.Text
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("site_settings")
+}
+
+model Promotion {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  subtitle    String?  @db.VarChar(255)
+  description String?  @db.Text
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  badgeText   String?  @map("badge_text") @db.VarChar(100)
+  oldPrice    Decimal? @map("old_price") @db.Decimal(10, 2)
+  newPrice    Decimal? @map("new_price") @db.Decimal(10, 2)
+  linkUrl     String?  @map("link_url") @db.VarChar(500)
+  buttonText  String   @default("จองเลย") @map("button_text") @db.VarChar(100)
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Int      @default(1) @map("is_active") @db.SmallInt
+
+  @@index([isActive, sortOrder], map: "idx_promotions_active_sort")
+  @@map("promotions")
+}
+
+model PageContent {
+  pageKey   String   @id @map("page_key") @db.VarChar(50)
+  content   Json     @default("{}")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("page_content")
+}
+
+model ManualReview {
+  id         Int      @id @default(autoincrement())
+  authorName String   @map("author_name") @db.VarChar(255)
+  rating     Int      @default(5) @db.SmallInt
+  text       String   @db.Text
+  photo      String   @default("") @db.VarChar(500)
+  trip       String   @default("Customer Review") @db.VarChar(255)
+  enabled    Int      @default(1) @db.SmallInt
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([enabled], map: "idx_manual_reviews_enabled")
+  @@map("manual_reviews")
+}
+
+model GoogleReviewsToggle {
+  id        Int      @id @default(autoincrement())
+  reviewKey String   @unique @map("review_key") @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("google_reviews_toggle")
+}

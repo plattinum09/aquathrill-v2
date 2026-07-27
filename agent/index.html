@@ -601,7 +601,7 @@
 
             <!-- Payment method tabs -->
             <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
-                <!-- ใช้ Payso (บัตรเครดิต/ออนไลน์) อย่างเดียว — ซ่อนปุ่มโอนเงิน/QR PromptPay (2026-05-21)
+                <!-- ใช้ Omise (บัตรเครดิต/ออนไลน์) อย่างเดียว — ซ่อนปุ่มโอนเงิน/QR PromptPay (2026-05-21)
                      เก็บปุ่มไว้ใน DOM (display:none) เพราะ setPayTab อ้างถึง id เหล่านี้ — เปิดคืนได้โดยลบ style="display:none" -->
                 <button class="q-boat-tab" id="pay-tab-transfer" onclick="setPayTab('transfer')" data-i18n="agent.transfer" style="display:none">
                     <i class="fas fa-university"></i> โอนเงิน
@@ -634,7 +634,7 @@
             <!-- Credit card section -->
             <div id="pay-credit-section" style="display:none;text-align:center;padding:20px 0">
                 <i class="fas fa-credit-card" style="font-size:2rem;color:#00b4ff;display:block;margin-bottom:12px"></i>
-                <p style="color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:20px" data-i18n="agent.credit_redirect">คุณจะถูกนำไปยังหน้าชำระเงิน Payso เพื่อชำระด้วยบัตรเครดิต/เดบิต หรือ QR</p>
+                <p style="color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:20px" data-i18n="agent.credit_redirect">คุณจะถูกนำไปยังหน้าชำระเงิน Omise เพื่อชำระด้วยบัตรเครดิต/เดบิต หรือ QR</p>
                 <button onclick="payCreditCard()" style="width:100%;padding:13px;background:linear-gradient(135deg,#00b4ff,#0066cc);border:none;border-radius:12px;color:#fff;font-family:'Kanit',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .3s" data-i18n="agent.pay_credit">
                     <i class="fas fa-lock"></i> ชำระด้วยบัตรเครดิต
                 </button>
@@ -1153,7 +1153,7 @@
 
     async function payCreditCard() {
         try {
-            var r = await fetch('/api/paysolutions-payment.php', {
+            var r = await fetch('/api/omise-payment.php', {
                 method: 'POST',
                 headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({booking_id: currentBookingId})

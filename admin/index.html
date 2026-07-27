@@ -11,7 +11,9 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Kanit',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
         /* Login */
-        .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0a1628,#0d2847)}
+        .auth-loading{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0a1628,#0d2847);color:rgba(255,255,255,.75);font-weight:600;gap:12px}
+        .auth-loading i{color:#00d4ff}
+        .login-wrap{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0a1628,#0d2847)}
         .login-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:48px 40px;width:100%;max-width:420px;text-align:center}
         .login-card h1{font-size:1.8rem;margin-bottom:8px}
         .login-card p{color:rgba(255,255,255,.5);margin-bottom:32px}
@@ -77,6 +79,10 @@
     </style>
 </head>
 <body>
+    <div class="auth-loading" id="auth-loading">
+        <i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบสิทธิ์...
+    </div>
+
     <!-- LOGIN -->
     <div class="login-wrap" id="login-section">
         <div class="login-card">
@@ -164,7 +170,12 @@
             const r = await fetch(API+'/admin-auth.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'check'}),credentials:'include'});
             const d = await r.json();
             if(d.authenticated){showDashboard(d.username);}
-        }catch(e){}
+            else{showLogin();}
+        }catch(e){showLogin();}
+        finally {
+            const loading = document.getElementById('auth-loading');
+            if (loading) loading.style.display = 'none';
+        }
     })();
 
     document.getElementById('login-form').addEventListener('submit',async function(e){
@@ -180,11 +191,20 @@
     });
 
     function showDashboard(username){
+        const loading = document.getElementById('auth-loading');
+        if (loading) loading.style.display='none';
         document.getElementById('login-section').style.display='none';
         document.getElementById('dashboard').style.display='block';
         document.getElementById('admin-name').textContent=username;
         loadStats();
         loadAgents();
+    }
+
+    function showLogin(){
+        const loading = document.getElementById('auth-loading');
+        if (loading) loading.style.display='none';
+        document.getElementById('dashboard').style.display='none';
+        document.getElementById('login-section').style.display='flex';
     }
 
     async function loadStats(){
