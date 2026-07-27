@@ -105,13 +105,89 @@
                     </ul>
                     <a href="services" class="btn btn-primary" style="margin-top: 20px;" data-i18n="services.cta">ดูรายละเอียดทริป</a>
                 </div>
-                <div class="fade-up" style="display:flex;gap:16px;align-items:stretch;justify-content:center;">
+                <div class="fade-up tiktok-row" style="display:flex;gap:16px;align-items:stretch;justify-content:center;">
                 <div class="tiktok-embed-wrap" style="flex:0 0 260px;overflow:hidden;border-radius:16px;">
                     <iframe src="https://www.tiktok.com/player/v1/7623666716605811976?music_info=0&description=0&autoplay=1&loop=1" style="width:100%;height:100%;min-height:500px;border:none;border-radius:16px;" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
                 <div class="tiktok-embed-wrap" style="flex:0 0 260px;overflow:hidden;border-radius:16px;">
                     <iframe src="https://www.tiktok.com/player/v1/7621506709516733703?music_info=0&description=0&autoplay=1&loop=1" style="width:100%;height:100%;min-height:500px;border:none;border-radius:16px;" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .home-trip-section{padding:90px 0;background:linear-gradient(135deg,#0d2847,#0a4d6e);color:#fff;position:relative;overflow:hidden}
+        .home-trip-section::before{content:'';position:absolute;top:-50%;right:-30%;width:80%;height:200%;background:radial-gradient(circle,rgba(0,180,255,.1) 0%,transparent 60%)}
+        .home-trip-layout{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;position:relative;z-index:2}
+        .home-trip-img{border-radius:26px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.32)}
+        .home-trip-img img{width:100%;display:block}
+        .home-trip-details h2{font-size:2.3rem;font-weight:900;margin-bottom:12px;color:#fff;line-height:1.2}
+        .home-trip-details h2 span{background:linear-gradient(135deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .home-trip-sub{color:rgba(255,255,255,.68);font-size:1.08rem;line-height:1.7;margin-bottom:26px;font-weight:600}
+        .home-island-list{display:flex;flex-direction:column;gap:16px;margin-bottom:30px}
+        .home-island-item{display:flex;gap:16px;align-items:flex-start}
+        .home-island-icon{width:52px;height:52px;min-width:52px;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,.12);border-radius:16px;font-size:1.25rem}
+        .home-island-item h4{font-size:1.12rem;font-weight:800;margin:0 0 4px;color:#fff}
+        .home-island-item p{font-size:.95rem;color:rgba(255,255,255,.6);line-height:1.5;margin:0;font-weight:600}
+        .home-includes-title{margin-bottom:14px;color:rgba(255,255,255,.95);font-size:1.1rem;font-weight:800}
+        .home-includes-title i{color:#00d4ff}
+        .home-tour-includes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:34px}
+        .home-include-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:14px 16px;font-size:.92rem;color:rgba(255,255,255,.82);font-weight:700}
+        .home-include-chip i{color:#00d4ff;font-size:1rem}
+        .home-trip-cta{font-size:1.08rem!important;padding:16px 34px!important;border-radius:999px}
+        @media(max-width:900px){.home-trip-layout{grid-template-columns:1fr;gap:34px}.home-trip-section{padding:70px 0}.home-trip-details h2{font-size:1.9rem}.home-tour-includes{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:520px){.home-tour-includes{grid-template-columns:1fr}.home-trip-details h2{font-size:1.65rem}.home-trip-sub{font-size:.95rem}.home-island-icon{width:46px;height:46px;min-width:46px}}
+    </style>
+
+    <section class="home-trip-section">
+        <div class="container">
+            <div class="home-trip-layout">
+                <div class="home-trip-img fade-up">
+                    <img src="images/โปรโมชั่น1.webp" alt="Khai Island Half Day Trip — AQUATHRILL Phuket" loading="lazy">
+                </div>
+                <div class="home-trip-details fade-up">
+                    <h2 data-i18n="promo.trip_title">ทัวร์ <span>เกาะไข่</span> ครึ่งวัน</h2>
+                    <p class="home-trip-sub" data-i18n="promo.trip_sub">3 Islands • 5 Points • 4 ชั่วโมง | ออกเดินทางจาก Phetphoom Pier, เกาะสิเหร่</p>
+
+                    <div class="home-island-list">
+                        <div class="home-island-item">
+                            <div class="home-island-icon">🏝️</div>
+                            <div>
+                                <h4 data-i18n="promo.isl1_name">เกาะไข่นุ้ย (Khai Nui)</h4>
+                                <p data-i18n="promo.isl1_desc">ดำน้ำชมปะการัง ให้อาหารปลาสีสัน เล่นน้ำอุ่น</p>
+                            </div>
+                        </div>
+                        <div class="home-island-item">
+                            <div class="home-island-icon">🐠</div>
+                            <div>
+                                <h4 data-i18n="promo.isl2_name">เกาะไข่นอก (Khai Nok)</h4>
+                                <p data-i18n="promo.isl2_desc">หาดทรายสวย น้ำใสระดับโลก ฝูงปลาว่ายรอบตัว</p>
+                            </div>
+                        </div>
+                        <div class="home-island-item">
+                            <div class="home-island-icon">📸</div>
+                            <div>
+                                <h4 data-i18n="promo.isl3_name">เกาะไข่ใน (Khai Nai)</h4>
+                                <p data-i18n="promo.isl3_desc">ทรายขาว น้ำเทอร์ควอยซ์ จุดถ่ายรูปสุดสวย</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="home-includes-title"><i class="fas fa-check-circle"></i> <span data-i18n="promo.includes_title">Tour Includes</span></h4>
+                    <div class="home-tour-includes">
+                        <div class="home-include-chip"><i class="fas fa-van-shuttle"></i> <span data-i18n="promo.inc_transfer">รถรับ-ส่ง</span></div>
+                        <div class="home-include-chip"><i class="fas fa-mask-snorkel"></i> <span data-i18n="promo.inc_snorkel">อุปกรณ์ดำน้ำ</span></div>
+                        <div class="home-include-chip"><i class="fas fa-utensils"></i> <span data-i18n="promo.inc_food">อาหาร</span></div>
+                        <div class="home-include-chip"><i class="fas fa-glass-water"></i> <span data-i18n="promo.inc_drink">เครื่องดื่ม</span></div>
+                        <div class="home-include-chip"><i class="fas fa-user-tie"></i> <span data-i18n="promo.inc_captain">กัปตัน</span></div>
+                        <div class="home-include-chip"><i class="fas fa-shield-halved"></i> <span data-i18n="promo.inc_insurance">ประกันภัย</span></div>
+                    </div>
+
+                    <a href="https://wa.me/66958192778?text=สนใจทัวร์เกาะไข่" class="btn btn-primary home-trip-cta" target="_blank">
+                        <i class="fab fa-whatsapp"></i> <span data-i18n="promo.btn_inquire">สอบถาม / จองทัวร์เกาะไข่</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -383,7 +459,7 @@
 
     /* Responsive */
     @media(max-width:1024px){.portfolio-grid{grid-template-columns:repeat(3,1fr);}}
-    @media(max-width:768px){.portfolio-grid{grid-template-columns:repeat(2,1fr);}.booking-steps-grid{grid-template-columns:repeat(2,1fr)!important;}.home-reviews-grid{grid-template-columns:1fr!important;}.trust-grid{grid-template-columns:repeat(2,1fr)!important;}.home-about-grid{grid-template-columns:1fr!important;}.tiktok-embed-wrap{display:none;}.yacht-grid{grid-template-columns:1fr!important;}}
+    @media(max-width:768px){.portfolio-grid{grid-template-columns:repeat(2,1fr);}.booking-steps-grid{grid-template-columns:repeat(2,1fr)!important;}.home-reviews-grid{grid-template-columns:1fr!important;}.trust-grid{grid-template-columns:repeat(2,1fr)!important;}.home-about-grid{grid-template-columns:1fr!important;}.tiktok-row{justify-content:flex-start!important;overflow-x:auto;padding:4px 0 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}.tiktok-embed-wrap{display:block!important;flex:0 0 min(78vw,300px)!important;scroll-snap-align:center;}.tiktok-embed-wrap iframe{min-height:520px!important;}.yacht-grid{grid-template-columns:1fr!important;}}
     @media(max-width:480px){.portfolio-grid{grid-template-columns:repeat(2,1fr);gap:8px;}.plb-nav{width:40px;height:40px;font-size:0.9rem;}.plb-prev{left:10px;}.plb-next{right:10px;}.booking-steps-grid{grid-template-columns:1fr!important;gap:16px!important;}.home-reviews-grid{grid-template-columns:1fr!important;}.trust-grid{grid-template-columns:1fr!important;gap:12px!important;}}
     </style>
 
