@@ -58,3 +58,24 @@ export async function bookings(request:NextRequest){
   if(request.method==="DELETE"){const r=await query("DELETE FROM bookings WHERE id=$1",[input.id]);return r.rowCount?json({success:true,message:"ลบการจองเรียบร้อยแล้ว"}):json({error:"ไม่พบการจอง"},404);}
   return json({error:"Method not allowed"},405);
 }
+
+export async function adminBookingStats(request: NextRequest) {
+  if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
+  if (!(await readSession(request, "admin"))) return json({ error: "Unauthorized" }, 401);
+  const result = await query<any>(
+    `SELECT
+      COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE booking_date = CURRENT_DATE)::int AS today,
+      COUNT(*) FILTER (WHERE status = 'confirmed')::int AS confirmed,
+      COALESCE(SUM(CASE WHEN status <> 'cancelled' THEN total_price ELSE 0 END), 0)::numeric AS revenue
+    FROM bookings`,
+    []
+  );
+  const row = result.rows[0] || {};
+  return json({
+    total: Number(row.total || 0),
+    today: Number(row.today || 0),
+    confirmed: Number(row.confirmed || 0),
+    revenue: Number(row.revenue || 0),
+  });
+}

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { adminAuth } from "@/lib/api/admin-auth";
 import { agentAuth } from "@/lib/api/agent-auth";
-import { availability, bookings } from "@/lib/api/booking-handlers";
+import { adminBookingStats, availability, bookings } from "@/lib/api/booking-handlers";
 import { agentBooking, agentPricing, agentSlip } from "@/lib/api/agent-handlers";
 import { gallery, galleryAuth } from "@/lib/api/gallery-handlers";
 import { omiseConfig, omisePayment, omiseSyncStatus, omiseWebhook, paysolutionsCallback, paysolutionsPayment } from "@/lib/api/payment-handlers";
@@ -24,6 +24,7 @@ async function dispatch(request:NextRequest,context:Context){
       case "boat-pricing":return boatPricing(request);
       case "availability":return availability(request);
       case "bookings":return bookings(request);
+      case "admin-booking-stats":return adminBookingStats(request);
       case "promotions":return promotions(request);
       case "agent-manage":return agentManage(request);
       case "agent-pricing":return agentPricing(request);

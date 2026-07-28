@@ -625,24 +625,27 @@
     }
 
     // ===== MAIN IMAGE UPLOAD =====
+    async function uploadImageFile(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        const r = await fetch(API + '/upload.php', { method: 'POST', body: formData, credentials: 'include' });
+        let d = {};
+        try { d = await r.json(); } catch (e) {}
+        if (!r.ok || !d.success) throw new Error(d.error || 'อัปโหลดไม่สำเร็จ');
+        return d;
+    }
+
     async function uploadMainImage(input) {
         if (!input.files || !input.files[0]) return;
-        const formData = new FormData();
-        formData.append('image', input.files[0]);
         try {
-            const r = await fetch(API + '/upload.php', { method: 'POST', body: formData, credentials: 'include' });
-            const d = await r.json();
-            if (d.success) {
-                modalMainImage = d.url;
-                const prev = document.getElementById('main-img-preview');
-                prev.src = d.url;
-                prev.style.display = 'block';
-                document.getElementById('main-img-placeholder').style.display = 'none';
-                showToast('อัปโหลดรูปหลักสำเร็จ!');
-            } else {
-                showToast(d.error || 'อัปโหลดไม่สำเร็จ');
-            }
-        } catch (e) { showToast('อัปโหลดไม่สำเร็จ'); }
+            const d = await uploadImageFile(input.files[0]);
+            modalMainImage = d.url;
+            const prev = document.getElementById('main-img-preview');
+            prev.src = d.url;
+            prev.style.display = 'block';
+            document.getElementById('main-img-placeholder').style.display = 'none';
+            showToast('อัปโหลดรูปหลักสำเร็จ!');
+        } catch (e) { showToast(e.message || 'อัปโหลดไม่สำเร็จ'); }
         input.value = '';
     }
 
@@ -695,21 +698,14 @@
 
     async function handleGalleryFile(input) {
         if (!input.files || !input.files[0]) return;
-        const formData = new FormData();
-        formData.append('image', input.files[0]);
         try {
-            const r = await fetch(API + '/upload.php', { method: 'POST', body: formData, credentials: 'include' });
-            const d = await r.json();
-            if (d.success) {
-                pendingGalleryUrl = d.url;
-                const prev = document.getElementById('upload-preview');
-                prev.src = d.url;
-                prev.style.display = 'block';
-                document.getElementById('btn-confirm-gallery').disabled = false;
-            } else {
-                showToast(d.error || 'อัปโหลดไม่สำเร็จ');
-            }
-        } catch (e) { showToast('อัปโหลดไม่สำเร็จ'); }
+            const d = await uploadImageFile(input.files[0]);
+            pendingGalleryUrl = d.url;
+            const prev = document.getElementById('upload-preview');
+            prev.src = d.url;
+            prev.style.display = 'block';
+            document.getElementById('btn-confirm-gallery').disabled = false;
+        } catch (e) { showToast(e.message || 'อัปโหลดไม่สำเร็จ'); }
     }
 
     function confirmGalleryUpload() {

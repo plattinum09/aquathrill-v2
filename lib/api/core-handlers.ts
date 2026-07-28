@@ -452,6 +452,22 @@ export async function upload(request: NextRequest) {
   if (!(file instanceof File)) return json({ error: "No file uploaded" }, 400);
   if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) return json({ error: "Invalid file type" }, 400);
   if (file.size > 5 * 1024 * 1024) return json({ error: "File too large. Max 5MB" }, 400);
-  const blob = await put(`images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`, file, { access: "public", addRandomSuffix: true });
-  return json({ success: true, url: blob.url, filename: blob.pathname });
+  const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    if (process.env.NODE_ENV === "production") {
+      return json({ error: "Missing BLOB_READ_WRITE_TOKEN. Please set Vercel Blob environment variable." }, 500);
+    }
+    const [{ mkdir, writeFile }, path] = await Promise.all([import("node:fs/promises"), import("node:path")]);
+    const dir = path.join(process.cwd(), "public", "images", "uploads");
+    await mkdir(dir, { recursive: true });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await writeFile(path.join(dir, safeName), buffer);
+    return json({ success: true, url: `/images/uploads/${safeName}`, filename: safeName, storage: "local" });
+  }
+  try {
+    const blob = await put(`images/${safeName}`, file, { access: "public", addRandomSuffix: true });
+    return json({ success: true, url: blob.url, filename: blob.pathname, storage: "vercel_blob" });
+  } catch (error: any) {
+    return json({ error: error?.message || "Failed to upload to Vercel Blob" }, 500);
+  }
 }

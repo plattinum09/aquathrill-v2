@@ -209,15 +209,12 @@
 
     async function loadStats(){
         try{
-            const r=await fetch(API+'/bookings.php?limit=1000',{credentials:'include'});
+            const r=await fetch(API+'/admin-booking-stats.php',{credentials:'include',cache:'no-store'});
             const d=await r.json();
-            const bookings=d.bookings||[];
-            const today=new Date().toISOString().split('T')[0];
-            document.getElementById('stat-total').textContent=bookings.length;
-            document.getElementById('stat-today').textContent=bookings.filter(b=>b.booking_date===today).length;
-            document.getElementById('stat-confirmed').textContent=bookings.filter(b=>b.status==='confirmed').length;
-            const rev=bookings.filter(b=>b.status!=='cancelled').reduce((s,b)=>s+parseFloat(b.total_price||0),0);
-            document.getElementById('stat-revenue').textContent='฿'+rev.toLocaleString('th-TH');
+            document.getElementById('stat-total').textContent=d.total||0;
+            document.getElementById('stat-today').textContent=d.today||0;
+            document.getElementById('stat-confirmed').textContent=d.confirmed||0;
+            document.getElementById('stat-revenue').textContent='฿'+Number(d.revenue||0).toLocaleString('th-TH');
         }catch(e){console.error(e);}
     }
 
