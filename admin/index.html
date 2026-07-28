@@ -197,7 +197,7 @@
         document.getElementById('dashboard').style.display='block';
         document.getElementById('admin-name').textContent=username;
         loadStats();
-        loadAgents();
+        loadAgentSummary();
     }
 
     function showLogin(){
@@ -227,11 +227,10 @@
     let allAgents = [];
     let currentAgentFilter = 'all';
 
-    async function loadAgents() {
+    async function loadAgentSummary() {
         try {
-            const r = await fetch(API + '/agent-manage.php', { credentials: 'include' });
+            const r = await fetch(API + '/agent-manage.php?summary=1', { credentials: 'include', cache: 'no-store' });
             const d = await r.json();
-            allAgents = d.agents || [];
             const counts = d.counts || {};
             const pendingCount = counts.pending || 0;
 
@@ -243,24 +242,41 @@
             } else {
                 badge.style.display = 'none';
             }
-
-            renderAgents();
+            document.getElementById('agent-list').innerHTML =
+                '<div class="agent-empty"><i class="fas fa-user-tie"></i><p>เลือกสถานะด้านบนเพื่อโหลดรายการ Agent</p></div>';
         } catch(e) { console.error('Failed to load agents', e); }
+    }
+
+    async function loadAgents(status) {
+        try {
+            const query = status && status !== 'all' ? '&status=' + encodeURIComponent(status) : '';
+            const r = await fetch(API + '/agent-manage.php?limit=50' + query, { credentials: 'include', cache: 'no-store' });
+            const d = await r.json();
+            allAgents = d.agents || [];
+            const counts = d.counts || {};
+            const pendingCount = counts.pending || 0;
+            document.getElementById('stat-pending-agents').textContent = pendingCount;
+            const badge = document.getElementById('agent-pending-badge');
+            if (pendingCount > 0) { badge.textContent = pendingCount; badge.style.display = ''; }
+            else { badge.style.display = 'none'; }
+            renderAgents();
+        } catch(e) {
+            console.error('Failed to load agents', e);
+            document.getElementById('agent-list').innerHTML = '<div class="agent-empty"><i class="fas fa-exclamation-triangle"></i><p>โหลดรายการ Agent ไม่สำเร็จ</p></div>';
+        }
     }
 
     function filterAgents(status) {
         currentAgentFilter = status;
         document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
-        renderAgents();
+        document.getElementById('agent-list').innerHTML = '<div class="agent-empty"><i class="fas fa-spinner fa-spin"></i><p>กำลังโหลด Agent...</p></div>';
+        loadAgents(status);
     }
 
     function renderAgents() {
         const container = document.getElementById('agent-list');
         let filtered = allAgents;
-        if (currentAgentFilter !== 'all') {
-            filtered = allAgents.filter(a => a.status === currentAgentFilter);
-        }
 
         if (filtered.length === 0) {
             container.innerHTML = '<div class="agent-empty"><i class="fas fa-user-tie"></i><p>ไม่มี Agent ' + (currentAgentFilter === 'all' ? '' : 'สถานะนี้') + '</p></div>';
@@ -310,7 +326,7 @@
                 credentials: 'include'
             });
             const d = await r.json();
-            if (d.success) { showToast('อนุมัติ Agent สำเร็จ!', 'success'); loadAgents(); }
+            if (d.success) { showToast('อนุมัติ Agent สำเร็จ!', 'success'); loadAgents(currentAgentFilter); }
             else showToast(d.error || 'เกิดข้อผิดพลาด', 'error');
         } catch(e) { showToast('ไม่สามารถดำเนินการได้', 'error'); }
     }
@@ -325,7 +341,7 @@
                 credentials: 'include'
             });
             const d = await r.json();
-            if (d.success) { showToast('ปฏิเสธ Agent แล้ว', 'success'); loadAgents(); }
+            if (d.success) { showToast('ปฏิเสธ Agent แล้ว', 'success'); loadAgents(currentAgentFilter); }
             else showToast(d.error || 'เกิดข้อผิดพลาด', 'error');
         } catch(e) { showToast('ไม่สามารถดำเนินการได้', 'error'); }
     }

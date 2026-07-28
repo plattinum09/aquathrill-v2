@@ -378,16 +378,22 @@ export async function promotions(request: NextRequest) {
 export async function agentManage(request: NextRequest) {
   if (!(await admin(request))) return json({ error: "Unauthorized" }, 401);
   if (request.method === "GET") {
-    const status = new URL(request.url).searchParams.get("status");
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const summary = url.searchParams.get("summary") === "1";
+    const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") || 50)));
+    const grouped = await prisma.agent.groupBy({ by: ["status"], _count: { status: true } });
+    const counts = Object.fromEntries(grouped.map((x) => [x.status, x._count.status]));
+    if (summary) return json({ agents: [], counts });
     const agents = await prisma.agent.findMany({
       where: status ? { status } : undefined,
       orderBy: { createdAt: "desc" },
+      take: limit,
       select: { id: true, firstName: true, lastName: true, email: true, phone: true, company: true, status: true, createdAt: true, approvedAt: true },
     });
-    const grouped = await prisma.agent.groupBy({ by: ["status"], _count: { status: true } });
     return json({
       agents: agents.map((x) => ({ id: x.id, first_name: x.firstName, last_name: x.lastName, email: x.email, phone: x.phone, company: x.company, status: x.status, created_at: x.createdAt, approved_at: x.approvedAt })),
-      counts: Object.fromEntries(grouped.map((x) => [x.status, x._count.status])),
+      counts,
     });
   }
   if (request.method === "PUT") {
