@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>แก้ข้อความหน้าแรก | AQUATHRILL Admin</title>
+  <title>แก้ข้อความหน้า Services | AQUATHRILL Admin</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -30,7 +30,7 @@
 </head>
 <body>
   <div class="topbar">
-    <div class="title"><a class="back" href="/admin/index.html"><i class="fas fa-arrow-left"></i> กลับ</a><span><i class="fas fa-pen-to-square"></i> แก้ข้อความหน้าแรก</span></div>
+    <div class="title"><a class="back" href="/admin/index.html"><i class="fas fa-arrow-left"></i> กลับ</a><span><i class="fas fa-pen-to-square"></i> แก้ข้อความหน้า Services</span></div>
     <div class="actions">
       <div class="lang-tabs">
         <button data-lang="th" class="active">🇹🇭 TH</button>
@@ -52,7 +52,7 @@
       <form id="content-form"></form>
     </section>
     <section class="panel preview-panel">
-      <iframe id="preview" title="Home preview"></iframe>
+      <iframe id="preview" title="Services preview"></iframe>
     </section>
   </main>
 
@@ -60,40 +60,14 @@
 
   <script>
   const API = '/api';
-  const sections = [
-    {title:'Hero ด้านบน', icon:'fa-star', fields:[
-      ['hero.title','หัวข้อใหญ่','textarea'], ['hero.subtitle','คำอธิบาย','textarea'],
-      ['hero.cta_trips','ปุ่มดูทริปทั้งหมด','input'], ['hero.cta_book','ปุ่มจองทริป','input'],
-      ['hero.trust_insurance','Trust badge: ประกันภัย','input'], ['hero.trust_captain','Trust badge: กัปตัน','input'],
-      ['hero.trust_payment','Trust badge: จ่ายบัตร','input'], ['hero.trust_reviews','Trust badge: รีวิว','input'],
-      ['hero.google_reviews','Google Reviews','input'], ['hero.social_label','ข้อความชวนติดตาม Social','input']
-    ]},
-    {title:'Section รีวิว / รายละเอียดทริป', icon:'fa-water', fields:[
-      ['services.title','หัวข้อ section','input'], ['services.desc','คำอธิบาย section','textarea'],
-      ['services.f1','Bullet 1','textarea'], ['services.f2','Bullet 2','textarea'],
-      ['services.f3','Bullet 3','textarea'], ['services.f4','Bullet 4','textarea'],
-      ['services.cta','ปุ่มดูรายละเอียด','input'], ['services.tiktok_title','หัวข้อวิดีโอ YouTube','input'],
-      ['services.tiktok_subtitle','คำอธิบายวิดีโอ YouTube','input']
-    ]},
-    {title:'Section ทัวร์เกาะไข่', icon:'fa-umbrella-beach', fields:[
-      ['trip.badge','Badge','input'], ['trip.title','หัวข้อทริป','textarea'], ['trip.subtitle','คำอธิบายทริป','textarea'],
-      ['trip.island1_name','เกาะ 1 ชื่อ','input'], ['trip.island1_desc','เกาะ 1 รายละเอียด','textarea'],
-      ['trip.island2_name','เกาะ 2 ชื่อ','input'], ['trip.island2_desc','เกาะ 2 รายละเอียด','textarea'],
-      ['trip.island3_name','เกาะ 3 ชื่อ','input'], ['trip.island3_desc','เกาะ 3 รายละเอียด','textarea'],
-      ['trip.includes_title','หัวข้อ Tour Includes','input'],
-      ['trip.include_transfer','รวม: รถรับส่ง','input'], ['trip.include_snorkel','รวม: อุปกรณ์ดำน้ำ','input'],
-      ['trip.include_food','รวม: อาหาร','input'], ['trip.include_drink','รวม: เครื่องดื่ม','input'],
-      ['trip.include_captain','รวม: กัปตัน','input'], ['trip.include_insurance','รวม: ประกันภัย','input'],
-      ['trip.cta','ปุ่ม WhatsApp','input']
-    ]}
-  ];
+  const sections = [];
   let currentLang = 'th';
   let dirty = false;
   const form = document.getElementById('content-form');
   const preview = document.getElementById('preview');
   const saveBtn = document.getElementById('btn-save');
 
-  function pageKey(){ return currentLang === 'th' ? 'home' : 'home_' + currentLang; }
+  function pageKey(){ return currentLang === 'th' ? 'services' : 'services_' + currentLang; }
   function showToast(msg,type='success'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+type; setTimeout(()=>t.className='toast',2600); }
   function getNested(obj,key){ return key.split('.').reduce((a,p)=>a&&a[p]!=null?a[p]:undefined,obj); }
   function setNested(obj,key,val){ const parts=key.split('.'); let cur=obj; parts.slice(0,-1).forEach(p=>cur=cur[p]=cur[p]||{}); cur[parts.at(-1)] = val; }
@@ -121,7 +95,7 @@
   }
   function labelForKey(key) {
     const map = {
-      nav:'เมนูนำทาง', hero:'Hero ด้านบน', services:'Section รีวิว / รายละเอียดทริป', trip:'Section ทัวร์เกาะไข่',
+      svc:'ข้อความหน้า Services', nav:'เมนูนำทาง', hero:'Hero ด้านบน', services:'Section รีวิว / รายละเอียดทริป', trip:'Section ทัวร์เกาะไข่',
       routes:'เส้นทางการเดินทาง', boats:'รุ่นเรือ', steps:'ขั้นตอนการจอง', reviews:'รีวิว', portfolio:'ผลงาน / Gallery',
       faq:'คำถามที่พบบ่อย', trust:'ความน่าเชื่อถือ', footer:'Footer', promo:'ทัวร์เกาะไข่'
     };
@@ -181,15 +155,15 @@
     const defaults = {};
     if (!doc) return defaults;
     try {
-      if (preview.contentWindow && typeof preview.contentWindow.prepareHomeContentTargets === 'function') {
-        preview.contentWindow.prepareHomeContentTargets(doc);
+      if (preview.contentWindow && typeof preview.contentWindow.preparePageContentTargets === 'function') {
+        preview.contentWindow.preparePageContentTargets(doc);
       }
     } catch(e) {}
-    doc.querySelectorAll('[data-home-content]').forEach(el => {
-      setNested(defaults, el.getAttribute('data-home-content'), el.innerHTML.trim());
+    doc.querySelectorAll('[data-page-content]').forEach(el => {
+      setNested(defaults, el.getAttribute('data-page-content'), el.innerHTML.trim());
     });
-    doc.querySelectorAll('[data-home-placeholder]').forEach(el => {
-      setNested(defaults, el.getAttribute('data-home-placeholder'), el.getAttribute('placeholder') || '');
+    doc.querySelectorAll('[data-page-placeholder]').forEach(el => {
+      setNested(defaults, el.getAttribute('data-page-placeholder'), el.getAttribute('placeholder') || '');
     });
     return defaults;
   }
@@ -198,19 +172,19 @@
     const doc = preview.contentDocument || preview.contentWindow?.document;
     if (!doc) return;
     const content = collect();
-    doc.querySelectorAll('[data-home-content]').forEach(el => {
-      const val = getNested(content, el.getAttribute('data-home-content'));
+    doc.querySelectorAll('[data-page-content]').forEach(el => {
+      const val = getNested(content, el.getAttribute('data-page-content'));
       if (val != null) el.innerHTML = val;
     });
-    doc.querySelectorAll('[data-home-placeholder]').forEach(el => {
-      const val = getNested(content, el.getAttribute('data-home-placeholder'));
+    doc.querySelectorAll('[data-page-placeholder]').forEach(el => {
+      const val = getNested(content, el.getAttribute('data-page-placeholder'));
       if (val != null) el.setAttribute('placeholder', val);
     });
   }
 
   async function loadContent(){
     buildForm();
-    preview.src = '/?lang=' + encodeURIComponent(currentLang) + '&_preview=' + Date.now();
+    preview.src = '/services?lang=' + encodeURIComponent(currentLang) + '&_preview=' + Date.now();
     await new Promise(resolve => preview.onload = resolve);
     await new Promise(resolve => setTimeout(resolve, 1000));
     const defaults = collectDefaultsFromPreview();
@@ -241,7 +215,7 @@
       const d = await r.json().catch(()=>({}));
       if (!r.ok || !d.success) throw new Error(d.error || 'บันทึกไม่สำเร็จ');
       dirty = false;
-      showToast('บันทึกข้อความหน้าแรกสำเร็จ');
+      showToast('บันทึกข้อความหน้า Services สำเร็จ');
     } catch(e) {
       saveBtn.disabled = false;
       showToast(e.message || 'บันทึกไม่สำเร็จ', 'error');

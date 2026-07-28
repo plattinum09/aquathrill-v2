@@ -261,7 +261,10 @@ nav .container {
 
 /* === Hero Section === */
 .hero {
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
+    padding-top: clamp(110px, 13vh, 170px);
+    padding-bottom: 80px;
     background: linear-gradient(135deg, rgba(11, 27, 43, 0.7), rgba(11, 27, 43, 0.4)),
                 url('../../images/hero.webp') center bottom/cover;
     display: flex;
@@ -283,6 +286,7 @@ nav .container {
 .hero-content {
     position: relative;
     z-index: 1;
+    transform: translateY(18px);
 }
 .hero-content h1 {
     font-size: clamp(2.2rem, 5vw, 4.2rem);
@@ -1453,6 +1457,14 @@ footer .container {
     .services-grid, .promo-grid, .reviews-grid { grid-template-columns: 1fr; }
     .services-grid .service-card:last-child:nth-child(odd) { grid-column: auto; max-width: none; margin: 0; }
     .stats-row { grid-template-columns: 1fr 1fr; }
+    .hero {
+        padding-top: 132px;
+        padding-bottom: 64px;
+        align-items: flex-start;
+    }
+    .hero-content {
+        transform: none;
+    }
     .hero-content h1 {
         font-size: clamp(2.05rem, 8vw, 3rem);
         line-height: 1.05;
@@ -1655,6 +1667,10 @@ footer .container {
 /* === Small Mobile (≤480px) === */
 @media (max-width: 480px) {
     .container { padding: 0 15px; }
+    .hero {
+        padding-top: 118px;
+        padding-bottom: 54px;
+    }
     .section-padding { padding: 40px 0; }
     .section-title h2 { font-size: 1.5rem; }
     .section-title p { font-size: 0.85rem; }

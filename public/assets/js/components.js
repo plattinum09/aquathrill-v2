@@ -58,19 +58,27 @@
         footerEl.innerHTML = `
     <style>
     @media (max-width: 768px) {
-        .footer-grid { text-align: center !important; }
+        .footer-grid { text-align: left !important; }
         .footer-col-brand,
-        .footer-grid > div { display: flex !important; flex-direction: column !important; align-items: center !important; }
-        .footer-logo { display: block !important; width: fit-content !important; margin: 0 auto !important; }
+        .footer-grid > div { align-items: stretch !important; }
+        .footer-logo { width: fit-content !important; margin: 0 auto 12px !important; }
         .social-links { justify-content: center !important; }
     }
     </style>
     <footer>
         <div class="container">
             <div class="footer-grid">
-                <div class="footer-col-brand" style="text-align:center">
-                    <a href="${rootPrefix}" class="footer-logo" style="display:flex; justify-content:center; margin:0 auto; width:100%"><img src="${assetPrefix}images/logo-footer.png" alt="AQUATHRILL" style="height:80px;display:block"></a>
-                    <p style="opacity: 0.7; margin-bottom: 10px;" data-i18n="footer.desc">บริการ Mini Speedboat self-drive<br>(with captain)</p>
+                <div class="footer-col-brand">
+                    <a href="${rootPrefix}" class="footer-logo"><img src="${assetPrefix}images/logo-footer.png" alt="AQUATHRILL"></a>
+                    <p class="footer-desc" data-i18n="footer.desc">บริการ Mini Speedboat self-drive<br>(with captain)</p>
+                    <div class="footer-trust-mini">
+                        <span><i class="fas fa-shield-halved"></i> <span data-home-content="footer.trust_license">T.A.T. 33/11987</span></span>
+                        <span><i class="fas fa-credit-card"></i> <span data-home-content="footer.trust_payment">Secure Payment</span></span>
+                    </div>
+                    <div class="footer-actions">
+                        <a href="/booking" class="footer-action primary"><i class="fas fa-calendar-check"></i> <span data-home-content="footer.book_cta">จองเลย</span></a>
+                        <a href="https://wa.me/66958192778" target="_blank" class="footer-action whatsapp"><i class="fab fa-whatsapp"></i> <span data-home-content="footer.whatsapp_cta">WhatsApp</span></a>
+                    </div>
                     <div class="social-links">
                         <a href="https://www.facebook.com/share/1MVoNcx4K6/?mibextid=wwXIfr" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
                         <a href="https://www.instagram.com/aquathrill.phuket" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
@@ -91,15 +99,15 @@
                 <div class="footer-links">
                     <h4 data-i18n="footer.contact_us">ติดต่อเรา</h4>
                     <ul>
-                        <li><a href="https://wa.me/66958192778" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-whatsapp"></i> +66958192778</a></li>
-                        <li><a href="https://www.instagram.com/aquathrill.phuket" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-instagram"></i> @aquathrill.phuket</a></li>
-                        <li><a href="mailto:aquathrill70@gmail.com" style="color:inherit;text-decoration:none;"><i class="fas fa-envelope"></i> aquathrill70@gmail.com</a></li>
+                        <li><a href="https://wa.me/66958192778" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-whatsapp"></i> <span data-home-content="footer.phone">+66958192778</span></a></li>
+                        <li><a href="https://www.instagram.com/aquathrill.phuket" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-instagram"></i> <span data-home-content="footer.instagram">@aquathrill.phuket</span></a></li>
+                        <li><a href="mailto:aquathrill70@gmail.com" style="color:inherit;text-decoration:none;"><i class="fas fa-envelope"></i> <span data-home-content="footer.email">aquathrill70@gmail.com</span></a></li>
                         <li><a href="https://www.google.com/maps/search/?api=1&query=Royal%20Phuket%20Marina" target="_blank" style="color:inherit;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> <span data-i18n="footer.location">Royal Phuket Marina</span></a></li>
                     </ul>
                 </div>
-                <div>
+                <div class="footer-newsletter">
                     <h4 data-i18n="footer.newsletter_title">รับข่าวสารและโปรโมชั่น</h4>
-                    <p style="margin: 15px 0; font-size: 0.85rem; opacity: 0.7;" data-i18n="footer.newsletter_desc">สมัครรับข้อเสนอพิเศษก่อนใคร</p>
+                    <p data-i18n="footer.newsletter_desc">สมัครรับข้อเสนอพิเศษก่อนใคร</p>
                     <div class="newsletter-form">
                         <input type="email" data-i18n-placeholder="footer.newsletter_placeholder" placeholder="อีเมลของคุณ">
                         <button data-i18n="footer.newsletter_btn">สมัคร</button>
@@ -107,7 +115,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket</p>
+                <p data-home-content="footer.license_address">T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket</p>
                 <p style="margin-top:8px;"><span data-i18n="footer.copyright">&copy; 2026 AQUATHRILL. สงวนลิขสิทธิ์</span> | <a href="/terms" style="color:rgba(255,255,255,0.6);" data-i18n="footer.terms">เงื่อนไขการให้บริการ</a> | <a href="/privacy-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.privacy">นโยบายความเป็นส่วนตัว</a> | <a href="/refund-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.refund">นโยบายคืนเงิน</a></p>
             </div>
         </div>

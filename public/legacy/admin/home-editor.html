@@ -106,9 +106,51 @@
     });
     return out;
   }
+  function flattenObject(obj, prefix = '', out = {}) {
+    Object.keys(obj || {}).forEach(key => {
+      const path = prefix ? prefix + '.' + key : key;
+      const value = obj[key];
+      if (value && typeof value === 'object' && !Array.isArray(value)) flattenObject(value, path, out);
+      else out[path] = value;
+    });
+    return out;
+  }
+  function fieldTypeFor(value) {
+    const text = String(value || '');
+    return text.length > 70 || text.includes('<br') || text.includes('<strong') ? 'textarea' : 'input';
+  }
+  function labelForKey(key) {
+    const map = {
+      nav:'เมนูนำทาง', hero:'Hero ด้านบน', services:'Section รีวิว / รายละเอียดทริป', trip:'Section ทัวร์เกาะไข่',
+      routes:'เส้นทางการเดินทาง', boats:'รุ่นเรือ', steps:'ขั้นตอนการจอง', reviews:'รีวิว', portfolio:'ผลงาน / Gallery',
+      faq:'คำถามที่พบบ่อย', trust:'ความน่าเชื่อถือ', footer:'Footer', promo:'ทัวร์เกาะไข่'
+    };
+    const parts = key.split('.');
+    return (map[parts[0]] || parts[0]) + ' — ' + parts.slice(1).join('.');
+  }
+  function sectionMetaForKey(key) {
+    const top = key.split('.')[0];
+    const metas = {
+      nav:['เมนูนำทาง','fa-bars'], routes:['เส้นทางการเดินทาง','fa-route'], boats:['รุ่นเรือ','fa-ship'],
+      steps:['ขั้นตอนจอง','fa-list-check'], reviews:['รีวิว','fa-comments'], portfolio:['Gallery / ผลงาน','fa-images'],
+      faq:['FAQ','fa-circle-question'], trust:['ความน่าเชื่อถือ','fa-shield-halved'], footer:['Footer','fa-link'],
+      promo:['ข้อความทัวร์/โปรโมชั่น','fa-bullhorn']
+    };
+    return metas[top] || ['ข้อความอื่น ๆ','fa-pen'];
+  }
 
-  function buildForm(){
-    form.innerHTML = sections.map(sec => '<div class="section"><h3><i class="fas '+sec.icon+'"></i>'+sec.title+'</h3>' + sec.fields.map(([key,label,type]) => {
+  function buildForm(allKeys = [], defaults = {}){
+    const known = new Set(sections.flatMap(sec => sec.fields.map(field => field[0])));
+    const flatDefaults = flattenObject(defaults);
+    const extraGroups = {};
+    allKeys.filter(key => !known.has(key)).sort().forEach(key => {
+      const [title, icon] = sectionMetaForKey(key);
+      const groupKey = title;
+      extraGroups[groupKey] = extraGroups[groupKey] || { title, icon, fields: [] };
+      extraGroups[groupKey].fields.push([key, labelForKey(key), fieldTypeFor(flatDefaults[key])]);
+    });
+    const renderSections = sections.concat(Object.values(extraGroups));
+    form.innerHTML = renderSections.map(sec => '<div class="section"><h3><i class="fas '+sec.icon+'"></i>'+sec.title+'</h3>' + sec.fields.map(([key,label,type]) => {
       const tag = type === 'textarea' ? 'textarea' : 'input';
       return '<div class="field"><label>'+label+'</label><'+tag+' data-key="'+key+'" placeholder="'+label+'"></'+tag+'></div>';
     }).join('') + '</div>').join('');
@@ -138,8 +180,16 @@
     const doc = preview.contentDocument || preview.contentWindow?.document;
     const defaults = {};
     if (!doc) return defaults;
+    try {
+      if (preview.contentWindow && typeof preview.contentWindow.prepareHomeContentTargets === 'function') {
+        preview.contentWindow.prepareHomeContentTargets(doc);
+      }
+    } catch(e) {}
     doc.querySelectorAll('[data-home-content]').forEach(el => {
       setNested(defaults, el.getAttribute('data-home-content'), el.innerHTML.trim());
+    });
+    doc.querySelectorAll('[data-home-placeholder]').forEach(el => {
+      setNested(defaults, el.getAttribute('data-home-placeholder'), el.getAttribute('placeholder') || '');
     });
     return defaults;
   }
@@ -152,14 +202,19 @@
       const val = getNested(content, el.getAttribute('data-home-content'));
       if (val != null) el.innerHTML = val;
     });
+    doc.querySelectorAll('[data-home-placeholder]').forEach(el => {
+      const val = getNested(content, el.getAttribute('data-home-placeholder'));
+      if (val != null) el.setAttribute('placeholder', val);
+    });
   }
 
   async function loadContent(){
     buildForm();
     preview.src = '/?lang=' + encodeURIComponent(currentLang) + '&_preview=' + Date.now();
     await new Promise(resolve => preview.onload = resolve);
-    await new Promise(resolve => setTimeout(resolve, 700));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const defaults = collectDefaultsFromPreview();
+    buildForm(Object.keys(flattenObject(defaults)), defaults);
     try {
       const r = await fetch(API + '/page-content.php?page=' + pageKey() + '&admin=1', {credentials:'include', cache:'no-store'});
       const d = await r.json();

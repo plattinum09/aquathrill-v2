@@ -72,12 +72,12 @@
                     <a href="${rootPrefix}" class="footer-logo"><img src="${assetPrefix}images/logo-footer.png" alt="AQUATHRILL"></a>
                     <p class="footer-desc" data-i18n="footer.desc">บริการ Mini Speedboat self-drive<br>(with captain)</p>
                     <div class="footer-trust-mini">
-                        <span><i class="fas fa-shield-halved"></i> T.A.T. 33/11987</span>
-                        <span><i class="fas fa-credit-card"></i> Secure Payment</span>
+                        <span><i class="fas fa-shield-halved"></i> <span data-home-content="footer.trust_license">T.A.T. 33/11987</span></span>
+                        <span><i class="fas fa-credit-card"></i> <span data-home-content="footer.trust_payment">Secure Payment</span></span>
                     </div>
                     <div class="footer-actions">
-                        <a href="/booking" class="footer-action primary"><i class="fas fa-calendar-check"></i> จองเลย</a>
-                        <a href="https://wa.me/66958192778" target="_blank" class="footer-action whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                        <a href="/booking" class="footer-action primary"><i class="fas fa-calendar-check"></i> <span data-home-content="footer.book_cta">จองเลย</span></a>
+                        <a href="https://wa.me/66958192778" target="_blank" class="footer-action whatsapp"><i class="fab fa-whatsapp"></i> <span data-home-content="footer.whatsapp_cta">WhatsApp</span></a>
                     </div>
                     <div class="social-links">
                         <a href="https://www.facebook.com/share/1MVoNcx4K6/?mibextid=wwXIfr" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -99,9 +99,9 @@
                 <div class="footer-links">
                     <h4 data-i18n="footer.contact_us">ติดต่อเรา</h4>
                     <ul>
-                        <li><a href="https://wa.me/66958192778" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-whatsapp"></i> +66958192778</a></li>
-                        <li><a href="https://www.instagram.com/aquathrill.phuket" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-instagram"></i> @aquathrill.phuket</a></li>
-                        <li><a href="mailto:aquathrill70@gmail.com" style="color:inherit;text-decoration:none;"><i class="fas fa-envelope"></i> aquathrill70@gmail.com</a></li>
+                        <li><a href="https://wa.me/66958192778" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-whatsapp"></i> <span data-home-content="footer.phone">+66958192778</span></a></li>
+                        <li><a href="https://www.instagram.com/aquathrill.phuket" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-instagram"></i> <span data-home-content="footer.instagram">@aquathrill.phuket</span></a></li>
+                        <li><a href="mailto:aquathrill70@gmail.com" style="color:inherit;text-decoration:none;"><i class="fas fa-envelope"></i> <span data-home-content="footer.email">aquathrill70@gmail.com</span></a></li>
                         <li><a href="https://www.google.com/maps/search/?api=1&query=Royal%20Phuket%20Marina" target="_blank" style="color:inherit;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> <span data-i18n="footer.location">Royal Phuket Marina</span></a></li>
                     </ul>
                 </div>
@@ -115,7 +115,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket</p>
+                <p data-home-content="footer.license_address">T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket</p>
                 <p style="margin-top:8px;"><span data-i18n="footer.copyright">&copy; 2026 AQUATHRILL. สงวนลิขสิทธิ์</span> | <a href="/terms" style="color:rgba(255,255,255,0.6);" data-i18n="footer.terms">เงื่อนไขการให้บริการ</a> | <a href="/privacy-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.privacy">นโยบายความเป็นส่วนตัว</a> | <a href="/refund-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.refund">นโยบายคืนเงิน</a></p>
             </div>
         </div>
