@@ -102,7 +102,7 @@
                         <li><a href="https://wa.me/66958192778" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-whatsapp"></i> +66958192778</a></li>
                         <li><a href="https://www.instagram.com/aquathrill.phuket" target="_blank" style="color:inherit;text-decoration:none;"><i class="fab fa-instagram"></i> @aquathrill.phuket</a></li>
                         <li><a href="mailto:aquathrill70@gmail.com" style="color:inherit;text-decoration:none;"><i class="fas fa-envelope"></i> aquathrill70@gmail.com</a></li>
-                        <li><a href="https://maps.app.goo.gl/2LK3wsQ9fyx83Kt66?g_st=ic" target="_blank" style="color:inherit;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> <span data-i18n="footer.location">ภูเก็ต</span></a></li>
+                        <li><a href="https://www.google.com/maps/search/?api=1&query=Royal%20Phuket%20Marina" target="_blank" style="color:inherit;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> <span data-i18n="footer.location">Royal Phuket Marina</span></a></li>
                     </ul>
                 </div>
                 <div class="footer-newsletter">
@@ -115,7 +115,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>T.A.T. Licence: 33/11987 | 70/3 No.1, Ratsada, Mueang Phuket 83000</p>
+                <p>T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket</p>
                 <p style="margin-top:8px;"><span data-i18n="footer.copyright">&copy; 2026 AQUATHRILL. สงวนลิขสิทธิ์</span> | <a href="/terms" style="color:rgba(255,255,255,0.6);" data-i18n="footer.terms">เงื่อนไขการให้บริการ</a> | <a href="/privacy-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.privacy">นโยบายความเป็นส่วนตัว</a> | <a href="/refund-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.refund">นโยบายคืนเงิน</a></p>
             </div>
         </div>
