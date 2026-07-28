@@ -320,6 +320,31 @@
         background: rgba(5,18,34,.52);
         pointer-events: none;
     }
+    .rv-loading-card {
+        min-height: 300px;
+        pointer-events: none;
+    }
+    .rv-skel {
+        display: block;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(0,151,202,.08), rgba(0,151,202,.18), rgba(0,151,202,.08));
+        background-size: 220% 100%;
+        animation: rv-shimmer 1.35s ease-in-out infinite;
+    }
+    .rv-skel-avatar { width: 52px; height: 52px; border-radius: 16px; }
+    .rv-skel-line { height: 13px; margin: 12px 0; }
+    .rv-skel-line.short { width: 42%; }
+    .rv-skel-line.mid { width: 68%; }
+    .rv-skel-line.long { width: 92%; }
+    .rv-skel-photo {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 13px;
+    }
+    @keyframes rv-shimmer {
+        0% { background-position: 120% 0; }
+        100% { background-position: -120% 0; }
+    }
 
     /* Card Footer */
     .rv-card-footer {
@@ -456,7 +481,7 @@
                 var lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
                 var reviews = window.REVIEWS_DATA || [];
                 var container = document.getElementById('rv-grid-container');
-                if (!container || !reviews.length) return;
+                if (!container) return;
 
                 function getLang(){ return (window.I18n && I18n.getLang) ? I18n.getLang() : 'th'; }
                 function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
@@ -487,8 +512,39 @@
                         });
                     });
                 }
+                function renderLoadingCards() {
+                    var html = '';
+                    for (var i = 0; i < 6; i++) {
+                        html += '<div class="rv-card rv-loading-card fade-up">'
+                            + '<div class="rv-card-header">'
+                            + '<span class="rv-skel rv-skel-avatar"></span>'
+                            + '<div style="flex:1">'
+                            + '<span class="rv-skel rv-skel-line mid"></span>'
+                            + '<span class="rv-skel rv-skel-line short"></span>'
+                            + '</div></div>'
+                            + '<span class="rv-skel rv-skel-line short"></span>'
+                            + '<span class="rv-skel rv-skel-line long"></span>'
+                            + '<span class="rv-skel rv-skel-line long"></span>'
+                            + '<span class="rv-skel rv-skel-line mid"></span>'
+                            + '<div class="rv-photo-grid">'
+                            + '<span class="rv-skel rv-skel-photo"></span>'
+                            + '<span class="rv-skel rv-skel-photo"></span>'
+                            + '<span class="rv-skel rv-skel-photo"></span>'
+                            + '</div>'
+                            + '</div>';
+                    }
+                    container.innerHTML = html;
+                    requestAnimationFrame(function(){
+                        container.querySelectorAll('.fade-up').forEach(function(el){ el.classList.add('visible'); });
+                        layoutMasonry();
+                    });
+                }
 
                 function renderCards(l) {
+                    if (!reviews.length) {
+                        renderLoadingCards();
+                        return;
+                    }
                     var html = '';
                     reviews.forEach(function(r){
                         var name = r.name[l] || r.name['th'];

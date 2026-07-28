@@ -97,8 +97,10 @@ window.REVIEWS_STATIC = [
     }
 ];
 
-// Use static data initially
-window.REVIEWS_DATA = window.REVIEWS_STATIC;
+// Do not paint fallback reviews before Google data on full reviews pages.
+// The page can show a premium loading skeleton first, then fall back only if the API fails.
+window.REVIEWS_DATA = window.location.pathname.indexOf('/reviews') !== -1 ? [] : window.REVIEWS_STATIC;
+window.REVIEWS_LOADING = true;
 
 // Fetch from Google API and update
 (function(){
@@ -116,7 +118,7 @@ window.REVIEWS_DATA = window.REVIEWS_STATIC;
     fetch('/api/google-reviews.php')
         .then(function(res){ return res.json(); })
         .then(function(data){
-            if (!data.success || !data.reviews || !data.reviews.length) return;
+            if (!data.success || !data.reviews || !data.reviews.length) throw new Error('No reviews');
 
             var apiReviews = data.reviews.map(function(r, i){
                 var text = '"' + r.text + '"';
@@ -143,9 +145,12 @@ window.REVIEWS_DATA = window.REVIEWS_STATIC;
             window.REVIEWS_DATA = apiReviews;
             window.REVIEWS_RATING = data.rating || null;
             window.REVIEWS_TOTAL = data.total_reviews || null;
+            window.REVIEWS_LOADING = false;
             document.dispatchEvent(new Event('reviewsUpdated'));
         })
         .catch(function(){
-            // API failed — keep static data, no action needed
+            window.REVIEWS_DATA = window.REVIEWS_STATIC;
+            window.REVIEWS_LOADING = false;
+            document.dispatchEvent(new Event('reviewsUpdated'));
         });
 })();

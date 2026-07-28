@@ -14,6 +14,14 @@ function omiseDefaultSourceType() {
   return process.env.OMISE_DEFAULT_SOURCE_TYPE || "promptpay";
 }
 
+function omiseSourceTypeForMethod(method: string) {
+  const normalized = String(method || "").trim();
+  if (normalized === "promptpay_qr") return process.env.OMISE_PROMPTPAY_SOURCE_TYPE || "promptpay";
+  if (normalized === "bill_payment_barcode") return process.env.OMISE_BILL_PAYMENT_SOURCE_TYPE || "bill_payment_tesco_lotus";
+  if (normalized === "ewallet_others") return process.env.OMISE_EWALLET_SOURCE_TYPE || "truemoney";
+  return omiseDefaultSourceType();
+}
+
 function paymentBaseUrl(request: NextRequest) {
   const configured =
     process.env.OMISE_RETURN_BASE_URL ||
@@ -158,7 +166,65 @@ async function createOmiseCardCharge(params: {
 }
 
 async function startOmisePayment(request: NextRequest) {
-  return paymentErrorPage("ระบบนี้รับชำระผ่านบัตรเครดิตเท่านั้น กรุณากลับไปหน้าจองแล้วกดชำระเงินด้วยบัตรเครดิต", 400);
+  const url = new URL(request.url);
+  const bookingId = String(url.searchParams.get("booking_id") || "").trim();
+  const method = String(url.searchParams.get("method") || "promptpay_qr").trim();
+  if (!/^[A-Za-z0-9-]{6,30}$/.test(bookingId)) return paymentErrorPage("Missing or invalid booking_id", 400);
+  if (!["promptpay_qr", "bill_payment_barcode", "ewallet_others"].includes(method)) {
+    return paymentErrorPage("ช่องทางชำระเงินนี้ยังไม่รองรับ กรุณากลับไปเลือกวิธีชำระเงินใหม่", 400);
+  }
+
+  const booking = (await query<any>(
+    "SELECT booking_id,total_price,customer_name,customer_phone,status FROM bookings WHERE booking_id=$1",
+    [bookingId]
+  )).rows[0];
+  if (!booking) return paymentErrorPage("Booking not found", 404);
+
+  const baseUrl = paymentBaseUrl(request);
+  const returnUri = `${baseUrl}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}`;
+  const amount = satang(booking.total_price);
+  if (amount <= 0) return paymentErrorPage("Invalid payment amount", 400);
+
+  let charge: any;
+  try {
+    charge = await createOmiseCharge({
+      amount,
+      bookingId: booking.booking_id,
+      customerName: booking.customer_name || "",
+      customerPhone: booking.customer_phone || "",
+      description: `AQUATHRILL Booking ${booking.booking_id}`,
+      returnUri,
+      sourceType: omiseSourceTypeForMethod(method),
+    });
+  } catch (error) {
+    return paymentErrorPage(error instanceof Error ? error.message : "Omise payment failed", 500);
+  }
+
+  const completed = charge.status === "successful" || charge.paid === true;
+  await query(
+    "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,$3,$4,$5,$6::jsonb)",
+    [booking.booking_id, charge.id || null, method, booking.total_price, completed ? "completed" : charge.status || "pending", JSON.stringify(charge)]
+  );
+  if (completed) await query("UPDATE bookings SET status='confirmed',payment_method=$2 WHERE booking_id=$1", [booking.booking_id, method]);
+  else await query("UPDATE bookings SET payment_method=$2 WHERE booking_id=$1 AND status!='confirmed'", [booking.booking_id, method]);
+
+  const qrUrl =
+    charge?.source?.scannable_code?.image?.download_uri ||
+    charge?.source?.scannableCode?.image?.downloadUri ||
+    charge?.source?.references?.barcode ||
+    "";
+  if (method === "promptpay_qr" && qrUrl) {
+    return omiseQrPage({
+      amount: booking.total_price,
+      bookingId: booking.booking_id,
+      expiresAt: charge?.source?.expires_at || charge?.source?.expiresAt,
+      qrUrl,
+      returnUri,
+    });
+  }
+
+  const redirectUrl = charge.authorize_uri || charge.authorizeUri || returnUri;
+  return Response.redirect(redirectUrl, 302);
 }
 
 function verifyOmiseSignature(rawBody: string, signature: string) {

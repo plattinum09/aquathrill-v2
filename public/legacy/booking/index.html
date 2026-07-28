@@ -428,6 +428,40 @@
         .m-price-box .label { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-bottom: 4px; }
         .m-price-box .price { color: #69f0ae; font-size: 1.6rem; font-weight: 700; }
 
+        /* Payment method selector */
+        .m-payment-methods { margin: 18px 0 6px; }
+        .m-payment-title {
+            display: flex; align-items: center; gap: 8px;
+            color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px;
+        }
+        .m-payment-title i { color: #00d4ff; }
+        .m-payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .m-payment-option {
+            border: 1px solid rgba(255,255,255,0.14);
+            background: linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
+            color: #fff; border-radius: 14px; padding: 13px 12px;
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            font-family: 'Kanit', sans-serif; font-weight: 700; text-align: left;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+        .m-payment-option:hover { transform: translateY(-1px); border-color: rgba(0,212,255,0.45); }
+        .m-payment-option i {
+            width: 34px; height: 34px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,212,255,0.13); color: #00d4ff; flex: 0 0 auto;
+        }
+        .m-payment-option .small {
+            display: block; color: rgba(255,255,255,0.52);
+            font-size: 0.72rem; font-weight: 500; margin-top: 2px;
+        }
+        .m-payment-option.active {
+            border-color: #00d4ff;
+            background: linear-gradient(145deg, rgba(0,212,255,0.22), rgba(0,180,255,0.08));
+            box-shadow: 0 10px 26px rgba(0,180,255,0.16), inset 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        .m-payment-option.active i { background: #00d4ff; color: #08213a; }
+        .m-payment-note { color: rgba(255,255,255,0.46); font-size: 0.72rem; line-height: 1.55; margin-top: 8px; }
+
         /* Buttons */
         .m-btn-primary {
             width: 100%; padding: 14px; border: none; border-radius: 12px;
@@ -537,6 +571,7 @@
             .month-nav .month-label { font-size: 1.2rem; min-width: 180px; }
             .modal-card { padding: 22px; border-radius: 18px; }
             .m-form-row { grid-template-columns: 1fr; }
+            .m-payment-grid { grid-template-columns: 1fr; }
             .m-pay-tab { font-size: 0.7rem; padding: 8px 4px; }
         }
         /* ===== DAY DETAIL POPUP ===== */
@@ -710,6 +745,31 @@
                     <div class="price" id="m-total-price">฿9,900</div>
                 </div>
 
+                <div class="m-payment-methods">
+                    <div class="m-payment-title"><i class="fas fa-wallet"></i> เลือกช่องทางการชำระเงิน</div>
+                    <div class="m-payment-grid" id="m-payment-methods">
+                        <button type="button" class="m-payment-option active" data-payment-method="omise_card">
+                            <i class="far fa-credit-card"></i>
+                            <span>Credit/Debit Card<span class="small">ชำระผ่านบัตรอย่างปลอดภัย</span></span>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="promptpay_qr">
+                            <i class="fas fa-qrcode"></i>
+                            <span>PromptPay QR<span class="small">สแกนจ่ายผ่านแอปธนาคาร</span></span>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="bill_payment_barcode">
+                            <i class="fas fa-barcode"></i>
+                            <span>Bill Payment / Barcode<span class="small">ชำระด้วยบาร์โค้ด/บิลเพย์เมนต์</span></span>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="ewallet_others">
+                            <i class="fas fa-mobile-screen-button"></i>
+                            <span>E-Wallet / Others<span class="small">วอลเล็ตและช่องทางอื่นๆ</span></span>
+                        </button>
+                    </div>
+                    <div class="m-payment-note" id="m-payment-note">
+                        ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง
+                    </div>
+                </div>
+
                 <button class="m-btn-primary" id="m-btn-to-pay" data-i18n="bk.btn_pay_now">
                     <i class="fas fa-lock"></i> ดำเนินการชำระเงิน
                 </button>
@@ -846,7 +906,7 @@
                 opt.textContent = name + ' (' + cap + ', ' + weight + 'kg) \u2014 ' + formatPriceDisplay(price);
             }
         }
-        // Load boat types dynamically
+        // Load boat types dynamically once and reuse it across selector/dropdown/day detail
         let allBoatTypes = [];
         let boatTypesLoaded = false;
         let boatTypesPromise = fetch('/api/boat-types-v2.php', { cache: 'force-cache' }).then(function(r){return r.json();}).then(function(d){
@@ -887,6 +947,16 @@
                 opt.textContent = bt.name + ' (2-' + bt.max_guests + ' ' + t('bk.pax_unit','คน') + ', ' + (bt.max_weight||0) + 'kg) \u2014 ' + formatPriceDisplay(bt.price||0);
                 sel.appendChild(opt);
             });
+            // Also fetch actual pricing for overrides
+            return fetch('/api/boat-pricing.php', { cache: 'force-cache' });
+        }).then(function(r){return r.json();}).then(function(d){
+            var p = d.prices || {};
+            var sel = document.getElementById('m-boat');
+            if (!sel) return;
+            for (var i = 0; i < sel.options.length; i++) {
+                var opt = sel.options[i];
+                if (p[opt.value]) opt.dataset.price = p[opt.value];
+            }
             updateBoatOptions();
         }).catch(function(){ boatTypesLoaded = true; });
 
@@ -1163,6 +1233,7 @@
         // ============================================
         const modal = document.getElementById('booking-modal');
         let modalData = {};
+        let selectedPaymentMethod = 'omise_card';
 
         function formatPrice(n) {
             var lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
@@ -1213,6 +1284,10 @@
             document.getElementById('m-name').value = '';
             document.getElementById('m-phone').value = '';
             document.getElementById('m-email').value = '';
+            selectedPaymentMethod = 'omise_card';
+            document.querySelectorAll('.m-payment-option').forEach(function(btn) {
+                btn.classList.toggle('active', btn.dataset.paymentMethod === selectedPaymentMethod);
+            });
             // Reset payment
             document.querySelectorAll('.m-pay-tab').forEach(function(t,i) {
                 t.classList.toggle('active', i===0);
@@ -1271,6 +1346,15 @@
         // Price update
         document.getElementById('m-boat').addEventListener('change', calcPrice);
 
+        document.querySelectorAll('.m-payment-option').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                selectedPaymentMethod = this.dataset.paymentMethod || 'omise_card';
+                document.querySelectorAll('.m-payment-option').forEach(function(item) {
+                    item.classList.toggle('active', item === btn);
+                });
+            });
+        });
+
         // Step 1 → 2
         document.getElementById('m-btn-to-pay').addEventListener('click', function() {
             const name = document.getElementById('m-name').value.trim();
@@ -1291,7 +1375,12 @@
             modalData.time = document.getElementById('m-time').value;
             modalData.timeValue = document.getElementById('m-time').value;
             modalData.timeName = document.getElementById('m-time').options[document.getElementById('m-time').selectedIndex].text;
-            showModalStep(2);
+            modalData.paymentMethod = selectedPaymentMethod;
+            if (selectedPaymentMethod === 'omise_card') {
+                payByCreditCard(this);
+            } else {
+                payByOmiseSource(this, selectedPaymentMethod);
+            }
         });
 
         // Back to step 1
@@ -1370,6 +1459,9 @@
         }
 
         async function payByCreditCard(btn) {
+            var resetText = btn.id === 'm-btn-to-pay'
+                ? t('bk.btn_pay_now','ดำเนินการชำระเงิน')
+                : t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('bk.processing','กำลังดำเนินการ...');
             try {
@@ -1393,13 +1485,27 @@
                     },
                     onFormClosed: function() {
                         btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-lock"></i> ' + t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย');
+                        btn.innerHTML = '<i class="fas fa-lock"></i> ' + resetText;
                     }
                 });
             } catch(e) {
                 alert(t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-lock"></i> ' + t('bk.btn_pay_secure','ชำระเงินอย่างปลอดภัย');
+                btn.innerHTML = '<i class="fas fa-lock"></i> ' + resetText;
+            }
+        }
+
+        async function payByOmiseSource(btn, method) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('bk.processing','กำลังดำเนินการ...');
+            try {
+                var apiData = await createBookingForPayment(method);
+                window.location.href = '/api/omise-payment.php?go=1&booking_id=' +
+                    encodeURIComponent(apiData.booking_id) + '&method=' + encodeURIComponent(method);
+            } catch(e) {
+                alert(e.message || t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> ' + t('bk.btn_pay_now','ดำเนินการชำระเงิน');
             }
         }
 
