@@ -16,12 +16,14 @@
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.4",
     "next": "^16.2.11",
+    "nodemailer": "^9.0.3",
     "prisma": "^6.19.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "typescript": "^5.8.3"

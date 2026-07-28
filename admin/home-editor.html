@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แก้ข้อความหน้าแรก | AQUATHRILL Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Kanit,sans-serif;background:#071426;color:#fff;min-height:100vh}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 22px;background:rgba(7,20,38,.96);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px)}
+    .title{display:flex;align-items:center;gap:10px;font-size:1.15rem;font-weight:800}.title i{color:#00d4ff}.back{color:rgba(255,255,255,.75);text-decoration:none;font-weight:700}.back:hover{color:#fff}
+    .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.lang-tabs{display:flex;gap:6px;padding:5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px}
+    .lang-tabs button,.save-btn,.reset-btn{font-family:inherit;border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer;color:#fff}
+    .lang-tabs button{background:transparent;color:rgba(255,255,255,.65)}.lang-tabs button.active{background:#0099ff;color:#fff}
+    .save-btn{background:linear-gradient(135deg,#00d4ff,#0077dd);box-shadow:0 8px 24px rgba(0,153,255,.25)}.save-btn:disabled{opacity:.45;cursor:not-allowed}.reset-btn{background:rgba(255,61,113,.14);color:#ff7a9a;border:1px solid rgba(255,61,113,.28)}
+    .layout{display:grid;grid-template-columns:minmax(360px,560px) 1fr;gap:18px;padding:18px}
+    .panel{background:#102746;border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.25);overflow:hidden}
+    .form-panel{max-height:calc(100vh - 92px);overflow:auto}.panel-head{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .panel-head h2{font-size:1.05rem}.panel-head p{margin-top:4px;color:rgba(255,255,255,.55);font-size:.86rem}
+    .section{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.06)}.section h3{font-size:.95rem;color:#00d4ff;margin-bottom:14px;display:flex;gap:8px;align-items:center}
+    .field{margin-bottom:14px}.field label{display:block;margin-bottom:7px;color:rgba(255,255,255,.72);font-size:.82rem;font-weight:700}
+    .field input,.field textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 13px;color:#fff;font-family:inherit;font-size:.95rem;outline:none}
+    .field textarea{min-height:82px;resize:vertical;line-height:1.55}.field input:focus,.field textarea:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.12)}
+    .preview-panel{height:calc(100vh - 92px);position:sticky;top:84px}.preview-panel iframe{width:100%;height:100%;border:0;background:#fff}
+    .toast{position:fixed;right:22px;bottom:22px;z-index:50;padding:13px 16px;border-radius:14px;background:#102746;border:1px solid rgba(0,212,255,.25);box-shadow:0 14px 40px rgba(0,0,0,.32);display:none;font-weight:800}.toast.show{display:block}.toast.success{color:#42f59b}.toast.error{color:#ff7a9a}
+    @media(max-width:1000px){.layout{grid-template-columns:1fr}.preview-panel{position:relative;top:0;height:72vh}.topbar{align-items:flex-start;flex-direction:column}.actions{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="title"><a class="back" href="/admin/index.html"><i class="fas fa-arrow-left"></i> กลับ</a><span><i class="fas fa-pen-to-square"></i> แก้ข้อความหน้าแรก</span></div>
+    <div class="actions">
+      <div class="lang-tabs">
+        <button data-lang="th" class="active">🇹🇭 TH</button>
+        <button data-lang="en">🇬🇧 EN</button>
+        <button data-lang="ru">🇷🇺 RU</button>
+        <button data-lang="zh">🇨🇳 ZH</button>
+      </div>
+      <button class="reset-btn" id="btn-reset"><i class="fas fa-rotate-left"></i> ล้างค่าที่แก้</button>
+      <button class="save-btn" id="btn-save" disabled><i class="fas fa-save"></i> บันทึก</button>
+    </div>
+  </div>
+
+  <main class="layout">
+    <section class="panel form-panel">
+      <div class="panel-head">
+        <h2>ข้อความที่แก้ได้จากหลังบ้าน</h2>
+        <p>รองรับ HTML ง่าย ๆ เช่น &lt;br&gt;, &lt;strong&gt;, &lt;span&gt; เพื่อขึ้นบรรทัด/เน้นคำ</p>
+      </div>
+      <form id="content-form"></form>
+    </section>
+    <section class="panel preview-panel">
+      <iframe id="preview" title="Home preview"></iframe>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  const API = '/api';
+  const sections = [
+    {title:'Hero ด้านบน', icon:'fa-star', fields:[
+      ['hero.title','หัวข้อใหญ่','textarea'], ['hero.subtitle','คำอธิบาย','textarea'],
+      ['hero.cta_trips','ปุ่มดูทริปทั้งหมด','input'], ['hero.cta_book','ปุ่มจองทริป','input'],
+      ['hero.trust_insurance','Trust badge: ประกันภัย','input'], ['hero.trust_captain','Trust badge: กัปตัน','input'],
+      ['hero.trust_payment','Trust badge: จ่ายบัตร','input'], ['hero.trust_reviews','Trust badge: รีวิว','input'],
+      ['hero.google_reviews','Google Reviews','input'], ['hero.social_label','ข้อความชวนติดตาม Social','input']
+    ]},
+    {title:'Section รีวิว / รายละเอียดทริป', icon:'fa-water', fields:[
+      ['services.title','หัวข้อ section','input'], ['services.desc','คำอธิบาย section','textarea'],
+      ['services.f1','Bullet 1','textarea'], ['services.f2','Bullet 2','textarea'],
+      ['services.f3','Bullet 3','textarea'], ['services.f4','Bullet 4','textarea'],
+      ['services.cta','ปุ่มดูรายละเอียด','input'], ['services.tiktok_title','หัวข้อวิดีโอ YouTube','input'],
+      ['services.tiktok_subtitle','คำอธิบายวิดีโอ YouTube','input']
+    ]},
+    {title:'Section ทัวร์เกาะไข่', icon:'fa-umbrella-beach', fields:[
+      ['trip.badge','Badge','input'], ['trip.title','หัวข้อทริป','textarea'], ['trip.subtitle','คำอธิบายทริป','textarea'],
+      ['trip.island1_name','เกาะ 1 ชื่อ','input'], ['trip.island1_desc','เกาะ 1 รายละเอียด','textarea'],
+      ['trip.island2_name','เกาะ 2 ชื่อ','input'], ['trip.island2_desc','เกาะ 2 รายละเอียด','textarea'],
+      ['trip.island3_name','เกาะ 3 ชื่อ','input'], ['trip.island3_desc','เกาะ 3 รายละเอียด','textarea'],
+      ['trip.includes_title','หัวข้อ Tour Includes','input'],
+      ['trip.include_transfer','รวม: รถรับส่ง','input'], ['trip.include_snorkel','รวม: อุปกรณ์ดำน้ำ','input'],
+      ['trip.include_food','รวม: อาหาร','input'], ['trip.include_drink','รวม: เครื่องดื่ม','input'],
+      ['trip.include_captain','รวม: กัปตัน','input'], ['trip.include_insurance','รวม: ประกันภัย','input'],
+      ['trip.cta','ปุ่ม WhatsApp','input']
+    ]}
+  ];
+  let currentLang = 'th';
+  let dirty = false;
+  const form = document.getElementById('content-form');
+  const preview = document.getElementById('preview');
+  const saveBtn = document.getElementById('btn-save');
+
+  function pageKey(){ return currentLang === 'th' ? 'home' : 'home_' + currentLang; }
+  function showToast(msg,type='success'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+type; setTimeout(()=>t.className='toast',2600); }
+  function getNested(obj,key){ return key.split('.').reduce((a,p)=>a&&a[p]!=null?a[p]:undefined,obj); }
+  function setNested(obj,key,val){ const parts=key.split('.'); let cur=obj; parts.slice(0,-1).forEach(p=>cur=cur[p]=cur[p]||{}); cur[parts.at(-1)] = val; }
+  function deepMerge(base, extra){
+    const out = Array.isArray(base) ? [...base] : {...(base || {})};
+    Object.keys(extra || {}).forEach(key => {
+      const value = extra[key];
+      if (value && typeof value === 'object' && !Array.isArray(value)) out[key] = deepMerge(out[key], value);
+      else out[key] = value;
+    });
+    return out;
+  }
+
+  function buildForm(){
+    form.innerHTML = sections.map(sec => '<div class="section"><h3><i class="fas '+sec.icon+'"></i>'+sec.title+'</h3>' + sec.fields.map(([key,label,type]) => {
+      const tag = type === 'textarea' ? 'textarea' : 'input';
+      return '<div class="field"><label>'+label+'</label><'+tag+' data-key="'+key+'" placeholder="'+label+'"></'+tag+'></div>';
+    }).join('') + '</div>').join('');
+    form.querySelectorAll('[data-key]').forEach(input=>{
+      input.addEventListener('input',()=>{ dirty=true; saveBtn.disabled=false; updatePreviewFromForm(); });
+    });
+  }
+
+  function collect(){
+    const content = {};
+    form.querySelectorAll('[data-key]').forEach(input => {
+      const val = input.value.trim();
+      if (val) setNested(content, input.dataset.key, val);
+    });
+    return content;
+  }
+
+  function fill(content){
+    form.querySelectorAll('[data-key]').forEach(input => {
+      input.value = getNested(content, input.dataset.key) || '';
+    });
+    dirty = false;
+    saveBtn.disabled = true;
+  }
+
+  function collectDefaultsFromPreview(){
+    const doc = preview.contentDocument || preview.contentWindow?.document;
+    const defaults = {};
+    if (!doc) return defaults;
+    doc.querySelectorAll('[data-home-content]').forEach(el => {
+      setNested(defaults, el.getAttribute('data-home-content'), el.innerHTML.trim());
+    });
+    return defaults;
+  }
+
+  function updatePreviewFromForm(){
+    const doc = preview.contentDocument || preview.contentWindow?.document;
+    if (!doc) return;
+    const content = collect();
+    doc.querySelectorAll('[data-home-content]').forEach(el => {
+      const val = getNested(content, el.getAttribute('data-home-content'));
+      if (val != null) el.innerHTML = val;
+    });
+  }
+
+  async function loadContent(){
+    buildForm();
+    preview.src = '/?lang=' + encodeURIComponent(currentLang) + '&_preview=' + Date.now();
+    await new Promise(resolve => preview.onload = resolve);
+    await new Promise(resolve => setTimeout(resolve, 700));
+    const defaults = collectDefaultsFromPreview();
+    try {
+      const r = await fetch(API + '/page-content.php?page=' + pageKey() + '&admin=1', {credentials:'include', cache:'no-store'});
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'โหลดข้อมูลไม่สำเร็จ');
+      fill(deepMerge(defaults, d.content || {}));
+      updatePreviewFromForm();
+    } catch(e) {
+      fill(defaults);
+      showToast(e.message || 'โหลดข้อมูลไม่สำเร็จ', 'error');
+    }
+  }
+
+  async function saveContent(){
+    const content = collect();
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+    try {
+      const r = await fetch(API + '/page-content.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify({page: pageKey(), content})
+      });
+      const d = await r.json().catch(()=>({}));
+      if (!r.ok || !d.success) throw new Error(d.error || 'บันทึกไม่สำเร็จ');
+      dirty = false;
+      showToast('บันทึกข้อความหน้าแรกสำเร็จ');
+    } catch(e) {
+      saveBtn.disabled = false;
+      showToast(e.message || 'บันทึกไม่สำเร็จ', 'error');
+    } finally {
+      saveBtn.innerHTML = '<i class="fas fa-save"></i> บันทึก';
+    }
+  }
+
+  async function resetContent(){
+    if (!confirm('ล้างข้อความที่แก้สำหรับภาษานี้ แล้วกลับไปใช้ค่า default?')) return;
+    const r = await fetch(API + '/page-content.php', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({page: pageKey(), content: null})
+    });
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok || !d.success) return showToast(d.error || 'ล้างค่าไม่สำเร็จ','error');
+    showToast('ล้างค่าแล้ว');
+    loadContent();
+  }
+
+  document.querySelectorAll('.lang-tabs button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if (dirty && !confirm('ยังไม่ได้บันทึก ต้องการเปลี่ยนภาษาเลยหรือไม่?')) return;
+      document.querySelectorAll('.lang-tabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentLang = btn.dataset.lang;
+      loadContent();
+    });
+  });
+  saveBtn.addEventListener('click', saveContent);
+  document.getElementById('btn-reset').addEventListener('click', resetContent);
+  loadContent();
+  </script>
+</body>
+</html>

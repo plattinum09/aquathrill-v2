@@ -82,21 +82,21 @@
 
     <header class="hero">
         <div class="hero-content container">
-            <h1 data-i18n="hero.title">สัมผัสประสบการณ์ขับเรือสปีดโบ๊ทมินิ<br>ด้วยตัวเองคุณเอง<br>แล้วออกไปสำรวจทะเลภูเก็ต</h1>
-            <p data-i18n="hero.subtitle">Aquathrill บริการเช่า Mini Speedboat ภูเก็ต เรือสปีดโบ๊ทส่วนตัวสุดพรีเมียม เที่ยวทะเลแบบใกล้ชิด สนุก ปลอดภัย ราคาคุ้มค่า จองออนไลน์ง่าย พร้อมออกทริปได้ทุกวัน</p>
+            <h1 data-i18n="hero.title" data-home-content="hero.title">สัมผัสประสบการณ์ขับเรือสปีดโบ๊ทมินิ<br>ด้วยตัวเองคุณเอง<br>แล้วออกไปสำรวจทะเลภูเก็ต</h1>
+            <p data-i18n="hero.subtitle" data-home-content="hero.subtitle">Aquathrill บริการเช่า Mini Speedboat ภูเก็ต เรือสปีดโบ๊ทส่วนตัวสุดพรีเมียม เที่ยวทะเลแบบใกล้ชิด สนุก ปลอดภัย ราคาคุ้มค่า จองออนไลน์ง่าย พร้อมออกทริปได้ทุกวัน</p>
             <div class="hero-btns">
-                <a href="services" class="btn btn-primary" data-i18n="hero.cta_trips"><i class="fas fa-compass"></i> ดูทริปทั้งหมด</a>
-                <a href="booking" class="btn btn-booking-hero" data-i18n="hero.cta_book"><i class="fas fa-calendar-check"></i> จองทริป</a>
+                <a href="services" class="btn btn-primary"><i class="fas fa-compass"></i> <span data-i18n="hero.cta_trips" data-home-content="hero.cta_trips">ดูทริปทั้งหมด</span></a>
+                <a href="booking" class="btn btn-booking-hero"><i class="fas fa-calendar-check"></i> <span data-i18n="hero.cta_book" data-home-content="hero.cta_book">จองทริป</span></a>
             </div>
             <div class="hero-trust">
-                <span><i class="fas fa-shield-halved" aria-hidden="true"></i> มีประกันภัย</span>
-                <span><i class="fas fa-anchor" aria-hidden="true"></i> กัปตันดูแล</span>
-                <span><i class="fas fa-lock" aria-hidden="true"></i> จ่ายบัตรปลอดภัย</span>
-                <span><i class="fas fa-circle-check" aria-hidden="true"></i> รีวิวจริง</span>
-                <span class="hero-rating"><i class="fab fa-google" aria-hidden="true"></i> 5.0 Google Reviews</span>
+                <span><i class="fas fa-shield-halved" aria-hidden="true"></i> <span data-home-content="hero.trust_insurance">มีประกันภัย</span></span>
+                <span><i class="fas fa-anchor" aria-hidden="true"></i> <span data-home-content="hero.trust_captain">กัปตันดูแล</span></span>
+                <span><i class="fas fa-lock" aria-hidden="true"></i> <span data-home-content="hero.trust_payment">จ่ายบัตรปลอดภัย</span></span>
+                <span><i class="fas fa-circle-check" aria-hidden="true"></i> <span data-home-content="hero.trust_reviews">รีวิวจริง</span></span>
+                <span class="hero-rating"><i class="fab fa-google" aria-hidden="true"></i> <span data-home-content="hero.google_reviews">5.0 Google Reviews</span></span>
             </div>
             <div class="hero-social-follow" aria-label="Follow AQUATHRILL on social media">
-                <span class="hero-social-label">Follow our real trip moments</span>
+                <span class="hero-social-label" data-home-content="hero.social_label">Follow our real trip moments</span>
                 <div class="hero-social-actions">
                     <a href="https://www.facebook.com/p/Aquathrill-Phuket-61581274125546" target="_blank" rel="noopener" class="hero-social-btn facebook">
                         <i class="fab fa-facebook-f" aria-hidden="true"></i>
@@ -115,28 +115,23 @@
         <div class="container">
             <div class="about-grid home-about-grid" style="grid-template-columns: 1fr 1fr; gap: 40px;">
                 <div class="service-content fade-up">
-                    <h2 style="font-size: 2.2rem; margin-bottom: 30px;" data-i18n="services.title">Khai Island Self-Drive Adventure</h2>
-                    <p style="color: var(--text-gray); margin-bottom: 20px; line-height: 1.8;" data-i18n="services.desc">ในฐานะหนึ่งในผู้ให้บริการทริปมินิสปีดโบ๊ทกลุ่มแรกๆ ในภูเก็ต Aquathrill Phuket ชวนคุณสัมผัสทะเลในมุมมองที่แตกต่าง ไม่ใช่แค่การเป็นผู้โดยสาร แต่คือการได้ควบคุมการเดินทางด้วยตัวเอง</p>
+                    <h2 style="font-size: 2.2rem; margin-bottom: 30px;" data-i18n="services.title" data-home-content="services.title">Khai Island Self-Drive Adventure</h2>
+                    <p style="color: var(--text-gray); margin-bottom: 20px; line-height: 1.8;" data-i18n="services.desc" data-home-content="services.desc">ในฐานะหนึ่งในผู้ให้บริการทริปมินิสปีดโบ๊ทกลุ่มแรกๆ ในภูเก็ต Aquathrill Phuket ชวนคุณสัมผัสทะเลในมุมมองที่แตกต่าง ไม่ใช่แค่การเป็นผู้โดยสาร แต่คือการได้ควบคุมการเดินทางด้วยตัวเอง</p>
                     <ul class="service-list">
-                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f1"><strong>ขับเรือด้วยตัวเอง:</strong> เรียนรู้พื้นฐานและขับเรือมินิสปีดโบ๊ทด้วยความมั่นใจ</div></li>
-                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f2"><strong>ดำน้ำตื้นชมปะการัง:</strong> น้ำทะเลใส ปะการังสมบูรณ์ พบปลาการ์ตูนในธรรมชาติ</div></li>
-                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f3"><strong>สำรวจ 5 จุด:</strong> แหลมมะพร้าว เกาะไข่นุ้ย เกาะไข่นอก เกาะไข่ใน เกาะลีเป๊ะ</div></li>
-                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f4"><strong>รวมอาหารบนเกาะ:</strong> รับประทานอาหารบนเกาะไข่ในพร้อมเล่นกับน้องแมว</div></li>
+                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f1" data-home-content="services.f1"><strong>ขับเรือด้วยตัวเอง:</strong> เรียนรู้พื้นฐานและขับเรือมินิสปีดโบ๊ทด้วยความมั่นใจ</div></li>
+                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f2" data-home-content="services.f2"><strong>ดำน้ำตื้นชมปะการัง:</strong> น้ำทะเลใส ปะการังสมบูรณ์ พบปลาการ์ตูนในธรรมชาติ</div></li>
+                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f3" data-home-content="services.f3"><strong>สำรวจ 5 จุด:</strong> แหลมมะพร้าว เกาะไข่นุ้ย เกาะไข่นอก เกาะไข่ใน เกาะลีเป๊ะ</div></li>
+                        <li><i class="fas fa-check-circle"></i> <div data-i18n="services.f4" data-home-content="services.f4"><strong>รวมอาหารบนเกาะ:</strong> รับประทานอาหารบนเกาะไข่ในพร้อมเล่นกับน้องแมว</div></li>
                     </ul>
-                    <a href="services" class="btn btn-primary" style="margin-top: 20px;" data-i18n="services.cta">ดูรายละเอียดทริป</a>
+                    <a href="services" class="btn btn-primary" style="margin-top: 20px;"><span data-i18n="services.cta" data-home-content="services.cta">ดูรายละเอียดทริป</span></a>
                 </div>
-                <div class="fade-up tiktok-showcase" style="display:flex;flex-direction:column;gap:14px;">
-                    <div class="tiktok-title">
-                        <span><i class="fab fa-tiktok"></i> ชมรีวิวจริงจากลูกค้า</span>
-                        <small>Real moments from AQUATHRILL Phuket</small>
+                <div class="fade-up video-showcase" style="display:flex;flex-direction:column;gap:14px;">
+                    <div class="video-title">
+                        <span><i class="fab fa-youtube"></i> <span data-home-content="services.tiktok_title">ชมวิดีโอประสบการณ์จริง</span></span>
+                        <small data-home-content="services.tiktok_subtitle">Self-drive mini speedboat experience from AQUATHRILL Phuket</small>
                     </div>
-                    <div class="tiktok-row" style="display:flex;gap:16px;align-items:stretch;justify-content:center;">
-                <div class="tiktok-embed-wrap" style="flex:0 0 260px;overflow:hidden;border-radius:16px;">
-                    <iframe src="https://www.tiktok.com/player/v1/7623666716605811976?music_info=0&description=0&autoplay=1&loop=1" style="width:100%;height:100%;min-height:500px;border:none;border-radius:16px;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                </div>
-                <div class="tiktok-embed-wrap" style="flex:0 0 260px;overflow:hidden;border-radius:16px;">
-                    <iframe src="https://www.tiktok.com/player/v1/7621506709516733703?music_info=0&description=0&autoplay=1&loop=1" style="width:100%;height:100%;min-height:500px;border:none;border-radius:16px;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                </div>
+                    <div class="youtube-embed-wrap">
+                        <iframe src="https://www.youtube.com/embed/Xkr6h4wQmUU?rel=0&modestbranding=1&playsinline=1" title="AQUATHRILL Phuket Mini Speedboat Experience" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                     </div>
                 </div>
             </div>
@@ -166,13 +161,14 @@
         .home-include-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:14px 16px;font-size:.92rem;color:rgba(255,255,255,.82);font-weight:700}
         .home-include-chip i{color:#00d4ff;font-size:1rem}
         .home-trip-cta{font-size:1.08rem!important;padding:16px 34px!important;border-radius:999px}
-        .tiktok-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;color:#172033}
-        .tiktok-title span{font-weight:900;font-size:1.05rem}
-        .tiktok-title i{color:#111;margin-right:6px}
-        .tiktok-title small{color:#7a8494;font-weight:700}
-        .tiktok-embed-wrap{box-shadow:0 18px 42px rgba(10,22,40,.18),0 0 0 1px rgba(10,22,40,.08);background:#111}
+        .video-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;color:#172033}
+        .video-title span{font-weight:900;font-size:1.05rem}
+        .video-title i{color:#ff0033;margin-right:6px}
+        .video-title small{color:#7a8494;font-weight:700}
+        .youtube-embed-wrap{position:relative;overflow:hidden;border-radius:24px;aspect-ratio:16/9;box-shadow:0 18px 42px rgba(10,22,40,.18),0 0 0 1px rgba(10,22,40,.08);background:#111}
+        .youtube-embed-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
         @media(max-width:900px){.home-trip-layout{grid-template-columns:1fr;gap:34px}.home-trip-details{order:1}.home-trip-img{order:2}.home-trip-section{padding:70px 0}.home-trip-details h2{font-size:1.9rem}.home-tour-includes{grid-template-columns:repeat(2,1fr)}}
-        @media(max-width:520px){.home-tour-includes{grid-template-columns:1fr}.home-trip-details h2{font-size:1.65rem}.home-trip-sub{font-size:.95rem}.home-island-icon{width:46px;height:46px;min-width:46px}.tiktok-title{display:block}.tiktok-title small{display:block;margin-top:4px}.tiktok-embed-wrap iframe{min-height:460px!important}}
+        @media(max-width:520px){.home-tour-includes{grid-template-columns:1fr}.home-trip-details h2{font-size:1.65rem}.home-trip-sub{font-size:.95rem}.home-island-icon{width:46px;height:46px;min-width:46px}.video-title{display:block}.video-title small{display:block;margin-top:4px}.youtube-embed-wrap{border-radius:18px}}
     </style>
 
     <section class="home-trip-section">
@@ -182,46 +178,46 @@
                     <img src="images/โปรโมชั่น1.webp" alt="Khai Island Half Day Trip — AQUATHRILL Phuket" loading="lazy">
                 </div>
                 <div class="home-trip-details fade-up">
-                    <div class="home-trip-badge"><i class="fas fa-star"></i> Half Day Signature Trip</div>
-                    <h2 data-i18n="promo.trip_title">ทัวร์ <span>เกาะไข่</span> ครึ่งวัน</h2>
-                    <p class="home-trip-sub" data-i18n="promo.trip_sub">3 Islands • 5 Points • 4 ชั่วโมง | ออกเดินทางจาก Phetphoom Pier, เกาะสิเหร่</p>
+                    <div class="home-trip-badge"><i class="fas fa-star"></i> <span data-home-content="trip.badge">Half Day Signature Trip</span></div>
+                    <h2 data-i18n="promo.trip_title" data-home-content="trip.title">ทัวร์ <span>เกาะไข่</span> ครึ่งวัน</h2>
+                    <p class="home-trip-sub" data-i18n="promo.trip_sub" data-home-content="trip.subtitle">3 Islands • 5 Points • 4 ชั่วโมง | ออกเดินทางจาก Phetphoom Pier, เกาะสิเหร่</p>
 
                     <div class="home-island-list">
                         <div class="home-island-item">
                             <div class="home-island-icon">🏝️</div>
                             <div>
-                                <h4 data-i18n="promo.isl1_name">เกาะไข่นุ้ย (Khai Nui)</h4>
-                                <p data-i18n="promo.isl1_desc">ดำน้ำชมปะการัง ให้อาหารปลาสีสัน เล่นน้ำอุ่น</p>
+                                <h4 data-i18n="promo.isl1_name" data-home-content="trip.island1_name">เกาะไข่นุ้ย (Khai Nui)</h4>
+                                <p data-i18n="promo.isl1_desc" data-home-content="trip.island1_desc">ดำน้ำชมปะการัง ให้อาหารปลาสีสัน เล่นน้ำอุ่น</p>
                             </div>
                         </div>
                         <div class="home-island-item">
                             <div class="home-island-icon">🐠</div>
                             <div>
-                                <h4 data-i18n="promo.isl2_name">เกาะไข่นอก (Khai Nok)</h4>
-                                <p data-i18n="promo.isl2_desc">หาดทรายสวย น้ำใสระดับโลก ฝูงปลาว่ายรอบตัว</p>
+                                <h4 data-i18n="promo.isl2_name" data-home-content="trip.island2_name">เกาะไข่นอก (Khai Nok)</h4>
+                                <p data-i18n="promo.isl2_desc" data-home-content="trip.island2_desc">หาดทรายสวย น้ำใสระดับโลก ฝูงปลาว่ายรอบตัว</p>
                             </div>
                         </div>
                         <div class="home-island-item">
                             <div class="home-island-icon">📸</div>
                             <div>
-                                <h4 data-i18n="promo.isl3_name">เกาะไข่ใน (Khai Nai)</h4>
-                                <p data-i18n="promo.isl3_desc">ทรายขาว น้ำเทอร์ควอยซ์ จุดถ่ายรูปสุดสวย</p>
+                                <h4 data-i18n="promo.isl3_name" data-home-content="trip.island3_name">เกาะไข่ใน (Khai Nai)</h4>
+                                <p data-i18n="promo.isl3_desc" data-home-content="trip.island3_desc">ทรายขาว น้ำเทอร์ควอยซ์ จุดถ่ายรูปสุดสวย</p>
                             </div>
                         </div>
                     </div>
 
-                    <h4 class="home-includes-title"><i class="fas fa-check-circle"></i> <span data-i18n="promo.includes_title">Tour Includes</span></h4>
+                    <h4 class="home-includes-title"><i class="fas fa-check-circle"></i> <span data-i18n="promo.includes_title" data-home-content="trip.includes_title">Tour Includes</span></h4>
                     <div class="home-tour-includes">
-                        <div class="home-include-chip"><i class="fas fa-van-shuttle"></i> <span data-i18n="promo.inc_transfer">รถรับ-ส่ง</span></div>
-                        <div class="home-include-chip"><i class="fas fa-mask-snorkel"></i> <span data-i18n="promo.inc_snorkel">อุปกรณ์ดำน้ำ</span></div>
-                        <div class="home-include-chip"><i class="fas fa-utensils"></i> <span data-i18n="promo.inc_food">อาหาร</span></div>
-                        <div class="home-include-chip"><i class="fas fa-glass-water"></i> <span data-i18n="promo.inc_drink">เครื่องดื่ม</span></div>
-                        <div class="home-include-chip"><i class="fas fa-user-tie"></i> <span data-i18n="promo.inc_captain">กัปตัน</span></div>
-                        <div class="home-include-chip"><i class="fas fa-shield-halved"></i> <span data-i18n="promo.inc_insurance">ประกันภัย</span></div>
+                        <div class="home-include-chip"><i class="fas fa-van-shuttle"></i> <span data-i18n="promo.inc_transfer" data-home-content="trip.include_transfer">รถรับ-ส่ง</span></div>
+                        <div class="home-include-chip"><i class="fas fa-mask-snorkel"></i> <span data-i18n="promo.inc_snorkel" data-home-content="trip.include_snorkel">อุปกรณ์ดำน้ำ</span></div>
+                        <div class="home-include-chip"><i class="fas fa-utensils"></i> <span data-i18n="promo.inc_food" data-home-content="trip.include_food">อาหาร</span></div>
+                        <div class="home-include-chip"><i class="fas fa-glass-water"></i> <span data-i18n="promo.inc_drink" data-home-content="trip.include_drink">เครื่องดื่ม</span></div>
+                        <div class="home-include-chip"><i class="fas fa-user-tie"></i> <span data-i18n="promo.inc_captain" data-home-content="trip.include_captain">กัปตัน</span></div>
+                        <div class="home-include-chip"><i class="fas fa-shield-halved"></i> <span data-i18n="promo.inc_insurance" data-home-content="trip.include_insurance">ประกันภัย</span></div>
                     </div>
 
                     <a href="https://wa.me/66958192778?text=สนใจทัวร์เกาะไข่" class="btn btn-primary home-trip-cta" target="_blank">
-                        <i class="fab fa-whatsapp"></i> <span data-i18n="promo.btn_inquire">สอบถาม / จองทัวร์เกาะไข่</span>
+                        <i class="fab fa-whatsapp"></i> <span data-i18n="promo.btn_inquire" data-home-content="trip.cta">สอบถาม / จองทัวร์เกาะไข่</span>
                     </a>
                 </div>
             </div>
@@ -505,9 +501,8 @@
         .service-content h2{font-size:clamp(1.55rem,7vw,2.05rem)!important;line-height:1.18!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;}
         .service-content p,.service-list li div{font-size:.95rem!important;line-height:1.72!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;}
         .service-list li{align-items:flex-start!important;min-width:0!important;}
-        .tiktok-row{justify-content:flex-start!important;overflow-x:auto;padding:4px 0 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
-        .tiktok-embed-wrap{display:block!important;flex:0 0 min(78vw,300px)!important;scroll-snap-align:center;}
-        .tiktok-embed-wrap iframe{min-height:460px!important;}
+        .video-showcase{width:100%!important;min-width:0!important;}
+        .youtube-embed-wrap{width:100%!important;max-width:100%!important;}
         .yacht-grid{grid-template-columns:1fr!important;}
     }
     @media(max-width:480px){
@@ -770,6 +765,7 @@
     <script src="assets/js/i18n-loader.js?v=20260724a" defer></script>
     <script src="assets/js/components.js?v=20260728b"></script>
     <script src="assets/js/main.js?v=20260724a"></script>
+    <script src="assets/js/home-content.js?v=20260728a"></script>
     <script>
     (function(){
         /* Island data with 4 languages */
