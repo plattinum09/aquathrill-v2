@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob";
+import { get, put } from "@vercel/blob";
 import type { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { readSession } from "./auth";
@@ -465,9 +465,49 @@ export async function upload(request: NextRequest) {
     return json({ success: true, url: `/images/uploads/${safeName}`, filename: safeName, storage: "local" });
   }
   try {
-    const blob = await put(`images/${safeName}`, file, { access: "public", addRandomSuffix: true });
-    return json({ success: true, url: blob.url, filename: blob.pathname, storage: "vercel_blob" });
+    const blobAccess = process.env.BLOB_ACCESS === "private" ? "private" : "public";
+    const blob = await put(`images/${safeName}`, file, { access: blobAccess, addRandomSuffix: true });
+    return json({
+      success: true,
+      url: blobAccess === "private" ? `/api/blob-file.php?path=${encodeURIComponent(blob.pathname)}` : blob.url,
+      filename: blob.pathname,
+      storage: blobAccess === "private" ? "vercel_blob_private" : "vercel_blob",
+    });
   } catch (error: any) {
+    const message = String(error?.message || "");
+    if (/private store|private access/i.test(message)) {
+      try {
+        const blob = await put(`images/${safeName}`, file, { access: "private", addRandomSuffix: true });
+        return json({
+          success: true,
+          url: `/api/blob-file.php?path=${encodeURIComponent(blob.pathname)}`,
+          filename: blob.pathname,
+          storage: "vercel_blob_private",
+        });
+      } catch (privateError: any) {
+        return json({ error: privateError?.message || "Failed to upload to private Vercel Blob" }, 500);
+      }
+    }
     return json({ error: error?.message || "Failed to upload to Vercel Blob" }, 500);
+  }
+}
+
+export async function blobFile(request: NextRequest) {
+  if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
+  const path = new URL(request.url).searchParams.get("path") || "";
+  if (!path || path.includes("..") || path.startsWith("/")) return json({ error: "Invalid blob path" }, 400);
+  try {
+    const result = await get(path, { access: "private" });
+    if (!result || result.statusCode !== 200 || !result.stream) return json({ error: "Blob not found" }, 404);
+    return new Response(result.stream, {
+      status: 200,
+      headers: {
+        "Content-Type": result.blob.contentType || "application/octet-stream",
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "ETag": result.blob.etag,
+      },
+    });
+  } catch (error: any) {
+    return json({ error: error?.message || "Failed to read blob" }, 500);
   }
 }

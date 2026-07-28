@@ -6,7 +6,7 @@ import { agentBooking, agentPricing, agentSlip } from "@/lib/api/agent-handlers"
 import { gallery, galleryAuth } from "@/lib/api/gallery-handlers";
 import { omiseConfig, omisePayment, omiseSyncStatus, omiseWebhook, paysolutionsCallback, paysolutionsPayment } from "@/lib/api/payment-handlers";
 import { reviews } from "@/lib/api/review-handlers";
-import { agentManage, boatPricing, boatTypes, pageContent, paymentSettings, promotions, upload } from "@/lib/api/core-handlers";
+import { agentManage, blobFile, boatPricing, boatTypes, pageContent, paymentSettings, promotions, upload } from "@/lib/api/core-handlers";
 import { errorResponse, json } from "@/lib/api/http";
 
 export const runtime = "nodejs";
@@ -33,6 +33,7 @@ async function dispatch(request:NextRequest,context:Context){
       case "page-content":return pageContent(request);
       case "payment-settings":return paymentSettings(request);
       case "upload":return upload(request);
+      case "blob-file":return blobFile(request);
       case "gallery":return gallery(request);
       case "gallery-auth":return galleryAuth(request);
       case "omise-payment":return omisePayment(request);
