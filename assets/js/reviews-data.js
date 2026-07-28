@@ -121,8 +121,12 @@ window.REVIEWS_DATA = window.REVIEWS_STATIC;
             var apiReviews = data.reviews.map(function(r, i){
                 var text = '"' + r.text + '"';
                 var isManual = r.source === 'manual';
-                var photos = [];
-                if (isManual && r.photo) photos.push(r.photo);
+                var photos = Array.isArray(r.photos) ? r.photos.filter(Boolean) : [];
+                if (isManual && r.photo) photos.unshift(r.photo);
+                if (!photos.length && Array.isArray(data.place_photos) && data.place_photos.length) {
+                    photos = data.place_photos.slice(i * 3, i * 3 + 5);
+                    if (!photos.length) photos = data.place_photos.slice(0, 3);
+                }
                 return {
                     name: { th: r.author_name, en: r.author_name, ru: r.author_name, zh: r.author_name },
                     avatar: r.author_photo || '',

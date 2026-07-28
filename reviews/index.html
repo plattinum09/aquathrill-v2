@@ -34,20 +34,23 @@
     body .section-padding,
     body .bg-light,
     body .rv-section {
-        background: #ffffff !important;
-        color: #1a2742;
+        background:
+            radial-gradient(circle at 12% 8%, rgba(42,211,255,.12), transparent 34%),
+            radial-gradient(circle at 82% 18%, rgba(255,193,7,.10), transparent 30%),
+            linear-gradient(180deg, #f6fbff 0%, #ffffff 44%, #edf8ff 100%) !important;
+        color: #122033;
     }
 
     /* Hero Enhanced */
     .rv-hero {
         position: relative;
-        min-height: 55vh;
+        min-height: 66vh;
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
         color: #fff;
-        background: linear-gradient(135deg, rgba(8,16,35,0.75), rgba(8,16,35,0.5)),
+        background: linear-gradient(135deg, rgba(5,18,34,0.84), rgba(0,116,161,0.45)),
                     url('../images/hero-reviews.webp') center/cover no-repeat;
         overflow: hidden;
     }
@@ -57,61 +60,84 @@
         bottom: 0;
         left: 0;
         right: 0;
-        height: 120px;
-        background: linear-gradient(to top, #ffffff, transparent);
+        height: 160px;
+        background: linear-gradient(to top, #f6fbff, transparent);
     }
     .rv-hero-content {
         position: relative;
         z-index: 2;
-        padding: 120px 20px 60px;
+        max-width: 980px;
+        padding: 150px 20px 70px;
     }
+    .rv-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 18px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        color: #fff;
+        background: rgba(255,255,255,.13);
+        border: 1px solid rgba(255,255,255,.24);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        font-weight: 800;
+        font-size: .86rem;
+    }
+    .rv-eyebrow i { color: #ffc107; }
     .rv-hero-content h1 {
-        font-size: 2.8rem;
-        font-weight: 700;
+        font-size: clamp(2.4rem, 6vw, 5.2rem);
+        font-weight: 900;
         margin-bottom: 12px;
-        background: linear-gradient(135deg, #fff 0%, #a0d8ef 100%);
+        line-height: .98;
+        letter-spacing: -.04em;
+        text-shadow: 0 24px 70px rgba(0,0,0,.42);
+        background: linear-gradient(135deg, #fff 0%, #dff8ff 50%, #7fecff 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
     .rv-hero-content p {
-        font-size: 1rem;
-        opacity: 0.7;
+        font-size: 1.08rem;
+        opacity: 0.86;
         max-width: 700px;
         margin: 0 auto;
-        white-space: nowrap;
+        line-height: 1.8;
     }
 
     /* Rating Badge */
     .rv-rating-badge {
         display: inline-flex;
         align-items: center;
-        gap: 14px;
-        background: rgba(255,255,255,0.08);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 60px;
-        padding: 12px 28px;
-        margin-top: 24px;
+        gap: 16px;
+        background: rgba(9,25,45,0.58);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.22);
+        border-radius: 28px;
+        padding: 16px 26px;
+        margin-top: 28px;
+        box-shadow: 0 18px 55px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.18);
     }
     .rv-rating-badge .big-score {
-        font-size: 2.4rem;
-        font-weight: 700;
+        font-size: 2.8rem;
+        font-weight: 900;
         color: #fff;
         line-height: 1;
+        min-width: 76px;
     }
     .rv-rating-badge .rating-info {
         text-align: left;
     }
     .rv-rating-badge .rating-stars {
         color: #ffc107;
-        font-size: 0.9rem;
+        font-size: 1rem;
         margin-bottom: 2px;
     }
     .rv-rating-badge .rating-count {
-        font-size: 0.75rem;
-        opacity: 0.6;
+        font-size: 0.82rem;
+        opacity: 0.78;
         color: #fff;
     }
 
@@ -127,33 +153,36 @@
         grid-template-columns: repeat(4, 1fr);
         max-width: 900px;
         margin: 0 auto;
-        background: #fff;
-        border: 1px solid rgba(0,0,0,0.08);
-        border-radius: 20px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        background: rgba(255,255,255,0.86);
+        border: 1px solid rgba(0,151,202,0.14);
+        border-radius: 28px;
+        box-shadow: 0 22px 65px rgba(19,68,105,0.13);
         overflow: hidden;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
     }
     .rv-stat {
-        padding: 28px 20px;
+        padding: 30px 20px;
         text-align: center;
         border-right: 1px solid rgba(0,0,0,0.06);
         transition: background 0.3s;
     }
     .rv-stat:last-child { border-right: none; }
-    .rv-stat:hover { background: rgba(0,212,255,0.05); }
+    .rv-stat:hover { background: rgba(0,212,255,0.07); transform: translateY(-2px); }
     .rv-stat-num {
         display: block;
-        font-size: 1.6rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #00d4ff, #00a3cc);
+        font-size: 1.95rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff, #0077dd);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         margin-bottom: 4px;
     }
     .rv-stat-label {
-        font-size: 0.78rem;
-        color: rgba(0,0,0,0.45);
+        font-size: 0.82rem;
+        color: rgba(18,32,51,0.55);
+        font-weight: 700;
     }
 
     /* Review Cards Grid */
@@ -168,11 +197,11 @@
 
     /* Review Card */
     .rv-card {
-        background: #fff;
-        border: 1px solid rgba(0,0,0,0.07);
-        border-radius: 20px;
-        padding: 28px 24px 22px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(0,151,202,0.12);
+        border-radius: 26px;
+        padding: 30px 25px 24px;
+        box-shadow: 0 12px 34px rgba(19,68,105,0.08);
         position: relative;
         overflow: hidden;
         transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
@@ -186,14 +215,14 @@
         right: 20px;
         font-size: 5rem;
         font-family: Georgia, serif;
-        color: rgba(0,212,255,0.06);
+        color: rgba(0,151,202,0.08);
         line-height: 1;
         pointer-events: none;
     }
     .rv-card:hover {
         transform: translateY(-6px);
-        border-color: rgba(0,212,255,0.25);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.1), 0 0 20px rgba(0,212,255,0.06);
+        border-color: rgba(0,212,255,0.35);
+        box-shadow: 0 22px 55px rgba(19,68,105,0.16), 0 0 24px rgba(0,212,255,0.08);
     }
 
     /* Card Header */
@@ -208,17 +237,18 @@
         height: 48px;
         border-radius: 14px;
         object-fit: cover;
-        border: 2px solid rgba(0,212,255,0.2);
+        border: 2px solid rgba(0,212,255,0.32);
+        box-shadow: 0 8px 18px rgba(0,151,202,.14);
     }
     .rv-name {
         font-size: 0.92rem;
         font-weight: 600;
-        color: #1a2742;
+        color: #122033;
         margin-bottom: 2px;
     }
     .rv-trip {
         font-size: 0.72rem;
-        color: rgba(0,0,0,0.4);
+        color: rgba(18,32,51,0.48);
         display: flex;
         align-items: center;
         gap: 5px;
@@ -245,12 +275,50 @@
 
     /* Review Text */
     .rv-text {
-        color: rgba(0,0,0,0.6);
+        color: rgba(18,32,51,0.68);
         font-size: 0.85rem;
         line-height: 1.75;
         margin-bottom: 16px;
         position: relative;
         flex-grow: 1;
+    }
+    .rv-photo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 4px 0 16px;
+    }
+    .rv-photo-grid img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 13px;
+        border: 1px solid rgba(0,151,202,.14);
+        box-shadow: 0 8px 18px rgba(19,68,105,.08);
+        cursor: pointer;
+        transition: transform .25s ease, filter .25s ease;
+    }
+    .rv-photo-grid img:hover {
+        transform: scale(1.035);
+        filter: saturate(1.12) contrast(1.03);
+    }
+    .rv-photo-grid .rv-photo-more {
+        position: relative;
+        overflow: hidden;
+        border-radius: 13px;
+    }
+    .rv-photo-grid .rv-photo-more::after {
+        content: attr(data-more);
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 900;
+        background: rgba(5,18,34,.52);
+        pointer-events: none;
     }
 
     /* Card Footer */
@@ -283,18 +351,21 @@
         text-align: center;
         margin-top: 50px;
         padding: 40px 30px;
-        background: linear-gradient(145deg, rgba(0,212,255,0.06), rgba(0,212,255,0.02));
-        border: 1px solid rgba(0,212,255,0.1);
-        border-radius: 24px;
+        background:
+            radial-gradient(circle at 20% 20%, rgba(255,255,255,.24), transparent 24%),
+            linear-gradient(135deg, #07243d, #075d83 55%, #00a7da);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 30px;
+        box-shadow: 0 22px 60px rgba(0,119,221,.18);
     }
     .rv-cta h3 {
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: #1a2742;
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: #fff;
         margin-bottom: 8px;
     }
     .rv-cta p {
-        color: rgba(0,0,0,0.45);
+        color: rgba(255,255,255,0.72);
         font-size: 0.88rem;
         margin-bottom: 20px;
     }
@@ -312,13 +383,15 @@
         .rv-grid .rv-card { width: calc(50% - 12px); }
     }
     @media (max-width: 768px) {
-        .rv-hero-content h1 { font-size: 2rem; }
+        .rv-hero { min-height: 62vh; }
+        .rv-hero-content { padding-top: 132px; }
+        .rv-hero-content h1 { font-size: 2.4rem; }
         .rv-hero-content p { white-space: normal; font-size: .85rem; }
         .rv-stats-inner { grid-template-columns: repeat(2, 1fr); }
         .rv-stat:nth-child(2) { border-right: none; }
         .rv-grid .rv-card { width: 100%; position: relative !important; top: auto !important; left: auto !important; }
         .rv-rating-badge { padding: 10px 20px; }
-        .rv-rating-badge .big-score { font-size: 1.8rem; }
+        .rv-rating-badge .big-score { font-size: 2rem; min-width: 56px; }
     }
     </style>
 </head>
@@ -328,10 +401,11 @@
     <!-- ===== HERO ===== -->
     <header class="rv-hero">
         <div class="rv-hero-content">
+            <div class="rv-eyebrow"><i class="fab fa-google"></i> 5.0 Google Reviews • Real customers</div>
             <h1 data-i18n="rv.hero_title">รีวิวจากลูกค้า</h1>
             <p data-i18n="rv.hero_sub">ประสบการณ์จริงจากลูกค้าที่ไว้วางใจใช้บริการ Mini Speedboat กับ AQUATHRILL</p>
             <div class="rv-rating-badge">
-                <span class="big-score">4.9</span>
+                <span class="big-score" data-count-to="4.9" data-decimals="1">0.0</span>
                 <div class="rating-info">
                     <div class="rating-stars">
                         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
@@ -347,19 +421,19 @@
         <div class="container">
             <div class="rv-stats-inner fade-up">
                 <div class="rv-stat">
-                    <span class="rv-stat-num" id="rv-total">35+</span>
+                    <span class="rv-stat-num" id="rv-total" data-count-to="35" data-suffix="+">0+</span>
                     <span class="rv-stat-label" data-i18n="rv.stat1">รีวิวทั้งหมด</span>
                 </div>
                 <div class="rv-stat">
-                    <span class="rv-stat-num" id="rv-rating">4.9</span>
+                    <span class="rv-stat-num" id="rv-rating" data-count-to="4.9" data-decimals="1">0.0</span>
                     <span class="rv-stat-label" data-i18n="rv.stat2">คะแนนเฉลี่ย</span>
                 </div>
                 <div class="rv-stat">
-                    <span class="rv-stat-num">98%</span>
+                    <span class="rv-stat-num" data-count-to="98" data-suffix="%">0%</span>
                     <span class="rv-stat-label" data-i18n="rv.stat3">ความพึงพอใจ</span>
                 </div>
                 <div class="rv-stat">
-                    <span class="rv-stat-num">15+</span>
+                    <span class="rv-stat-num" data-count-to="15" data-suffix="+">0+</span>
                     <span class="rv-stat-label" data-i18n="rv.stat4">ปีประสบการณ์</span>
                 </div>
             </div>
@@ -385,6 +459,34 @@
                 if (!container || !reviews.length) return;
 
                 function getLang(){ return (window.I18n && I18n.getLang) ? I18n.getLang() : 'th'; }
+                function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+                function animateNumber(el, to, opts) {
+                    opts = opts || {};
+                    if (!el) return;
+                    var from = parseFloat(el.dataset.currentValue || '0') || 0;
+                    var target = Number(to) || 0;
+                    var decimals = opts.decimals != null ? opts.decimals : Number(el.dataset.decimals || 0);
+                    var suffix = opts.suffix != null ? opts.suffix : (el.dataset.suffix || '');
+                    var duration = opts.duration || 1200;
+                    var start = performance.now();
+                    el.dataset.currentValue = target;
+                    function step(now) {
+                        var progress = Math.min(1, (now - start) / duration);
+                        var value = from + (target - from) * easeOutCubic(progress);
+                        el.textContent = value.toFixed(decimals) + suffix;
+                        if (progress < 1) requestAnimationFrame(step);
+                    }
+                    requestAnimationFrame(step);
+                }
+                function animateReviewStats() {
+                    document.querySelectorAll('[data-count-to]').forEach(function(el){
+                        animateNumber(el, el.dataset.countTo, {
+                            decimals: Number(el.dataset.decimals || 0),
+                            suffix: el.dataset.suffix || '',
+                            duration: 1300
+                        });
+                    });
+                }
 
                 function renderCards(l) {
                     var html = '';
@@ -408,8 +510,11 @@
                             : '<div class="rv-avatar" style="background:' + r.initColor + ';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.2rem;">' + name.charAt(0) + '</div>';
                         var photosHtml = '';
                         if (r.photos && r.photos.length) {
-                            photosHtml = '<div style="margin-top:12px;">';
-                            r.photos.forEach(function(p){ photosHtml += '<img src="' + p + '" alt="Review photo" style="width:100%;max-height:250px;object-fit:cover;border-radius:12px;cursor:pointer;" onclick="window.open(this.src)">'; });
+                            photosHtml = '<div class="rv-photo-grid">';
+                            r.photos.slice(0, 6).forEach(function(p, idx){
+                                var more = idx === 5 && r.photos.length > 6 ? ' class="rv-photo-more" data-more="+ ' + (r.photos.length - 6) + '"' : '';
+                                photosHtml += '<div' + more + '><img loading="lazy" src="' + p + '" alt="Review photo" onclick="window.open(this.src)"></div>';
+                            });
                             photosHtml += '</div>';
                         }
                         html += '<div class="rv-card fade-up">'
@@ -491,7 +596,10 @@
 
                     if (rating) {
                         var scoreEl = badge.querySelector('.big-score');
-                        if (scoreEl) scoreEl.textContent = Number(rating).toFixed(1);
+                        if (scoreEl) {
+                            scoreEl.dataset.countTo = Number(rating).toFixed(1);
+                            animateNumber(scoreEl, rating, {decimals: 1, duration: 900});
+                        }
 
                         var starsEl = badge.querySelector('.rating-stars');
                         if (starsEl) {
@@ -528,11 +636,32 @@
                     requestAnimationFrame(layoutAfterImages);
                     // Update stats from API
                     var ratingEl = document.getElementById('rv-rating');
-                    if (ratingEl && window.REVIEWS_RATING) ratingEl.textContent = window.REVIEWS_RATING.toFixed(1);
+                    if (ratingEl && window.REVIEWS_RATING) {
+                        ratingEl.dataset.countTo = window.REVIEWS_RATING.toFixed(1);
+                        animateNumber(ratingEl, window.REVIEWS_RATING, {decimals: 1, duration: 900});
+                    }
                     var totalEl = document.getElementById('rv-total');
-                    if (totalEl && window.REVIEWS_TOTAL) totalEl.textContent = window.REVIEWS_TOTAL + '+';
+                    if (totalEl && window.REVIEWS_TOTAL) {
+                        totalEl.dataset.countTo = window.REVIEWS_TOTAL;
+                        animateNumber(totalEl, window.REVIEWS_TOTAL, {suffix: '+', duration: 900});
+                    }
                     updateRatingBadge();
                 });
+                if ('IntersectionObserver' in window) {
+                    var statsBox = document.querySelector('.rv-stats-inner');
+                    var statsObserver = new IntersectionObserver(function(entries){
+                        entries.forEach(function(entry){
+                            if (!entry.isIntersecting) return;
+                            animateReviewStats();
+                            statsObserver.disconnect();
+                        });
+                    }, {threshold: 0.35});
+                    if (statsBox) statsObserver.observe(statsBox);
+                    else animateReviewStats();
+                } else {
+                    animateReviewStats();
+                }
+                setTimeout(updateRatingBadge, 350);
             })();
             </script>
 
