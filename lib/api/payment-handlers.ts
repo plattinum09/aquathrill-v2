@@ -17,7 +17,7 @@ function omiseDefaultSourceType() {
 function omiseSourceTypeForMethod(method: string) {
   const normalized = String(method || "").trim();
   if (normalized === "promptpay_qr") return process.env.OMISE_PROMPTPAY_SOURCE_TYPE || "promptpay";
-  if (normalized === "bill_payment_barcode") return process.env.OMISE_BILL_PAYMENT_SOURCE_TYPE || "bill_payment_tesco_lotus";
+  if (normalized === "bill_payment_barcode") return process.env.OMISE_BILL_PAYMENT_SOURCE_TYPE || "";
   if (normalized === "ewallet_others") return process.env.OMISE_EWALLET_SOURCE_TYPE || "truemoney";
   return omiseDefaultSourceType();
 }
@@ -172,6 +172,9 @@ async function startOmisePayment(request: NextRequest) {
   if (!/^[A-Za-z0-9-]{6,30}$/.test(bookingId)) return paymentErrorPage("Missing or invalid booking_id", 400);
   if (!["promptpay_qr", "bill_payment_barcode", "ewallet_others"].includes(method)) {
     return paymentErrorPage("ช่องทางชำระเงินนี้ยังไม่รองรับ กรุณากลับไปเลือกวิธีชำระเงินใหม่", 400);
+  }
+  if (method === "bill_payment_barcode" && !process.env.OMISE_BILL_PAYMENT_SOURCE_TYPE) {
+    return paymentErrorPage("Bill Payment / Barcode ถูกยกเลิกจาก Omise แล้ว กรุณาเลือก Credit/Debit Card หรือ PromptPay QR", 400);
   }
 
   const booking = (await query<any>(

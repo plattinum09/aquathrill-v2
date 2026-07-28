@@ -460,6 +460,11 @@
             box-shadow: 0 10px 26px rgba(0,180,255,0.16), inset 0 0 0 1px rgba(255,255,255,0.06);
         }
         .m-payment-option.active i { background: #00d4ff; color: #08213a; }
+        .m-payment-option:disabled {
+            opacity: 0.46; cursor: not-allowed; transform: none;
+            border-style: dashed; filter: grayscale(0.35);
+        }
+        .m-payment-option:disabled:hover { transform: none; border-color: rgba(255,255,255,0.14); }
         .m-payment-note { color: rgba(255,255,255,0.46); font-size: 0.72rem; line-height: 1.55; margin-top: 8px; }
 
         /* Buttons */
@@ -755,14 +760,6 @@
                         <button type="button" class="m-payment-option" data-payment-method="promptpay_qr">
                             <i class="fas fa-qrcode"></i>
                             <span>PromptPay QR<span class="small">สแกนจ่ายผ่านแอปธนาคาร</span></span>
-                        </button>
-                        <button type="button" class="m-payment-option" data-payment-method="bill_payment_barcode">
-                            <i class="fas fa-barcode"></i>
-                            <span>Bill Payment / Barcode<span class="small">ชำระด้วยบาร์โค้ด/บิลเพย์เมนต์</span></span>
-                        </button>
-                        <button type="button" class="m-payment-option" data-payment-method="ewallet_others">
-                            <i class="fas fa-mobile-screen-button"></i>
-                            <span>E-Wallet / Others<span class="small">วอลเล็ตและช่องทางอื่นๆ</span></span>
                         </button>
                     </div>
                     <div class="m-payment-note" id="m-payment-note">
@@ -1348,6 +1345,7 @@
 
         document.querySelectorAll('.m-payment-option').forEach(function(btn) {
             btn.addEventListener('click', function() {
+                if (this.disabled) return;
                 selectedPaymentMethod = this.dataset.paymentMethod || 'omise_card';
                 document.querySelectorAll('.m-payment-option').forEach(function(item) {
                     item.classList.toggle('active', item === btn);
