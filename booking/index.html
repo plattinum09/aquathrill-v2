@@ -1479,7 +1479,11 @@
                         });
                         var payData = await payRes.json();
                         if (payData.success && payData.redirect_url) window.location.href = payData.redirect_url;
-                        else alert(payData.error || t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
+                        else {
+                            alert(payData.error || t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-lock"></i> ' + resetText;
+                        }
                     },
                     onFormClosed: function() {
                         btn.disabled = false;
@@ -1487,7 +1491,7 @@
                     }
                 });
             } catch(e) {
-                alert(t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
+                alert(e.message || t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-lock"></i> ' + resetText;
             }
