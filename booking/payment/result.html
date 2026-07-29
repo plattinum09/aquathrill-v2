@@ -77,15 +77,17 @@
             return;
         }
 
-        // Wait a moment for callback to process, then sync/check booking status
-        await new Promise(r => setTimeout(r, 2000));
-
         try {
-            await fetch('/api/omise-sync-status.php?booking_id=' + encodeURIComponent(bookingId), { credentials: 'include', cache: 'no-store' }).catch(function(){});
-            const r = await fetch('/api/bookings.php?search=' + bookingId + '&limit=1', { credentials: 'include' });
-            const d = await r.json();
-            const bookings = d.bookings || [];
-            const booking = bookings.find(b => b.booking_id === bookingId);
+            let booking = null;
+            for (let attempt = 0; attempt < 5; attempt++) {
+                if (attempt > 0) await new Promise(r => setTimeout(r, 1800));
+                await fetch('/api/omise-sync-status.php?booking_id=' + encodeURIComponent(bookingId), { credentials: 'include', cache: 'no-store' }).catch(function(){});
+                const r = await fetch('/api/bookings.php?search=' + bookingId + '&limit=1', { credentials: 'include', cache: 'no-store' });
+                const d = await r.json();
+                const bookings = d.bookings || [];
+                booking = bookings.find(b => b.booking_id === bookingId) || null;
+                if (!booking || booking.status === 'confirmed' || booking.status === 'cancelled') break;
+            }
 
             if (!booking) {
                 showResult('failed', 'fa-exclamation-circle', 'ไม่พบการจอง', 'ไม่พบข้อมูลการจองหมายเลข ' + bookingId);
