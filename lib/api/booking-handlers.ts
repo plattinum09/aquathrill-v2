@@ -61,13 +61,15 @@ export async function bookings(request:NextRequest){
         boatType:String(input.boat_type),
         customerName:String(input.customer_name),
         customerPhone:String(input.customer_phone),
+        customerEmail:String(input.customer_email||""),
+        paymentMethod:String(input.payment_method||""),
         totalPrice:price,
       }));
     }
     return json({success:true,booking_id:id,total_price:price},201);
   }
   if(!admin)return json({error:"Unauthorized"},401);
-  if(request.method==="PUT"){if(!["pending","confirmed","cancelled"].includes(input.status))return json({error:"Invalid status"},400);const r=await query<any>("UPDATE bookings SET status=$1,notes=COALESCE($2,notes),payment_method=CASE WHEN $1='confirmed' AND COALESCE(payment_method,'')='' THEN 'bank_transfer' WHEN $1='cancelled' THEN COALESCE(payment_method,'') ELSE payment_method END WHERE id=$3 RETURNING booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,total_price",[input.status,input.notes??null,input.id]);if(!r.rowCount)return json({error:"Booking not found"},404);const row=r.rows[0];if(input.status==="confirmed"){after(()=>sendBookingNotificationEmailSafe({bookingId:String(row.booking_id),bookingDate:String(row.booking_date).slice(0,10),timeSlot:String(row.time_slot),boatType:String(row.boat_type),customerName:String(row.customer_name||""),customerPhone:String(row.customer_phone||""),totalPrice:Number(row.total_price||0)}));}return json({success:true});}
+  if(request.method==="PUT"){if(!["pending","confirmed","cancelled"].includes(input.status))return json({error:"Invalid status"},400);const r=await query<any>("UPDATE bookings SET status=$1,notes=COALESCE($2,notes),payment_method=CASE WHEN $1='confirmed' AND COALESCE(payment_method,'')='' THEN 'bank_transfer' WHEN $1='cancelled' THEN COALESCE(payment_method,'') ELSE payment_method END WHERE id=$3 RETURNING booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price",[input.status,input.notes??null,input.id]);if(!r.rowCount)return json({error:"Booking not found"},404);const row=r.rows[0];if(input.status==="confirmed"){after(()=>sendBookingNotificationEmailSafe({bookingId:String(row.booking_id),bookingDate:String(row.booking_date).slice(0,10),timeSlot:String(row.time_slot),boatType:String(row.boat_type),customerName:String(row.customer_name||""),customerPhone:String(row.customer_phone||""),customerEmail:String(row.customer_email||""),paymentMethod:String(row.payment_method||""),totalPrice:Number(row.total_price||0)}));}return json({success:true});}
   if(request.method==="DELETE"){const r=await query("DELETE FROM bookings WHERE id=$1",[input.id]);return r.rowCount?json({success:true,message:"ลบการจองเรียบร้อยแล้ว"}):json({error:"ไม่พบการจอง"},404);}
   return json({error:"Method not allowed"},405);
 }

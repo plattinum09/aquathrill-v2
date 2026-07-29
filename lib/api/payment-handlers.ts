@@ -41,7 +41,7 @@ function satang(amount: unknown) {
 
 async function notifyConfirmedBooking(bookingId: string) {
   const booking = (await query<any>(
-    "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,total_price FROM bookings WHERE booking_id=$1 LIMIT 1",
+    "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price FROM bookings WHERE booking_id=$1 LIMIT 1",
     [bookingId]
   )).rows[0];
   if (!booking) return;
@@ -52,6 +52,8 @@ async function notifyConfirmedBooking(bookingId: string) {
     boatType: String(booking.boat_type),
     customerName: String(booking.customer_name || ""),
     customerPhone: String(booking.customer_phone || ""),
+    customerEmail: String(booking.customer_email || ""),
+    paymentMethod: String(booking.payment_method || ""),
     totalPrice: Number(booking.total_price || 0),
   }));
 }

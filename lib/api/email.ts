@@ -11,6 +11,8 @@ export type BookingNotification = {
   boatType: string;
   customerName: string;
   customerPhone: string;
+  customerEmail?: string;
+  paymentMethod?: string;
   totalPrice: number;
 };
 
@@ -54,6 +56,16 @@ function formatMoney(value: number) {
   });
 }
 
+function formatPaymentMethod(value?: string) {
+  const methods: Record<string, string> = {
+    omise_card: "Credit / Debit Card",
+    promptpay_qr: "PromptPay QR",
+    omise: "Omise",
+    bank_transfer: "Bank Transfer",
+  };
+  return methods[String(value || "")] || value || "-";
+}
+
 export async function sendBookingNotificationEmail(booking: BookingNotification) {
   const host = env("SMTP_HOST");
   const user = env("SMTP_USER");
@@ -82,16 +94,21 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
     ["ประเภทเรือ", booking.boatType],
     ["ชื่อลูกค้า", booking.customerName],
     ["เบอร์โทร", booking.customerPhone],
+    ["อีเมลลูกค้า", booking.customerEmail || "-"],
+    ["ช่องทางชำระเงิน", formatPaymentMethod(booking.paymentMethod)],
     ["ยอดชำระ", formatMoney(booking.totalPrice)],
   ];
 
   const htmlRows = rows
     .map(
-      ([label, value]) => `
+      ([label, value]) => {
+        const isAmount = label === "ยอดชำระ";
+        return `
         <tr>
-          <td style="padding:10px 12px;color:#64748b;border-bottom:1px solid #e2e8f0;">${escapeHtml(label)}</td>
-          <td style="padding:10px 12px;color:#0f172a;font-weight:700;border-bottom:1px solid #e2e8f0;">${escapeHtml(value)}</td>
-        </tr>`
+          <td style="padding:15px 20px;color:#64748b;border-bottom:1px solid #e5edf6;font-size:15px;">${escapeHtml(label)}</td>
+          <td style="padding:15px 20px;color:${isAmount ? "#0284c7" : "#0f172a"};font-weight:800;border-bottom:1px solid #e5edf6;font-size:16px;text-align:right;">${escapeHtml(value)}</td>
+        </tr>`;
+      }
     )
     .join("");
 
@@ -101,15 +118,25 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
     subject: `New booking ${booking.bookingId} | AQUATHRILL`,
     text: rows.map(([label, value]) => `${label}: ${value}`).join("\n"),
     html: `
-      <div style="font-family:Arial,'Helvetica Neue',sans-serif;background:#f8fafc;padding:24px;">
-        <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e2e8f0;">
-          <div style="background:#08233e;color:white;padding:22px 24px;">
-            <h1 style="margin:0;font-size:24px;">มีรายการจองใหม่สำเร็จ</h1>
-            <p style="margin:8px 0 0;color:#bae6fd;">AQUATHRILL Phuket Booking Notification</p>
+      <div style="font-family:Arial,'Helvetica Neue',sans-serif;background:linear-gradient(135deg,#eaf8ff 0%,#f8fafc 45%,#ffffff 100%);padding:28px;">
+        <div style="max-width:680px;margin:0 auto;background:#ffffff;border-radius:26px;overflow:hidden;border:1px solid #dbeafe;box-shadow:0 20px 60px rgba(8,35,62,.14);">
+          <div style="background:linear-gradient(135deg,#061b31,#08375e 58%,#06b6d4);color:white;padding:30px 30px 26px;">
+            <div style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 13px;color:#bae6fd;font-size:13px;font-weight:700;letter-spacing:.4px;">AQUATHRILL PHUKET</div>
+            <h1 style="margin:18px 0 8px;font-size:30px;line-height:1.25;">มีรายการจองใหม่สำเร็จ</h1>
+            <p style="margin:0;color:#d7f3ff;font-size:16px;">ลูกค้าชำระเงินเรียบร้อย กรุณาตรวจสอบรายละเอียดการจอง</p>
           </div>
-          <table style="width:100%;border-collapse:collapse;font-size:16px;">
-            ${htmlRows}
-          </table>
+          <div style="padding:24px 30px;background:#f8fbff;border-bottom:1px solid #e5edf6;">
+            <div style="font-size:13px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Booking Reference</div>
+            <div style="margin-top:6px;font-size:28px;color:#0f172a;font-weight:900;letter-spacing:.5px;">${escapeHtml(booking.bookingId)}</div>
+          </div>
+          <div style="padding:0 10px 8px;">
+            <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:16px;">
+              ${htmlRows}
+            </table>
+          </div>
+          <div style="padding:18px 30px 26px;background:#f8fafc;color:#64748b;font-size:13px;line-height:1.6;">
+            อีเมลนี้ถูกส่งอัตโนมัติจากระบบจอง AQUATHRILL เมื่อสถานะรายการเป็น confirmed
+          </div>
         </div>
       </div>
     `,
@@ -147,7 +174,7 @@ export async function bookingEmailTest(request: NextRequest) {
   const bookingId = String(payload.booking_id || "").trim();
   const booking = bookingId
     ? (await query<any>(
-        "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,total_price FROM bookings WHERE booking_id=$1 LIMIT 1",
+        "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price FROM bookings WHERE booking_id=$1 LIMIT 1",
         [bookingId]
       )).rows[0]
     : null;
@@ -160,6 +187,8 @@ export async function bookingEmailTest(request: NextRequest) {
     boatType: String(booking.boat_type),
     customerName: String(booking.customer_name || ""),
     customerPhone: String(booking.customer_phone || ""),
+    customerEmail: String(booking.customer_email || ""),
+    paymentMethod: String(booking.payment_method || ""),
     totalPrice: Number(booking.total_price || 0),
   } : {
     bookingId: `SMTP-TEST-${Date.now()}`,
@@ -168,6 +197,8 @@ export async function bookingEmailTest(request: NextRequest) {
     boatType: "SMTP Test",
     customerName: "AQUATHRILL System",
     customerPhone: "-",
+    customerEmail: "customer@example.com",
+    paymentMethod: "omise_card",
     totalPrice: 0,
   });
 
