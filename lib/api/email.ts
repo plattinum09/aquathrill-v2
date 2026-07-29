@@ -1,4 +1,8 @@
 import nodemailer from "nodemailer";
+import type { NextRequest } from "next/server";
+import { readSession } from "./auth";
+import { query } from "./db";
+import { json } from "./http";
 
 export type BookingNotification = {
   bookingId: string;
@@ -121,4 +125,57 @@ export async function sendBookingNotificationEmailSafe(booking: BookingNotificat
     console.error("[email] Booking notification failed", error);
     return { success: false, error };
   }
+}
+
+export async function bookingEmailTest(request: NextRequest) {
+  if (!(await readSession(request, "admin"))) return json({ error: "Unauthorized" }, 401);
+  const config = {
+    SMTP_HOST: Boolean(env("SMTP_HOST")),
+    SMTP_PORT: env("SMTP_PORT") || "587",
+    SMTP_USER: Boolean(env("SMTP_USER")),
+    SMTP_PASS: Boolean(env("SMTP_PASS")),
+    SMTP_FROM: env("SMTP_FROM") || env("SMTP_USER") || "",
+    SMTP_SECURE: env("SMTP_SECURE") || (Number(env("SMTP_PORT") || 587) === 465 ? "true" : "false"),
+    BOOKING_NOTIFY_EMAIL: env("BOOKING_NOTIFY_EMAIL") || "Aquathrill70@gmail.com",
+  };
+
+  if (request.method === "GET") return json({ success: true, configured: config });
+  if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  let payload: any = {};
+  try { payload = await request.json(); } catch {}
+  const bookingId = String(payload.booking_id || "").trim();
+  const booking = bookingId
+    ? (await query<any>(
+        "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,total_price FROM bookings WHERE booking_id=$1 LIMIT 1",
+        [bookingId]
+      )).rows[0]
+    : null;
+  if (bookingId && !booking) return json({ success: false, message: "ไม่พบ booking_id นี้", configured: config }, 404);
+
+  const result = await sendBookingNotificationEmailSafe(booking ? {
+    bookingId: String(booking.booking_id),
+    bookingDate: String(booking.booking_date).slice(0, 10),
+    timeSlot: String(booking.time_slot),
+    boatType: String(booking.boat_type),
+    customerName: String(booking.customer_name || ""),
+    customerPhone: String(booking.customer_phone || ""),
+    totalPrice: Number(booking.total_price || 0),
+  } : {
+    bookingId: `SMTP-TEST-${Date.now()}`,
+    bookingDate: new Date().toISOString().slice(0, 10),
+    timeSlot: "afternoon",
+    boatType: "SMTP Test",
+    customerName: "AQUATHRILL System",
+    customerPhone: "-",
+    totalPrice: 0,
+  });
+
+  if (result?.success) return json({ success: true, message: "ส่งเมลทดสอบสำเร็จ", configured: config });
+  return json({
+    success: false,
+    message: "ส่งเมลทดสอบไม่สำเร็จ",
+    configured: config,
+    reason: (result as any)?.reason || ((result as any)?.error instanceof Error ? (result as any).error.message : String((result as any)?.error || "unknown")),
+  }, 500);
 }

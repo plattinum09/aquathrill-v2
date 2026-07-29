@@ -7,6 +7,7 @@ import { gallery, galleryAuth } from "@/lib/api/gallery-handlers";
 import { omiseConfig, omisePayment, omiseSyncStatus, omiseWebhook, paysolutionsCallback, paysolutionsPayment } from "@/lib/api/payment-handlers";
 import { reviews } from "@/lib/api/review-handlers";
 import { agentManage, blobFile, boatPricing, boatTypes, pageContent, paymentSettings, promotions, upload } from "@/lib/api/core-handlers";
+import { bookingEmailTest } from "@/lib/api/email";
 import { errorResponse, json } from "@/lib/api/http";
 
 export const runtime = "nodejs";
@@ -24,6 +25,7 @@ async function dispatch(request:NextRequest,context:Context){
       case "boat-pricing":return boatPricing(request);
       case "availability":return availability(request);
       case "bookings":return bookings(request);
+      case "booking-email-test":return bookingEmailTest(request);
       case "admin-booking-stats":return adminBookingStats(request);
       case "promotions":return promotions(request);
       case "agent-manage":return agentManage(request);
