@@ -302,11 +302,12 @@ export async function bookingEmailTest(request: NextRequest) {
     totalPrice: 0,
   });
 
-  if (result?.success) return json({ success: true, message: "ส่งเมลทดสอบสำเร็จ", configured: config });
+  if (result?.success) return json({ success: true, message: "ส่งเมลทดสอบสำเร็จ", configured: config, result });
   return json({
     success: false,
     message: "ส่งเมลทดสอบไม่สำเร็จ",
     configured: config,
+    result,
     reason: (result as any)?.reason || ((result as any)?.error instanceof Error ? (result as any).error.message : String((result as any)?.error || "unknown")),
   }, 500);
 }
