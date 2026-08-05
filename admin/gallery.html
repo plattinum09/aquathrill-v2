@@ -332,9 +332,15 @@
 
     function formatThaiDate(dateStr) {
         if (!dateStr) return '';
-        const d = new Date(dateStr + 'T00:00:00');
+        const normalized = String(dateStr).slice(0, 10);
+        const d = new Date(normalized + 'T00:00:00');
+        if (Number.isNaN(d.getTime())) return 'ไม่ระบุวันที่';
         const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
         return d.getDate() + ' ' + months[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
     function renderGallery() {
@@ -392,13 +398,13 @@
             html += '<div class="gallery-admin-grid">';
             items.forEach(item => {
                 const isYT = item.type === 'youtube';
-                const folder = galleryFolders.find(f => f.id === item.folder_id);
-                const folderBadge = folder ? `<div class="folder-badge"><i class="fas fa-folder"></i> ${folder.name}</div>` : `<div class="folder-badge" style="background:rgba(0,212,255,.2);color:#fff;border-color:transparent"><i class="fas fa-globe"></i> สาธารณะ</div>`;
+                const folder = galleryFolders.find(f => String(f.id || '') === String(item.folder_id || ''));
+                const folderBadge = folder ? `<div class="folder-badge"><i class="fas fa-folder"></i> ${escapeHtml(folder.name || 'อัลบั้ม')}</div>` : `<div class="folder-badge" style="background:rgba(0,212,255,.2);color:#fff;border-color:transparent"><i class="fas fa-globe"></i> สาธารณะ</div>`;
                 
                 html += `
                     <div class="gallery-admin-item" data-id="${item.id}">
                         <div class="item-img">
-                            <img src="${item.src}" alt="${item.caption || ''}" loading="lazy" onerror="this.src='https://img.youtube.com/vi/default/hqdefault.jpg'">
+                            <img src="${escapeHtml(item.src || '')}" alt="${escapeHtml(item.caption || '')}" loading="lazy" onerror="this.src='https://img.youtube.com/vi/default/hqdefault.jpg'">
                             ${isYT ? '<div class="item-video-badge"><i class="fas fa-play"></i></div><span class="item-yt-banner">YouTube</span>' : ''}
                             ${folderBadge}
                             <div class="item-actions">
@@ -409,7 +415,7 @@
                             </div>
                         </div>
                         <div class="item-info">
-                            <div class="item-caption">${item.caption || 'ไม่มีคำอธิบาย'}</div>
+                            <div class="item-caption">${escapeHtml(item.caption || 'ไม่มีคำอธิบาย')}</div>
                             <div class="item-meta">
                                 <span class="item-date"><i class="fas fa-calendar-alt"></i> ${formatThaiDate(item.event_date)}</span>
                                 ${isYT ? '<span style="color:#ff5252;font-size:.7rem"><i class="fab fa-youtube"></i> YouTube</span>' : ''}
@@ -493,14 +499,17 @@
 
         let html = '';
         galleryFolders.forEach(f => {
-            const count = galleryItems.filter(i => i.folder_id === f.id).length;
+            const folderId = String(f.id || '');
+            const folderName = escapeHtml(f.name || 'อัลบั้ม');
+            const createdAt = f.created_at ? String(f.created_at).slice(0, 10) : '';
+            const count = galleryItems.filter(i => String(i.folder_id || '') === folderId).length;
             html += `
                 <div class="folder-card">
-                    <h4><i class="fas fa-folder"></i> ${f.name}</h4>
-                    <p>มีรูปภาพทั้งหมด ${count} รายการ<br>สร้างเมื่อ: ${formatThaiDate(f.created_at.split(' ')[0])}</p>
+                    <h4><i class="fas fa-folder"></i> ${folderName}</h4>
+                    <p>มีรูปภาพทั้งหมด ${count} รายการ<br>สร้างเมื่อ: ${formatThaiDate(createdAt)}</p>
                     <div class="folder-actions">
-                        <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff" onclick="editFolderPassword('${f.id}')"><i class="fas fa-key"></i> เปลี่ยนรหัสผ่าน</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteFolder('${f.id}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff" onclick="editFolderPassword('${folderId}')"><i class="fas fa-key"></i> เปลี่ยนรหัสผ่าน</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteFolder('${folderId}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `;

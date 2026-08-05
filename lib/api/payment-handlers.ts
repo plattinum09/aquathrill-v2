@@ -1,7 +1,7 @@
 import { after, type NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { query } from "./db";
-import { sendBookingNotificationEmailSafe } from "./email";
+import { sendBookingEmailsForBookingId } from "./email";
 import { body, json } from "./http";
 
 const escape = (value: any) =>
@@ -40,22 +40,7 @@ function satang(amount: unknown) {
 }
 
 async function notifyConfirmedBooking(bookingId: string) {
-  const booking = (await query<any>(
-    "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price FROM bookings WHERE booking_id=$1 LIMIT 1",
-    [bookingId]
-  )).rows[0];
-  if (!booking) return;
-  after(() => sendBookingNotificationEmailSafe({
-    bookingId: String(booking.booking_id),
-    bookingDate: String(booking.booking_date).slice(0, 10),
-    timeSlot: String(booking.time_slot),
-    boatType: String(booking.boat_type),
-    customerName: String(booking.customer_name || ""),
-    customerPhone: String(booking.customer_phone || ""),
-    customerEmail: String(booking.customer_email || ""),
-    paymentMethod: String(booking.payment_method || ""),
-    totalPrice: Number(booking.total_price || 0),
-  }));
+  after(() => sendBookingEmailsForBookingId(bookingId));
 }
 
 function paymentErrorPage(message: string, status = 500) {
@@ -297,6 +282,7 @@ async function syncOmiseBooking(bookingId: string) {
   if (!booking) return { error: "Booking not found", statusCode: 404 };
 
   if (booking.status === "confirmed") {
+    await notifyConfirmedBooking(bookingId);
     return { success: true, booking_id: bookingId, status: "confirmed", synced: false };
   }
 

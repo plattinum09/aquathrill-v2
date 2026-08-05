@@ -6,9 +6,27 @@ import { prisma } from "./prisma";
 
 async function setting(key:string,fallback:any[]=[]){const row=await prisma.siteSetting.findUnique({where:{settingKey:key}});if(!row)return fallback;try{return JSON.parse(row.settingValue)}catch{return fallback}}
 async function save(key:string,value:any){await prisma.siteSetting.upsert({where:{settingKey:key},create:{settingKey:key,settingValue:JSON.stringify(value)},update:{settingValue:JSON.stringify(value)}})}
-export async function galleryAuth(request:NextRequest){if(request.method!=="POST")return json({error:"Method not allowed"},405);const input=await body(request);const folders=await setting("gallery_folders");const folder=folders.find((x:any)=>x.id===input.folder_id);if(!folder)return json({error:"ไม่พบอัลบั้มนี้"},404);if(!(await verifyPassword(String(input.password||""),folder.password)))return json({error:"รหัสผ่านไม่ถูกต้อง"},401);const items=await setting("gallery_items");return json({success:true,folder:{id:folder.id,name:folder.name},items:items.filter((x:any)=>x.folder_id===folder.id)});}
+function normalizeFolders(folders:any[]){
+  return (Array.isArray(folders)?folders:[]).map((folder:any,index:number)=>({
+    ...folder,
+    id:String(folder?.id||`folder_${index}`),
+    name:String(folder?.name||folder?.title||`อัลบั้ม ${index+1}`),
+    created_at:String(folder?.created_at||folder?.createdAt||folder?.date||new Date().toISOString()),
+  }));
+}
+function normalizeItems(items:any[]){
+  return (Array.isArray(items)?items:[]).map((item:any,index:number)=>({
+    ...item,
+    id:String(item?.id||`item_${index}`),
+    type:item?.type||"image",
+    folder_id:item?.folder_id?String(item.folder_id):"",
+    event_date:String(item?.event_date||item?.date||item?.uploaded_at||new Date().toISOString()).slice(0,10),
+    uploaded_at:String(item?.uploaded_at||item?.created_at||new Date().toISOString()),
+  }));
+}
+export async function galleryAuth(request:NextRequest){if(request.method!=="POST")return json({error:"Method not allowed"},405);const input=await body(request);const folders=normalizeFolders(await setting("gallery_folders"));const folder=folders.find((x:any)=>x.id===input.folder_id);if(!folder)return json({error:"ไม่พบอัลบั้มนี้"},404);if(!(await verifyPassword(String(input.password||""),folder.password)))return json({error:"รหัสผ่านไม่ถูกต้อง"},401);const items=normalizeItems(await setting("gallery_items"));return json({success:true,folder:{id:folder.id,name:folder.name},items:items.filter((x:any)=>x.folder_id===folder.id)});}
 export async function gallery(request:NextRequest){
-  let items=await setting("gallery_items"),folders=await setting("gallery_folders");const admin=await readSession(request,"admin");const url=new URL(request.url);
+  let items=normalizeItems(await setting("gallery_items")),folders=normalizeFolders(await setting("gallery_folders"));const admin=await readSession(request,"admin");const url=new URL(request.url);
   if(request.method==="GET"){if(url.searchParams.has("admin")){if(!admin)return json({error:"Unauthorized"},401);return json({items,folders});}return publicJson({items:items.filter((x:any)=>!x.folder_id),folders:folders.map((x:any)=>({id:x.id,name:x.name,created_at:x.created_at})).sort((a:any,b:any)=>String(b.created_at).localeCompare(String(a.created_at)))});}
   if(!admin)return json({error:"Unauthorized"},401);
   if(request.method==="POST"){

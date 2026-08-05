@@ -254,6 +254,92 @@ export async function sendBookingNotificationEmailSafe(booking: BookingNotificat
   };
 }
 
+async function ensureBookingEmailLogsTable() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS booking_email_logs (
+      id SERIAL PRIMARY KEY,
+      booking_id VARCHAR(50) NOT NULL,
+      recipient_type VARCHAR(30) NOT NULL,
+      recipient_email VARCHAR(255),
+      status VARCHAR(30) NOT NULL,
+      reason TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  await query("CREATE INDEX IF NOT EXISTS idx_booking_email_logs_lookup ON booking_email_logs(booking_id, recipient_type, status)");
+}
+
+function bookingFromRow(row: any): BookingNotification {
+  return {
+    bookingId: String(row.booking_id),
+    bookingDate: String(row.booking_date).slice(0, 10),
+    timeSlot: String(row.time_slot),
+    boatType: String(row.boat_type),
+    customerName: String(row.customer_name || ""),
+    customerPhone: String(row.customer_phone || ""),
+    customerEmail: String(row.customer_email || ""),
+    paymentMethod: String(row.payment_method || ""),
+    totalPrice: Number(row.total_price || 0),
+  };
+}
+
+function resultStatus(result: any) {
+  if (result?.success) return { status: "sent", reason: "" };
+  if (result?.skipped) return { status: "skipped", reason: String(result.reason || "skipped") };
+  return { status: "failed", reason: String(result?.reason || result?.error?.message || result?.error || "unknown") };
+}
+
+async function insertEmailLog(bookingId: string, type: string, email: string, result: any) {
+  const normalized = resultStatus(result);
+  await query(
+    "INSERT INTO booking_email_logs(booking_id,recipient_type,recipient_email,status,reason) VALUES($1,$2,$3,$4,$5)",
+    [bookingId, type, email || null, normalized.status, normalized.reason || null]
+  );
+}
+
+export async function sendBookingEmailsForBookingId(bookingId: string, options: { force?: boolean } = {}) {
+  await ensureBookingEmailLogsTable();
+  const row = (await query<any>(
+    "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price,status FROM bookings WHERE booking_id=$1 LIMIT 1",
+    [bookingId]
+  )).rows[0];
+  if (!row) return { success: false, error: "booking_not_found" };
+
+  const booking = bookingFromRow(row);
+  const sent = options.force ? [] : (await query<any>(
+    "SELECT recipient_type FROM booking_email_logs WHERE booking_id=$1 AND status IN ('sent','skipped')",
+    [bookingId]
+  )).rows.map((x: any) => String(x.recipient_type));
+
+  const tasks: Array<Promise<any>> = [];
+  const types: string[] = [];
+  if (!sent.includes("shop")) {
+    types.push("shop");
+    tasks.push(sendBookingNotificationEmail(booking));
+  }
+  if (!sent.includes("customer")) {
+    types.push("customer");
+    tasks.push(sendCustomerBookingConfirmationEmail(booking));
+  }
+  if (!tasks.length) return { success: true, skipped: true, reason: "already_sent_or_skipped" };
+
+  const settled = await Promise.allSettled(tasks);
+  const details: Record<string, any> = {};
+  for (let i = 0; i < settled.length; i++) {
+    const type = types[i];
+    const item = settled[i];
+    const value = item.status === "fulfilled" ? item.value : { success: false, error: item.reason };
+    details[type] = value;
+    await insertEmailLog(bookingId, type, type === "customer" ? booking.customerEmail || "" : env("BOOKING_NOTIFY_EMAIL") || "Aquathrill70@gmail.com", value);
+    if (item.status === "rejected") console.error(`[email] ${type} booking email failed`, item.reason);
+  }
+  return {
+    success: Object.values(details).some((x: any) => x?.success || x?.skipped),
+    booking_id: bookingId,
+    ...details,
+  };
+}
+
 export async function bookingEmailTest(request: NextRequest) {
   if (!(await readSession(request, "admin"))) return json({ error: "Unauthorized" }, 401);
   const config = {
@@ -272,25 +358,7 @@ export async function bookingEmailTest(request: NextRequest) {
   let payload: any = {};
   try { payload = await request.json(); } catch {}
   const bookingId = String(payload.booking_id || "").trim();
-  const booking = bookingId
-    ? (await query<any>(
-        "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price FROM bookings WHERE booking_id=$1 LIMIT 1",
-        [bookingId]
-      )).rows[0]
-    : null;
-  if (bookingId && !booking) return json({ success: false, message: "ไม่พบ booking_id นี้", configured: config }, 404);
-
-  const result = await sendBookingNotificationEmailSafe(booking ? {
-    bookingId: String(booking.booking_id),
-    bookingDate: String(booking.booking_date).slice(0, 10),
-    timeSlot: String(booking.time_slot),
-    boatType: String(booking.boat_type),
-    customerName: String(booking.customer_name || ""),
-    customerPhone: String(booking.customer_phone || ""),
-    customerEmail: String(booking.customer_email || ""),
-    paymentMethod: String(booking.payment_method || ""),
-    totalPrice: Number(booking.total_price || 0),
-  } : {
+  const result = bookingId ? await sendBookingEmailsForBookingId(bookingId, { force: true }) : await sendBookingNotificationEmailSafe({
     bookingId: `SMTP-TEST-${Date.now()}`,
     bookingDate: new Date().toISOString().slice(0, 10),
     timeSlot: "afternoon",
@@ -301,6 +369,7 @@ export async function bookingEmailTest(request: NextRequest) {
     paymentMethod: "omise_card",
     totalPrice: 0,
   });
+  if (bookingId && (result as any)?.error === "booking_not_found") return json({ success: false, message: "ไม่พบ booking_id นี้", configured: config, result }, 404);
 
   if (result?.success) return json({ success: true, message: "ส่งเมลทดสอบสำเร็จ", configured: config, result });
   return json({

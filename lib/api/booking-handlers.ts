@@ -1,7 +1,7 @@
 import { after, type NextRequest } from "next/server";
 import { readSession } from "./auth";
 import { query } from "./db";
-import { sendBookingNotificationEmailSafe } from "./email";
+import { sendBookingEmailsForBookingId } from "./email";
 import { body, json, publicJson } from "./http";
 
 export async function availability(request:NextRequest){
@@ -53,23 +53,11 @@ export async function bookings(request:NextRequest){
     if(!input.skip_availability){const over=(await query<any>("SELECT status,total_boats,blocked_boats FROM boat_availability WHERE boat_type=$1 AND slot_date=$2::date AND time_slot=$3",[input.boat_type,input.booking_date,input.time_slot])).rows[0];if(over?.status==="blocked")return json({error:"This slot is blocked"},409);const booked=Number((await query<any>("SELECT COUNT(*)::int count FROM bookings WHERE boat_type=$1 AND booking_date=$2::date AND time_slot=$3 AND status='confirmed'",[input.boat_type,input.booking_date,input.time_slot])).rows[0].count);if(Number(over?.total_boats??boat.total_boats)-booked-Number(over?.blocked_boats||0)<=0)return json({error:"No boats available for this slot"},409);}
     const id=bookingId(input.booking_type==="agent"?"AG":"BK",input.admin_create?input.booking_date:undefined);const price=input.admin_create&&input.total_price!=null?Number(input.total_price):Number(boat.price);const minAmount=minOnlineBookingAmount();if(!Number.isFinite(price)||price<minAmount)return json({error:`Invalid booking price: amount must be at least ${minAmount} THB`},400);const status=input.admin_create?(input.status||"confirmed"):"pending";
     await query("INSERT INTO bookings(booking_id,boat_type,booking_date,time_slot,guests,customer_name,customer_phone,customer_email,payment_method,total_price,status,notes,agent_id) VALUES($1,$2,$3::date,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",[id,input.boat_type,input.booking_date,input.time_slot,Number(input.guests),input.customer_name,input.customer_phone,input.customer_email||"",input.payment_method||"",price,status,input.notes||"",input.agent_id||null]);
-    if(input.admin_create&&status==="confirmed"){
-      after(()=>sendBookingNotificationEmailSafe({
-        bookingId:id,
-        bookingDate:String(input.booking_date),
-        timeSlot:String(input.time_slot),
-        boatType:String(input.boat_type),
-        customerName:String(input.customer_name),
-        customerPhone:String(input.customer_phone),
-        customerEmail:String(input.customer_email||""),
-        paymentMethod:String(input.payment_method||""),
-        totalPrice:price,
-      }));
-    }
+    if(input.admin_create&&status==="confirmed") after(()=>sendBookingEmailsForBookingId(id));
     return json({success:true,booking_id:id,total_price:price},201);
   }
   if(!admin)return json({error:"Unauthorized"},401);
-  if(request.method==="PUT"){if(!["pending","confirmed","cancelled"].includes(input.status))return json({error:"Invalid status"},400);const r=await query<any>("UPDATE bookings SET status=$1,notes=COALESCE($2,notes),payment_method=CASE WHEN $1='confirmed' AND COALESCE(payment_method,'')='' THEN 'bank_transfer' WHEN $1='cancelled' THEN COALESCE(payment_method,'') ELSE payment_method END WHERE id=$3 RETURNING booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price",[input.status,input.notes??null,input.id]);if(!r.rowCount)return json({error:"Booking not found"},404);const row=r.rows[0];if(input.status==="confirmed"){after(()=>sendBookingNotificationEmailSafe({bookingId:String(row.booking_id),bookingDate:String(row.booking_date).slice(0,10),timeSlot:String(row.time_slot),boatType:String(row.boat_type),customerName:String(row.customer_name||""),customerPhone:String(row.customer_phone||""),customerEmail:String(row.customer_email||""),paymentMethod:String(row.payment_method||""),totalPrice:Number(row.total_price||0)}));}return json({success:true});}
+  if(request.method==="PUT"){if(!["pending","confirmed","cancelled"].includes(input.status))return json({error:"Invalid status"},400);const r=await query<any>("UPDATE bookings SET status=$1,notes=COALESCE($2,notes),payment_method=CASE WHEN $1='confirmed' AND COALESCE(payment_method,'')='' THEN 'bank_transfer' WHEN $1='cancelled' THEN COALESCE(payment_method,'') ELSE payment_method END WHERE id=$3 RETURNING booking_id",[input.status,input.notes??null,input.id]);if(!r.rowCount)return json({error:"Booking not found"},404);const row=r.rows[0];if(input.status==="confirmed")after(()=>sendBookingEmailsForBookingId(String(row.booking_id)));return json({success:true});}
   if(request.method==="DELETE"){const r=await query("DELETE FROM bookings WHERE id=$1",[input.id]);return r.rowCount?json({success:true,message:"ลบการจองเรียบร้อยแล้ว"}):json({error:"ไม่พบการจอง"},404);}
   return json({error:"Method not allowed"},405);
 }
