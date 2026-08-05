@@ -6,6 +6,25 @@ import { prisma } from "./prisma";
 
 async function setting(key:string,fallback:any[]=[]){const row=await prisma.siteSetting.findUnique({where:{settingKey:key}});if(!row)return fallback;try{return JSON.parse(row.settingValue)}catch{return fallback}}
 async function save(key:string,value:any){await prisma.siteSetting.upsert({where:{settingKey:key},create:{settingKey:key,settingValue:JSON.stringify(value)},update:{settingValue:JSON.stringify(value)}})}
+function blobProxyUrl(pathname:string){return `/api/blob-file.php?path=${encodeURIComponent(pathname)}`}
+async function putGalleryImage(file:File){
+  const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"-")||`image-${Date.now()}`;
+  try{
+    const blob=await put(`gallery/${safeName}`,file,{access:"public",addRandomSuffix:true});
+    return {url:blob.url,pathname:blob.pathname,access:"public"};
+  }catch(error:any){
+    const message=String(error?.message||"");
+    if(!/private store|private access|public access/i.test(message))throw error;
+    const blob=await put(`gallery/${safeName}`,file,{access:"private",addRandomSuffix:true});
+    return {url:blobProxyUrl(blob.pathname),pathname:blob.pathname,access:"private"};
+  }
+}
+function deleteTarget(item:any){
+  const pathname=String(item?.blob_pathname||item?.pathname||item?.filename||"");
+  if(pathname)return pathname;
+  const src=String(item?.src||"");
+  return src.includes("blob.vercel-storage.com")?src:"";
+}
 function normalizeFolders(folders:any[]){
   return (Array.isArray(folders)?folders:[]).map((folder:any,index:number)=>({
     ...folder,
@@ -33,10 +52,10 @@ export async function gallery(request:NextRequest){
     const contentType=request.headers.get("content-type")||"";
     if(contentType.includes("application/json")){const input=await body(request);const match=String(input.youtube_url||"").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);if(!match)return json({error:"ไม่พบ YouTube Video ID กรุณาตรวจสอบ URL"},400);const item={id:`yt_${crypto.randomUUID()}`,type:"youtube",youtube_id:match[1],src:`https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`,caption:input.caption||"",event_date:input.event_date||new Date().toISOString().slice(0,10),folder_id:input.folder_id||"",uploaded_at:new Date().toISOString()};items.unshift(item);await save("gallery_items",items);return json({success:true,item});}
     const form=await request.formData();if(form.get("action")==="create_folder"){const name=String(form.get("name")||"").trim(),password=String(form.get("password")||"");if(!name||!password)return json({error:"กรุณาระบุชื่ออัลบั้มและรหัสผ่าน"},400);const folder={id:`fld_${crypto.randomUUID()}`,name,password:await createPasswordHash(password),created_at:new Date().toISOString()};folders.unshift(folder);await save("gallery_folders",folders);return json({success:true,folder:{id:folder.id,name}});}
-    const file=form.get("image");if(!(file instanceof File))return json({error:"No file uploaded"},400);if(file.size>10*1024*1024)return json({error:"ไฟล์ใหญ่เกินไป สูงสุด 10MB"},400);if(!["image/jpeg","image/png","image/webp","image/gif"].includes(file.type))return json({error:"ไฟล์ไม่ถูกต้อง"},400);const blob=await put(`gallery/${file.name.replace(/[^a-zA-Z0-9._-]/g,"-")}`,file,{access:"public",addRandomSuffix:true});const item={id:`gal_${crypto.randomUUID()}`,src:blob.url,caption:String(form.get("caption")||""),event_date:String(form.get("event_date")||new Date().toISOString().slice(0,10)),type:"image",folder_id:String(form.get("folder_id")||""),uploaded_at:new Date().toISOString()};items.unshift(item);await save("gallery_items",items);return json({success:true,item});
+    const file=form.get("image");if(!(file instanceof File))return json({error:"No file uploaded"},400);if(file.size>10*1024*1024)return json({error:"ไฟล์ใหญ่เกินไป สูงสุด 10MB"},400);if(!["image/jpeg","image/png","image/webp","image/gif"].includes(file.type))return json({error:"ไฟล์ไม่ถูกต้อง"},400);const blob=await putGalleryImage(file);const item={id:`gal_${crypto.randomUUID()}`,src:blob.url,blob_pathname:blob.pathname,blob_access:blob.access,caption:String(form.get("caption")||""),event_date:String(form.get("event_date")||new Date().toISOString().slice(0,10)),type:"image",folder_id:String(form.get("folder_id")||""),uploaded_at:new Date().toISOString()};items.unshift(item);await save("gallery_items",items);return json({success:true,item});
   }
   const input=await body(request);
-  if(request.method==="DELETE"){if(input.action==="delete_folder"){const removed=items.filter((x:any)=>x.folder_id===input.id);for(const x of removed)if(x.type!=="youtube"&&String(x.src).includes("blob.vercel-storage.com"))await del(x.src);folders=folders.filter((x:any)=>x.id!==input.id);items=items.filter((x:any)=>x.folder_id!==input.id);await save("gallery_folders",folders);await save("gallery_items",items);return json({success:true});}const target=items.find((x:any)=>x.id===input.id);if(!target)return json({error:"Item not found"},404);if(target.type!=="youtube"&&String(target.src).includes("blob.vercel-storage.com"))await del(target.src);items=items.filter((x:any)=>x.id!==input.id);await save("gallery_items",items);return json({success:true});}
+  if(request.method==="DELETE"){if(input.action==="delete_folder"){const removed=items.filter((x:any)=>x.folder_id===input.id);for(const x of removed){const target=deleteTarget(x);if(x.type!=="youtube"&&target)await del(target).catch(console.warn)}folders=folders.filter((x:any)=>x.id!==input.id);items=items.filter((x:any)=>x.folder_id!==input.id);await save("gallery_folders",folders);await save("gallery_items",items);return json({success:true});}const target=items.find((x:any)=>x.id===input.id);if(!target)return json({error:"Item not found"},404);const blobTarget=deleteTarget(target);if(target.type!=="youtube"&&blobTarget)await del(blobTarget).catch(console.warn);items=items.filter((x:any)=>x.id!==input.id);await save("gallery_items",items);return json({success:true});}
   if(request.method==="PUT"){if(input.action==="update_folder_password"){const folder=folders.find((x:any)=>x.id===input.id);if(!folder)return json({error:"Folder not found"},404);folder.password=await createPasswordHash(input.password);await save("gallery_folders",folders);return json({success:true});}const item=items.find((x:any)=>x.id===input.id);if(!item)return json({error:"Item not found"},404);for(const key of ["caption","event_date","folder_id"])if(Object.hasOwn(input,key))item[key]=input[key];await save("gallery_items",items);return json({success:true});}
   return json({error:"Method not allowed"},405);
 }
