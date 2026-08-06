@@ -513,22 +513,55 @@
         for (var n = 1; n <= 81; n++) {
             if (missingImages.indexOf(n) === -1) imageNumbers.push(n);
         }
-        var totalImages = imageNumbers.length;
+        var portfolioItems = imageNumbers.map(function(num){
+            return {
+                src: 'images/ผลงาน/ผลงาน' + num + '.webp',
+                caption: 'ผลงาน AQUATHRILL #' + num
+            };
+        });
+        var totalImages = portfolioItems.length;
         var perPage = 12;
         var loaded = 0;
         var grid = document.getElementById('portfolio-gallery');
         var loadMoreBtn = document.getElementById('portfolio-load-more');
+
+        function normalizePortfolioSrc(src) {
+            if (!src) return '';
+            if (/^(https?:)?\/\//.test(src) || src.charAt(0) === '/') return src;
+            return src;
+        }
+
+        async function loadPortfolioFromAdmin() {
+            try {
+                var r = await fetch('/api/gallery.php', { cache: 'no-store' });
+                var d = await r.json();
+                if (!d.items || !d.items.length) return;
+                var publicItems = d.items.filter(function(item){ return item.type !== 'youtube' && item.src; });
+                if (!publicItems.length) return;
+                portfolioItems = publicItems.map(function(item, idx){
+                    return {
+                        src: normalizePortfolioSrc(item.src),
+                        caption: item.caption || ('ผลงาน AQUATHRILL #' + (idx + 1)),
+                        event_date: item.event_date || ''
+                    };
+                });
+                totalImages = portfolioItems.length;
+                loaded = 0;
+                grid.innerHTML = '';
+                loadMoreBtn.style.display = totalImages > perPage ? '' : 'none';
+            } catch(e) {}
+        }
 
         function loadImages(){
             var start = loaded;
             var end = Math.min(loaded + perPage, totalImages);
             var frag = document.createDocumentFragment();
             for(var i = start; i < end; i++){
-                var num = imageNumbers[i];
+                var item = portfolioItems[i];
                 var div = document.createElement('div');
                 div.className = 'portfolio-item fade-up';
                 div.setAttribute('data-idx', i);
-                div.innerHTML = '<img src="images/ผลงาน/ผลงาน' + num + '.webp" alt="ผลงาน AQUATHRILL #' + num + '" loading="lazy"><div class="pi-zoom"><i class="fas fa-search-plus"></i></div>';
+                div.innerHTML = '<img src="' + item.src + '" alt="' + (item.caption || 'ผลงาน AQUATHRILL') + '" loading="lazy"><div class="pi-zoom"><i class="fas fa-search-plus"></i></div>';
                 div.addEventListener('click', function(){ openPortfolioLightbox(parseInt(this.dataset.idx)); });
                 frag.appendChild(div);
             }
@@ -547,7 +580,6 @@
         }
 
         loadMoreBtn.addEventListener('click', loadImages);
-        loadImages(); // Load first batch
 
         // Lightbox
         var lightbox = document.getElementById('portfolio-lightbox');
@@ -563,9 +595,11 @@
         };
 
         function updateLightbox(){
+            var item = portfolioItems[currentIdx] || {};
             lbImg.style.opacity = '0';
             setTimeout(function(){
-                lbImg.src = 'images/ผลงาน/ผลงาน' + imageNumbers[currentIdx] + '.webp';
+                lbImg.src = item.src || '';
+                lbImg.alt = item.caption || 'ผลงาน AQUATHRILL';
                 lbImg.onload = function(){ lbImg.style.opacity = '1'; };
             }, 150);
             lbCounter.textContent = (currentIdx + 1) + ' / ' + totalImages;
@@ -597,6 +631,8 @@
             if(e.key === 'ArrowLeft'){ currentIdx = (currentIdx - 1 + totalImages) % totalImages; updateLightbox(); }
             if(e.key === 'ArrowRight'){ currentIdx = (currentIdx + 1) % totalImages; updateLightbox(); }
         });
+
+        loadPortfolioFromAdmin().finally(loadImages);
     })();
     </script>
 

@@ -25,6 +25,37 @@ function deleteTarget(item:any){
   const src=String(item?.src||"");
   return src.includes("blob.vercel-storage.com")?src:"";
 }
+function defaultPublicItems(){
+  const missing=[5,6,7,8,9];
+  const today=new Date().toISOString();
+  const eventDate=today.slice(0,10);
+  const items:any[]=[];
+  for(let n=1;n<=81;n++){
+    if(missing.includes(n))continue;
+    items.push({
+      id:`default_portfolio_${n}`,
+      type:"image",
+      src:`/images/ผลงาน/ผลงาน${n}.webp`,
+      caption:`ผลงาน AQUATHRILL #${n}`,
+      event_date:eventDate,
+      folder_id:"",
+      uploaded_at:today,
+      source:"default_portfolio",
+    });
+  }
+  return items;
+}
+async function ensureDefaultPublicItems(items:any[],persist=false){
+  const seeded=await setting("gallery_defaults_seeded",false as any);
+  const hasPublic=items.some((item:any)=>!item.folder_id);
+  if(seeded||hasPublic)return items;
+  const next=[...defaultPublicItems(),...items];
+  if(persist){
+    await save("gallery_items",next);
+    await save("gallery_defaults_seeded",true);
+  }
+  return next;
+}
 function normalizeFolders(folders:any[]){
   return (Array.isArray(folders)?folders:[]).map((folder:any,index:number)=>({
     ...folder,
@@ -46,7 +77,7 @@ function normalizeItems(items:any[]){
 export async function galleryAuth(request:NextRequest){if(request.method!=="POST")return json({error:"Method not allowed"},405);const input=await body(request);const folders=normalizeFolders(await setting("gallery_folders"));const folder=folders.find((x:any)=>x.id===input.folder_id);if(!folder)return json({error:"ไม่พบอัลบั้มนี้"},404);if(!(await verifyPassword(String(input.password||""),folder.password)))return json({error:"รหัสผ่านไม่ถูกต้อง"},401);const items=normalizeItems(await setting("gallery_items"));return json({success:true,folder:{id:folder.id,name:folder.name},items:items.filter((x:any)=>x.folder_id===folder.id)});}
 export async function gallery(request:NextRequest){
   let items=normalizeItems(await setting("gallery_items")),folders=normalizeFolders(await setting("gallery_folders"));const admin=await readSession(request,"admin");const url=new URL(request.url);
-  if(request.method==="GET"){if(url.searchParams.has("admin")){if(!admin)return json({error:"Unauthorized"},401);return json({items,folders});}return publicJson({items:items.filter((x:any)=>!x.folder_id),folders:folders.map((x:any)=>({id:x.id,name:x.name,created_at:x.created_at})).sort((a:any,b:any)=>String(b.created_at).localeCompare(String(a.created_at)))});}
+  if(request.method==="GET"){if(url.searchParams.has("admin")){if(!admin)return json({error:"Unauthorized"},401);items=normalizeItems(await ensureDefaultPublicItems(items,true));return json({items,folders});}items=normalizeItems(await ensureDefaultPublicItems(items,false));return publicJson({items:items.filter((x:any)=>!x.folder_id),folders:folders.map((x:any)=>({id:x.id,name:x.name,created_at:x.created_at})).sort((a:any,b:any)=>String(b.created_at).localeCompare(String(a.created_at)))});}
   if(!admin)return json({error:"Unauthorized"},401);
   if(request.method==="POST"){
     const contentType=request.headers.get("content-type")||"";
