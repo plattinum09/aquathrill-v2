@@ -197,6 +197,7 @@
         <div class="upload-form" id="upload-form">
             <h3 style="margin-bottom:16px"><i class="fas fa-upload" style="color:#00d4ff"></i> อัปโหลดรูปภาพใหม่</h3>
             <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+            <input type="file" id="replace-file-input" accept="image/*" style="display:none">
             <div class="upload-preview-grid" id="preview-grid"></div>
             <div class="form-row">
                 <div class="form-group">
@@ -285,6 +286,7 @@
     let galleryItems = [];
     let galleryFolders = [];
     let pendingFiles = [];
+    let replacingItemId = null;
     let currentFilterDate = null;
     let currentFilterFolder = 'all';
 
@@ -409,6 +411,7 @@
                             ${folderBadge}
                             <div class="item-actions">
                                 <button class="btn btn-primary btn-sm" onclick="editItem('${item.id}')" title="แก้ไขข้อมูล"><i class="fas fa-edit"></i></button>
+                                ${!isYT ? `<button class="btn btn-primary btn-sm" style="background:#13d8ff;color:#001b2f" onclick="replaceItemImage('${item.id}')" title="เปลี่ยนรูปภาพ"><i class="fas fa-image"></i></button>` : ''}
                                 <button class="btn btn-primary btn-sm" style="background:#00d4ff;color:#000" onclick="changeImageFolder('${item.id}')" title="ย้ายอัลบั้ม"><i class="fas fa-folder-open"></i></button>
                                 <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')" title="ลบภาพ"><i class="fas fa-trash"></i></button>
                                 ${isYT ? `<a href="https://www.youtube.com/watch?v=${item.youtube_id}" target="_blank" class="btn btn-sm" style="background:rgba(255,0,0,.2);color:#ff5252"><i class="fas fa-external-link-alt"></i></a>` : ''}
@@ -657,6 +660,15 @@
 
     document.getElementById('file-input').addEventListener('change', function(e) {
         addFiles(Array.from(e.target.files));
+        this.value = '';
+    });
+
+    document.getElementById('replace-file-input').addEventListener('change', async function(e) {
+        const file = e.target.files && e.target.files[0];
+        this.value = '';
+        if (!file || !replacingItemId) return;
+        await uploadReplacementImage(replacingItemId, file);
+        replacingItemId = null;
     });
 
     const uploadZone = document.getElementById('upload-zone');
@@ -697,6 +709,37 @@
         const el = document.querySelector(`.upload-preview-item[data-idx="${idx}"]`);
         if (el) el.remove();
         if (pendingFiles.filter(f => f).length === 0) document.getElementById('btn-upload').disabled = true;
+    }
+
+    function replaceItemImage(id) {
+        const item = galleryItems.find(i => i.id === id);
+        if (!item) return;
+        if (item.type === 'youtube') {
+            showToast('วิดีโอ YouTube ไม่สามารถเปลี่ยนเป็นรูปภาพได้', 'error');
+            return;
+        }
+        replacingItemId = id;
+        document.getElementById('replace-file-input').click();
+    }
+
+    async function uploadReplacementImage(id, file) {
+        if (!file.type.startsWith('image/')) { showToast('กรุณาเลือกไฟล์รูปภาพเท่านั้น', 'error'); return; }
+        if (file.size > 10 * 1024 * 1024) { showToast('ไฟล์ใหญ่เกินไป สูงสุด 10MB', 'error'); return; }
+        const formData = new FormData();
+        formData.append('action', 'replace_image');
+        formData.append('id', id);
+        formData.append('image', file);
+        try {
+            showToast('กำลังเปลี่ยนรูปภาพ...', 'success');
+            const r = await fetch(API + '/gallery.php', { method: 'POST', body: formData, credentials: 'include' });
+            const raw = await r.text();
+            let d = {};
+            try { d = raw ? JSON.parse(raw) : {}; } catch { d = { error: raw }; }
+            if (r.ok && d.success) { showToast('เปลี่ยนรูปภาพสำเร็จ', 'success'); loadGallery(); }
+            else { showToast(d.error || 'เปลี่ยนรูปภาพไม่สำเร็จ', 'error'); }
+        } catch (e) {
+            showToast(e.message || 'เปลี่ยนรูปภาพไม่สำเร็จ', 'error');
+        }
     }
 
     async function startUpload() {

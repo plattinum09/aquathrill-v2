@@ -457,7 +457,7 @@ export async function upload(request: NextRequest) {
   const file = form.get("image");
   if (!(file instanceof File)) return json({ error: "No file uploaded" }, 400);
   if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) return json({ error: "Invalid file type" }, 400);
-  if (file.size > 5 * 1024 * 1024) return json({ error: "File too large. Max 5MB" }, 400);
+  if (file.size > 10 * 1024 * 1024) return json({ error: "File too large. Max 10MB" }, 400);
   const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     if (process.env.NODE_ENV === "production") {

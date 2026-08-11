@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แก้ภาพพื้นหลัง | AQUATHRILL Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Kanit,sans-serif;background:#071426;color:#fff;min-height:100vh}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 22px;background:rgba(7,20,38,.96);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px)}
+    .title{display:flex;align-items:center;gap:12px;font-size:1.15rem;font-weight:900}.title i{color:#00d4ff}.back{color:rgba(255,255,255,.76);text-decoration:none;font-weight:800}.back:hover{color:#fff}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}.btn{font-family:inherit;border:0;border-radius:14px;padding:12px 16px;color:#fff;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;gap:9px;align-items:center;justify-content:center}
+    .btn-primary{background:linear-gradient(135deg,#00d4ff,#0077dd);box-shadow:0 10px 28px rgba(0,153,255,.25)}.btn-dark{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}.btn-danger{background:rgba(255,61,113,.14);color:#ff7a9a;border:1px solid rgba(255,61,113,.28)}
+    .wrap{padding:22px;display:grid;grid-template-columns:minmax(330px,520px) 1fr;gap:20px}.panel{background:#102746;border:1px solid rgba(255,255,255,.1);border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,.26);overflow:hidden}.panel-head{padding:20px 22px;border-bottom:1px solid rgba(255,255,255,.08)}.panel-head h2{font-size:1.15rem}.panel-head p{margin-top:5px;color:rgba(255,255,255,.58);font-size:.9rem}
+    .page-list{padding:16px;display:grid;gap:12px}.page-card{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);border-radius:18px;padding:14px;display:grid;grid-template-columns:96px 1fr;gap:14px;cursor:pointer;transition:.22s}.page-card:hover,.page-card.active{border-color:rgba(0,212,255,.55);background:rgba(0,212,255,.08);transform:translateY(-2px)}.thumb{height:72px;border-radius:14px;background:#08192d center/cover no-repeat;border:1px solid rgba(255,255,255,.12)}.page-card h3{font-size:1rem}.page-card p{color:rgba(255,255,255,.56);font-size:.82rem;margin-top:4px;line-height:1.35}.tag{display:inline-flex;margin-top:9px;padding:4px 9px;border-radius:999px;background:rgba(0,212,255,.14);color:#00d4ff;font-size:.72rem;font-weight:800}
+    .editor{padding:20px 22px;display:grid;gap:16px}.current-preview{height:260px;border-radius:22px;background:#0b1f38 center/cover no-repeat;border:1px solid rgba(255,255,255,.12);position:relative;overflow:hidden}.current-preview::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(3,13,28,.44),rgba(0,160,210,.18))}.preview-label{position:absolute;left:16px;bottom:16px;z-index:1;padding:8px 12px;border-radius:999px;background:rgba(4,18,34,.58);border:1px solid rgba(255,255,255,.16);font-weight:900}
+    .field label{display:block;color:rgba(255,255,255,.72);font-size:.86rem;font-weight:800;margin-bottom:8px}.url-row{display:flex;gap:10px}.url-row input{flex:1;min-width:0}.field input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:13px 14px;color:#fff;font-family:inherit;font-size:.95rem;outline:none}.field input:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.12)}
+    .dropzone{border:2px dashed rgba(0,212,255,.38);border-radius:22px;background:rgba(0,212,255,.06);padding:28px 18px;text-align:center;cursor:pointer;transition:.22s}.dropzone:hover,.dropzone.drag{background:rgba(0,212,255,.12);border-color:#00d4ff}.dropzone i{font-size:2.2rem;color:#00d4ff;margin-bottom:10px}.dropzone strong{display:block;font-size:1.05rem}.dropzone span{display:block;color:rgba(255,255,255,.55);font-size:.84rem;margin-top:5px}
+    .preview-panel{height:calc(100vh - 94px);position:sticky;top:88px}.preview-panel iframe{width:100%;height:100%;border:0;background:#fff}.toast{position:fixed;right:22px;bottom:22px;z-index:60;display:none;padding:13px 16px;border-radius:14px;background:#102746;border:1px solid rgba(0,212,255,.25);box-shadow:0 14px 40px rgba(0,0,0,.32);font-weight:900}.toast.show{display:block}.toast.success{color:#42f59b}.toast.error{color:#ff7a9a}
+    @media(max-width:980px){.wrap{grid-template-columns:1fr}.preview-panel{position:relative;top:0;height:70vh}.topbar{align-items:flex-start;flex-direction:column}.actions{width:100%}.actions .btn{flex:1}.current-preview{height:220px}}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="title"><a class="back" href="/admin/index.html"><i class="fas fa-arrow-left"></i> กลับ</a><span><i class="fas fa-image"></i> แก้ภาพพื้นหลัง</span></div>
+    <div class="actions">
+      <a class="btn btn-dark" id="open-page" href="/" target="_blank"><i class="fas fa-eye"></i> ดูหน้าเว็บ</a>
+      <button class="btn btn-danger" id="reset-btn"><i class="fas fa-rotate-left"></i> ใช้ภาพเดิม</button>
+      <button class="btn btn-primary" id="save-btn"><i class="fas fa-save"></i> บันทึก</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>เลือกหน้าที่ต้องการเปลี่ยนภาพพื้นหลัง</h2>
+        <p>อัปโหลดภาพใหม่ หรือวาง URL รูปภาพ จากนั้นกดบันทึก ภาพจะใช้ร่วมทุกภาษา</p>
+      </div>
+      <div class="page-list" id="page-list"></div>
+      <div class="editor">
+        <div class="current-preview" id="current-preview"><span class="preview-label" id="preview-label">Home</span></div>
+        <div class="dropzone" id="dropzone">
+          <i class="fas fa-cloud-arrow-up"></i>
+          <strong>คลิกหรือวางไฟล์เพื่ออัปโหลดภาพพื้นหลัง</strong>
+          <span>รองรับ JPG, PNG, WebP, GIF สูงสุด 5MB — แนะนำภาพแนวนอนกว้าง 1600px ขึ้นไป</span>
+          <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+        </div>
+        <div class="field">
+          <label>URL รูปภาพพื้นหลัง</label>
+          <div class="url-row">
+            <input id="image-url" type="text" placeholder="/images/hero.webp หรือ URL จาก Vercel Blob">
+            <button class="btn btn-dark" id="apply-url" type="button"><i class="fas fa-wand-magic-sparkles"></i> Preview</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel preview-panel">
+      <iframe id="preview-frame" title="Website preview"></iframe>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  const API = '/api';
+  const pages = [
+    {key:'home', label:'Home / หน้าแรก', path:'/', defaultImage:'/images/hero.webp', desc:'ภาพใหญ่หน้าแรก'},
+    {key:'services', label:'Services / บริการ', path:'/services', defaultImage:'/images/hero-services.webp', desc:'ภาพหัวข้อบริการ'},
+    {key:'promotions', label:'Promotions / โปรโมชั่น', path:'/promotions', defaultImage:'/images/hero-promotions.webp', desc:'ภาพหัวข้อโปรโมชั่น'},
+    {key:'reviews', label:'Reviews / รีวิว', path:'/reviews', defaultImage:'/images/hero-reviews.webp', desc:'ภาพหัวข้อรีวิว'},
+    {key:'contact', label:'Contact / ติดต่อเรา', path:'/contact', defaultImage:'/images/hero-contact.webp', desc:'ภาพหัวข้อติดต่อเรา'}
+  ];
+  let selected = pages[0];
+  let pageContent = {};
+  const list = document.getElementById('page-list');
+  const imageUrl = document.getElementById('image-url');
+  const currentPreview = document.getElementById('current-preview');
+  const previewFrame = document.getElementById('preview-frame');
+  const openPage = document.getElementById('open-page');
+  const previewLabel = document.getElementById('preview-label');
+
+  function getNested(obj,key){ return key.split('.').reduce((a,p)=>a&&a[p]!=null?a[p]:undefined,obj); }
+  function setNested(obj,key,val){ const parts=key.split('.'); let cur=obj; parts.slice(0,-1).forEach(p=>cur=cur[p]=cur[p]||{}); cur[parts.at(-1)] = val; }
+  function showToast(msg,type='success'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+type; setTimeout(()=>t.className='toast',2800); }
+  function activeImage(page = selected) { return getNested(pageContent, 'backgrounds.hero_image') || page.defaultImage; }
+  function setPreviewImage(url) {
+    const value = url || selected.defaultImage;
+    currentPreview.style.backgroundImage = 'url("' + String(value).replace(/"/g, '\\"') + '")';
+    const doc = previewFrame.contentDocument || previewFrame.contentWindow?.document;
+    if (doc && previewFrame.contentWindow && typeof previewFrame.contentWindow.applyEditableBackgrounds === 'function') {
+      previewFrame.contentWindow.applyEditableBackgrounds({backgrounds:{hero_image:value}});
+    }
+  }
+  function renderList() {
+    list.innerHTML = pages.map(page => `
+      <button type="button" class="page-card ${page.key === selected.key ? 'active' : ''}" data-page="${page.key}">
+        <span class="thumb" style="background-image:url('${page.defaultImage}')"></span>
+        <span>
+          <h3>${page.label}</h3>
+          <p>${page.desc}</p>
+          <span class="tag">${page.path}</span>
+        </span>
+      </button>
+    `).join('');
+    list.querySelectorAll('[data-page]').forEach(btn => btn.addEventListener('click', () => selectPage(btn.dataset.page)));
+  }
+  async function loadPageContent() {
+    const res = await fetch(`${API}/page-content.php?page=${encodeURIComponent(selected.key)}&admin=1`, {credentials:'include', cache:'no-store'});
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(data.error || 'โหลดข้อมูลไม่สำเร็จ');
+    pageContent = data.content && typeof data.content === 'object' ? data.content : {};
+    imageUrl.value = activeImage();
+    setPreviewImage(imageUrl.value);
+  }
+  async function selectPage(key) {
+    selected = pages.find(page => page.key === key) || pages[0];
+    renderList();
+    previewLabel.textContent = selected.label;
+    openPage.href = selected.path;
+    previewFrame.src = selected.path + (selected.path.includes('?') ? '&' : '?') + '_bg_preview=' + Date.now();
+    try {
+      await loadPageContent();
+    } catch (error) {
+      pageContent = {};
+      imageUrl.value = selected.defaultImage;
+      setPreviewImage(selected.defaultImage);
+      showToast(error.message || 'โหลดข้อมูลไม่สำเร็จ', 'error');
+    }
+  }
+  async function uploadFile(file) {
+    if (!file) return;
+    const form = new FormData();
+    form.append('image', file);
+    form.append('type', 'background');
+    showToast('กำลังอัปโหลดภาพ...', 'success');
+    const res = await fetch(`${API}/upload.php`, {method:'POST', credentials:'include', body:form});
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok || !data.success) throw new Error(data.error || 'อัปโหลดไม่สำเร็จ');
+    imageUrl.value = data.url;
+    setPreviewImage(data.url);
+    showToast('อัปโหลดสำเร็จ กดบันทึกเพื่อใช้งาน');
+  }
+  async function save() {
+    const url = imageUrl.value.trim();
+    if (!url) return showToast('กรุณาใส่ URL หรืออัปโหลดรูปก่อน', 'error');
+    setNested(pageContent, 'backgrounds.hero_image', url);
+    const res = await fetch(`${API}/page-content.php`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({page:selected.key, content:pageContent})
+    });
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok || !data.success) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+    showToast('บันทึกภาพพื้นหลัง ' + selected.label + ' สำเร็จ');
+    setTimeout(() => selectPage(selected.key), 350);
+  }
+  async function reset() {
+    if (!confirm('ต้องการกลับไปใช้ภาพพื้นหลังเดิมของหน้านี้ใช่ไหม?')) return;
+    if (pageContent.backgrounds) delete pageContent.backgrounds.hero_image;
+    imageUrl.value = selected.defaultImage;
+    setPreviewImage(selected.defaultImage);
+    const res = await fetch(`${API}/page-content.php`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({page:selected.key, content:pageContent})
+    });
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok || !data.success) throw new Error(data.error || 'คืนค่าภาพเดิมไม่สำเร็จ');
+    showToast('กลับไปใช้ภาพพื้นหลังเดิมแล้ว');
+    setTimeout(() => selectPage(selected.key), 350);
+  }
+
+  document.getElementById('dropzone').addEventListener('click', () => document.getElementById('file-input').click());
+  document.getElementById('file-input').addEventListener('change', async (e) => {
+    try { await uploadFile(e.target.files[0]); } catch (error) { showToast(error.message || 'อัปโหลดไม่สำเร็จ', 'error'); }
+    e.target.value = '';
+  });
+  ['dragenter','dragover'].forEach(evt => document.getElementById('dropzone').addEventListener(evt, e => { e.preventDefault(); document.getElementById('dropzone').classList.add('drag'); }));
+  ['dragleave','drop'].forEach(evt => document.getElementById('dropzone').addEventListener(evt, e => { e.preventDefault(); document.getElementById('dropzone').classList.remove('drag'); }));
+  document.getElementById('dropzone').addEventListener('drop', async (e) => {
+    try { await uploadFile(e.dataTransfer.files[0]); } catch (error) { showToast(error.message || 'อัปโหลดไม่สำเร็จ', 'error'); }
+  });
+  document.getElementById('apply-url').addEventListener('click', () => setPreviewImage(imageUrl.value.trim()));
+  document.getElementById('save-btn').addEventListener('click', () => save().catch(error => showToast(error.message || 'บันทึกไม่สำเร็จ', 'error')));
+  document.getElementById('reset-btn').addEventListener('click', () => reset().catch(error => showToast(error.message || 'บันทึกไม่สำเร็จ', 'error')));
+  previewFrame.addEventListener('load', () => setTimeout(() => setPreviewImage(imageUrl.value.trim() || selected.defaultImage), 450));
+  renderList();
+  selectPage('home');
+  </script>
+</body>
+</html>

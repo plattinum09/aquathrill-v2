@@ -22,6 +22,7 @@ const pageFiles: Record<string, string> = {
   "admin/bookings": "admin/bookings.html",
   "admin/change-password": "admin/change-password.html",
   "admin/gallery": "admin/gallery.html",
+  "admin/background-editor": "admin/background-editor.html",
   "admin/home-editor": "admin/home-editor.html",
   "admin/services-editor": "admin/services-editor.html",
   "admin/payment-settings": "admin/payment-settings.html",
