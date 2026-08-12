@@ -45,6 +45,12 @@
       if (value == null || value === "") return;
       el.setAttribute("placeholder", String(value));
     });
+    document.querySelectorAll("[data-home-image]").forEach((el) => {
+      const key = el.getAttribute("data-home-image");
+      const value = getValue(content, key);
+      if (value == null || value === "") return;
+      el.setAttribute("src", String(value));
+    });
   }
 
   async function loadHomeContent() {

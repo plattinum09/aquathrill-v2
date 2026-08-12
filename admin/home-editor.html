@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>แก้ข้อความหน้าแรก | AQUATHRILL Admin</title>
+  <title>แก้ไขหน้าแรก | AQUATHRILL Admin</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -23,6 +23,11 @@
     .field{margin-bottom:14px}.field label{display:block;margin-bottom:7px;color:rgba(255,255,255,.72);font-size:.82rem;font-weight:700}
     .field input,.field textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 13px;color:#fff;font-family:inherit;font-size:.95rem;outline:none}
     .field textarea{min-height:82px;resize:vertical;line-height:1.55}.field input:focus,.field textarea:focus{border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.12)}
+    .image-field{display:grid;grid-template-columns:108px 1fr;gap:12px;align-items:start}
+    .image-preview{width:108px;height:78px;border-radius:12px;object-fit:cover;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+    .image-tools{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .image-upload-btn{display:inline-flex;align-items:center;gap:7px;border:1px dashed rgba(0,212,255,.45);background:rgba(0,212,255,.1);color:#00d4ff;border-radius:10px;padding:9px 12px;font-family:inherit;font-weight:800;cursor:pointer}
+    .image-upload-btn:disabled{opacity:.55;cursor:not-allowed}
     .preview-panel{height:calc(100vh - 92px);position:sticky;top:84px}.preview-panel iframe{width:100%;height:100%;border:0;background:#fff}
     .toast{position:fixed;right:22px;bottom:22px;z-index:50;padding:13px 16px;border-radius:14px;background:#102746;border:1px solid rgba(0,212,255,.25);box-shadow:0 14px 40px rgba(0,0,0,.32);display:none;font-weight:800}.toast.show{display:block}.toast.success{color:#42f59b}.toast.error{color:#ff7a9a}
     @media(max-width:1000px){.layout{grid-template-columns:1fr}.preview-panel{position:relative;top:0;height:72vh}.topbar{align-items:flex-start;flex-direction:column}.actions{width:100%}}
@@ -30,7 +35,7 @@
 </head>
 <body>
   <div class="topbar">
-    <div class="title"><a class="back" href="/admin/index.html"><i class="fas fa-arrow-left"></i> กลับ</a><span><i class="fas fa-pen-to-square"></i> แก้ข้อความหน้าแรก</span></div>
+    <div class="title"><a class="back" href="/admin/index.html"><i class="fas fa-arrow-left"></i> กลับ</a><span><i class="fas fa-pen-to-square"></i> แก้ไขหน้าแรก</span></div>
     <div class="actions">
       <div class="lang-tabs">
         <button data-lang="th" class="active">🇹🇭 TH</button>
@@ -46,8 +51,8 @@
   <main class="layout">
     <section class="panel form-panel">
       <div class="panel-head">
-        <h2>ข้อความที่แก้ได้จากหลังบ้าน</h2>
-        <p>รองรับ HTML ง่าย ๆ เช่น &lt;br&gt;, &lt;strong&gt;, &lt;span&gt; เพื่อขึ้นบรรทัด/เน้นคำ</p>
+        <h2>ข้อความและรูปภาพที่แก้ได้จากหลังบ้าน</h2>
+        <p>รองรับ HTML ง่าย ๆ เช่น &lt;br&gt;, &lt;strong&gt;, &lt;span&gt; และสามารถอัปโหลดรูปสำหรับ section หน้าแรกได้</p>
       </div>
       <form id="content-form"></form>
     </section>
@@ -67,6 +72,13 @@
       ['hero.trust_insurance','Trust badge: ประกันภัย','input'], ['hero.trust_captain','Trust badge: กัปตัน','input'],
       ['hero.trust_payment','Trust badge: จ่ายบัตร','input'], ['hero.trust_reviews','Trust badge: รีวิว','input'],
       ['hero.google_reviews','Google Reviews','input'], ['hero.social_label','ข้อความชวนติดตาม Social','input']
+    ]},
+    {title:'แถบรูปภาพ 5 ช่องใต้ Hero', icon:'fa-images', fields:[
+      ['moments.card1_image','รูปช่อง 1','image'], ['moments.card1_text','ข้อความช่อง 1','input'],
+      ['moments.card2_image','รูปช่อง 2','image'], ['moments.card2_text','ข้อความช่อง 2','input'],
+      ['moments.card3_image','รูปช่อง 3','image'], ['moments.card3_text','ข้อความช่อง 3','input'],
+      ['moments.card4_image','รูปช่อง 4','image'], ['moments.card4_text','ข้อความช่อง 4','input'],
+      ['moments.card5_image','รูปช่อง 5','image'], ['moments.card5_text','ข้อความช่อง 5','input']
     ]},
     {title:'Section รีวิว / รายละเอียดทริป', icon:'fa-water', fields:[
       ['services.title','หัวข้อ section','input'], ['services.desc','คำอธิบาย section','textarea'],
@@ -151,11 +163,20 @@
     });
     const renderSections = sections.concat(Object.values(extraGroups));
     form.innerHTML = renderSections.map(sec => '<div class="section"><h3><i class="fas '+sec.icon+'"></i>'+sec.title+'</h3>' + sec.fields.map(([key,label,type]) => {
+      if (type === 'image') {
+        return '<div class="field"><label>'+label+'</label><div class="image-field"><img class="image-preview" data-preview="'+key+'" alt=""><div><input data-key="'+key+'" data-type="image" placeholder="URL รูปภาพ"><div class="image-tools"><button type="button" class="image-upload-btn" data-upload="'+key+'"><i class="fas fa-cloud-upload-alt"></i> อัปโหลดรูป</button><input type="file" accept="image/*" data-file="'+key+'" hidden></div></div></div></div>';
+      }
       const tag = type === 'textarea' ? 'textarea' : 'input';
       return '<div class="field"><label>'+label+'</label><'+tag+' data-key="'+key+'" placeholder="'+label+'"></'+tag+'></div>';
     }).join('') + '</div>').join('');
     form.querySelectorAll('[data-key]').forEach(input=>{
       input.addEventListener('input',()=>{ dirty=true; saveBtn.disabled=false; updatePreviewFromForm(); });
+    });
+    form.querySelectorAll('[data-upload]').forEach(btn=>{
+      btn.addEventListener('click',()=> form.querySelector('[data-file="'+btn.dataset.upload+'"]').click());
+    });
+    form.querySelectorAll('[data-file]').forEach(fileInput=>{
+      fileInput.addEventListener('change',()=> uploadImageField(fileInput.dataset.file, fileInput));
     });
   }
 
@@ -171,6 +192,7 @@
   function fill(content){
     form.querySelectorAll('[data-key]').forEach(input => {
       input.value = getNested(content, input.dataset.key) || '';
+      updateImagePreview(input.dataset.key, input.value);
     });
     dirty = false;
     saveBtn.disabled = true;
@@ -191,6 +213,9 @@
     doc.querySelectorAll('[data-home-placeholder]').forEach(el => {
       setNested(defaults, el.getAttribute('data-home-placeholder'), el.getAttribute('placeholder') || '');
     });
+    doc.querySelectorAll('[data-home-image]').forEach(el => {
+      setNested(defaults, el.getAttribute('data-home-image'), el.getAttribute('src') || '');
+    });
     return defaults;
   }
 
@@ -206,6 +231,44 @@
       const val = getNested(content, el.getAttribute('data-home-placeholder'));
       if (val != null) el.setAttribute('placeholder', val);
     });
+    doc.querySelectorAll('[data-home-image]').forEach(el => {
+      const val = getNested(content, el.getAttribute('data-home-image'));
+      if (val != null) el.setAttribute('src', val);
+    });
+  }
+
+  function updateImagePreview(key, value){
+    const img = form.querySelector('[data-preview="'+key+'"]');
+    if (!img) return;
+    img.src = value || '';
+    img.style.visibility = value ? 'visible' : 'hidden';
+  }
+
+  async function uploadImageField(key, fileInput){
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    const btn = form.querySelector('[data-upload="'+key+'"]');
+    const oldHtml = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังอัปโหลด...'; }
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const r = await fetch(API + '/upload.php', {method:'POST', body:fd, credentials:'include'});
+      const d = await r.json().catch(()=>({}));
+      if (!r.ok || !d.success) throw new Error(d.error || 'อัปโหลดรูปไม่สำเร็จ');
+      const input = form.querySelector('[data-key="'+key+'"]');
+      input.value = d.url;
+      updateImagePreview(key, d.url);
+      dirty = true;
+      saveBtn.disabled = false;
+      updatePreviewFromForm();
+      showToast('อัปโหลดรูปสำเร็จ อย่าลืมกดบันทึก');
+    } catch(e) {
+      showToast(e.message || 'อัปโหลดรูปไม่สำเร็จ', 'error');
+    } finally {
+      fileInput.value = '';
+      if (btn) { btn.disabled = false; btn.innerHTML = oldHtml; }
+    }
   }
 
   async function loadContent(){
@@ -241,7 +304,7 @@
       const d = await r.json().catch(()=>({}));
       if (!r.ok || !d.success) throw new Error(d.error || 'บันทึกไม่สำเร็จ');
       dirty = false;
-      showToast('บันทึกข้อความหน้าแรกสำเร็จ');
+      showToast('บันทึกหน้าแรกสำเร็จ');
     } catch(e) {
       saveBtn.disabled = false;
       showToast(e.message || 'บันทึกไม่สำเร็จ', 'error');

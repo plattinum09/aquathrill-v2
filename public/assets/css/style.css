@@ -434,6 +434,70 @@ nav .container {
     box-shadow: 0 16px 38px rgba(221,42,123,0.34);
 }
 
+.home-moments-strip {
+    position: relative;
+    z-index: 3;
+    padding: 0 0 42px;
+    margin-top: -26px;
+    background: var(--white);
+}
+.home-moments-strip .container {
+    position: relative;
+}
+.home-moments-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+    align-items: stretch;
+}
+.home-moment-card {
+    position: relative;
+    min-height: 152px;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 18px;
+    background: #0d2847;
+    box-shadow: 0 16px 38px rgba(10, 22, 40, 0.13);
+}
+.home-moment-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0, 28, 52, 0.38));
+}
+.home-moment-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 152px;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+}
+.home-moment-card:hover img {
+    transform: scale(1.05);
+}
+.home-moment-card span {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    z-index: 2;
+    min-width: 72%;
+    padding: 8px 14px 10px;
+    transform: translateX(-50%) rotate(-1.2deg);
+    border-radius: 13px 18px 14px 20px;
+    background: linear-gradient(135deg, #00d4ff, #0077dd);
+    color: #fff;
+    font-size: clamp(0.72rem, 1.2vw, 0.95rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    box-shadow: 0 9px 20px rgba(0,153,255,0.28);
+}
+
 /* === Page Hero (Sub Pages) === */
 .page-hero {
     height: 50vh;
@@ -1564,6 +1628,37 @@ footer .container {
         height: 26px;
         font-size: 0.82rem;
     }
+    .home-moments-strip {
+        margin-top: -18px;
+        padding-bottom: 34px;
+        overflow: hidden;
+    }
+    .home-moments-grid {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 3px 4px 14px;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+    }
+    .home-moments-grid::-webkit-scrollbar {
+        display: none;
+    }
+    .home-moment-card {
+        flex: 0 0 72%;
+        min-height: 166px;
+        scroll-snap-align: center;
+        border-radius: 20px;
+    }
+    .home-moment-card img {
+        min-height: 166px;
+    }
+    .home-moment-card span {
+        min-width: 68%;
+        bottom: 11px;
+        padding: 8px 12px 9px;
+        font-size: 0.78rem;
+    }
     .section-padding { padding: 60px 0; }
     .countdown { flex-wrap: wrap; }
     .countdown-item { min-width: 80px; padding: 15px 20px; }
@@ -1707,6 +1802,17 @@ footer .container {
         min-height: 44px;
         gap: 8px;
         font-size: 0.78rem;
+    }
+    .home-moment-card {
+        flex-basis: 82%;
+        min-height: 148px;
+    }
+    .home-moment-card img {
+        min-height: 148px;
+    }
+    .home-moment-card span {
+        min-width: 74%;
+        font-size: 0.72rem;
     }
     .service-content h2 {
         font-size: clamp(1.45rem, 7.2vw, 1.9rem) !important;
