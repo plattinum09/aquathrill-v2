@@ -437,9 +437,12 @@ nav .container {
 .home-moments-strip {
     position: relative;
     z-index: 3;
-    padding: 34px 0 42px;
+    padding: 46px 0 18px;
     margin-top: 0;
     background: var(--white);
+}
+.home-moments-strip + #services {
+    padding-top: 34px;
 }
 .home-moments-strip .container {
     position: relative;
@@ -1630,9 +1633,12 @@ footer .container {
     }
     .home-moments-strip {
         margin-top: 0;
-        padding-top: 28px;
-        padding-bottom: 34px;
+        padding-top: 34px;
+        padding-bottom: 14px;
         overflow: hidden;
+    }
+    .home-moments-strip + #services {
+        padding-top: 26px;
     }
     .home-moments-grid {
         display: flex;
