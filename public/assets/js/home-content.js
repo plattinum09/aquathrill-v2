@@ -55,8 +55,9 @@
 
   async function loadHomeContent() {
     try {
-      const response = await fetch(`${API}/page-content.php?page=${encodeURIComponent(pageKey())}`, {
+      const response = await fetch(`${API}/page-content.php?page=${encodeURIComponent(pageKey())}&_=${Date.now()}`, {
         cache: "no-store",
+        credentials: "same-origin",
       });
       if (!response.ok) return;
       const data = await response.json();
@@ -74,6 +75,10 @@
     prepareHomeContentTargets();
     setTimeout(loadHomeContent, 350);
     setTimeout(loadHomeContent, 900);
+    setTimeout(loadHomeContent, 1600);
+  });
+  window.addEventListener("pageshow", () => {
+    setTimeout(loadHomeContent, 80);
   });
   document.addEventListener("langchange", () => {
     setTimeout(loadHomeContent, 80);
