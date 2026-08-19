@@ -40,7 +40,11 @@
             display: flex;
             align-items: center;
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(10,22,40,0.85) 0%, rgba(13,40,71,0.85) 50%, rgba(10,77,110,0.85) 100%), url('../images/hero-promotions.webp') center/cover no-repeat;
+            background: linear-gradient(135deg, rgba(10,22,40,0.85) 0%, rgba(13,40,71,0.85) 50%, rgba(10,77,110,0.85) 100%);
+            background-color: #0a1628;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .promo-hero::before {
             content: '';
@@ -523,7 +527,7 @@
     <div id="site-header"></div>
 
     <!-- ===== HERO ===== -->
-    <section class="promo-hero" data-editable-background="backgrounds.hero_image" data-bg-overlay="linear-gradient(135deg, rgba(10,22,40,0.85) 0%, rgba(13,40,71,0.85) 50%, rgba(10,77,110,0.85) 100%)">
+    <section class="promo-hero" data-editable-background="backgrounds.hero_image" data-bg-fallback="../images/hero-promotions.webp" data-bg-overlay="linear-gradient(135deg, rgba(10,22,40,0.85) 0%, rgba(13,40,71,0.85) 50%, rgba(10,77,110,0.85) 100%)">
         <div class="container" style="padding-top:100px; padding-bottom:60px;">
             <div class="promo-hero-text">
                 <div class="hero-badge"><i class="fas fa-fire"></i> <span data-i18n="promo.hero_badge">Thailand First Self-Drive!</span></div>
@@ -964,7 +968,7 @@
     <!-- i18n-core and i18n-loader are now loaded in <head> above -->
     <script src="../assets/js/components.js?v=20260724a"></script>
     <script src="../assets/js/main.js?v=20260724a"></script>
-    <script src="../assets/js/background-content.js?v=20260819a" data-page="promotions"></script>
+    <script src="../assets/js/background-content.js?v=20260819b" data-page="promotions"></script>
     <script src="../assets/js/boat-modal.js?v=20260516c"></script>
 </body>
 </html>

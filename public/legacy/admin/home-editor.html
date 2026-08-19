@@ -304,6 +304,9 @@
       });
       const d = await r.json().catch(()=>({}));
       if (!r.ok || !d.success) throw new Error(d.error || 'บันทึกไม่สำเร็จ');
+      try {
+        localStorage.setItem('aquathrill:page-content:' + pageKey(), JSON.stringify(content));
+      } catch(e) {}
       dirty = false;
       showToast('บันทึกหน้าแรกสำเร็จ');
     } catch(e) {
@@ -324,6 +327,9 @@
     });
     const d = await r.json().catch(()=>({}));
     if (!r.ok || !d.success) return showToast(d.error || 'ล้างค่าไม่สำเร็จ','error');
+    try {
+      localStorage.removeItem('aquathrill:page-content:' + pageKey());
+    } catch(e) {}
     showToast('ล้างค่าแล้ว');
     loadContent();
   }

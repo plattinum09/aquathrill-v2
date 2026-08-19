@@ -85,6 +85,13 @@
   function getNested(obj,key){ return key.split('.').reduce((a,p)=>a&&a[p]!=null?a[p]:undefined,obj); }
   function setNested(obj,key,val){ const parts=key.split('.'); let cur=obj; parts.slice(0,-1).forEach(p=>cur=cur[p]=cur[p]||{}); cur[parts.at(-1)] = val; }
   function showToast(msg,type='success'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+type; setTimeout(()=>t.className='toast',2800); }
+  function backgroundStorageKey(page = selected.key){ return 'aquathrill:background:' + page; }
+  function storeBackground(url,page = selected.key){
+    try {
+      if (url) localStorage.setItem(backgroundStorageKey(page), url);
+      else localStorage.removeItem(backgroundStorageKey(page));
+    } catch(e) {}
+  }
   function activeImage(page = selected) { return getNested(pageContent, 'backgrounds.hero_image') || page.defaultImage; }
   function setPreviewImage(url) {
     const value = url || selected.defaultImage;
@@ -155,6 +162,7 @@
     });
     const data = await res.json().catch(()=>({}));
     if (!res.ok || !data.success) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
+    storeBackground(url);
     showToast('บันทึกภาพพื้นหลัง ' + selected.label + ' สำเร็จ');
     setTimeout(() => selectPage(selected.key), 350);
   }
@@ -171,6 +179,7 @@
     });
     const data = await res.json().catch(()=>({}));
     if (!res.ok || !data.success) throw new Error(data.error || 'คืนค่าภาพเดิมไม่สำเร็จ');
+    storeBackground('');
     showToast('กลับไปใช้ภาพพื้นหลังเดิมแล้ว');
     setTimeout(() => selectPage(selected.key), 350);
   }

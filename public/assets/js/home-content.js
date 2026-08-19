@@ -26,6 +26,27 @@
     return lang === "th" ? "home" : "home_" + lang;
   }
 
+  function storageKey(page = pageKey()) {
+    return `aquathrill:page-content:${page}`;
+  }
+
+  function readCachedContent() {
+    try {
+      const raw = localStorage.getItem(storageKey());
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeCachedContent(content) {
+    try {
+      localStorage.setItem(storageKey(), JSON.stringify(content || {}));
+    } catch (_) {
+      /* localStorage may be disabled; ignore */
+    }
+  }
+
   function getValue(content, key) {
     return key.split(".").reduce((acc, part) => (acc && acc[part] != null ? acc[part] : undefined), content);
   }
@@ -62,6 +83,7 @@
       if (!response.ok) return;
       const data = await response.json();
       applyHomeContent(data.content);
+      if (data.content && typeof data.content === "object") writeCachedContent(data.content);
     } catch (error) {
       console.warn("[home-content] Unable to load saved home content", error);
     }
@@ -73,6 +95,7 @@
 
   function initHomeContent() {
     prepareHomeContentTargets();
+    applyHomeContent(readCachedContent());
     setTimeout(loadHomeContent, 350);
     setTimeout(loadHomeContent, 900);
     setTimeout(loadHomeContent, 1600);

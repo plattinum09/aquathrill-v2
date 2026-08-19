@@ -26,21 +26,45 @@
     return "";
   }
 
+  function storageKey(page = pageBase()) {
+    return `aquathrill:background:${page}`;
+  }
+
+  function readStoredBackground(page = pageBase()) {
+    try {
+      return localStorage.getItem(storageKey(page)) || "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function storeBackground(url, page = pageBase()) {
+    try {
+      if (url) localStorage.setItem(storageKey(page), url);
+      else localStorage.removeItem(storageKey(page));
+    } catch (_) {
+      /* localStorage may be disabled; ignore */
+    }
+  }
+
   function escapeCssUrl(url) {
     return String(url || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "");
   }
 
   function applyEditableBackgrounds(content) {
-    if (!content || typeof content !== "object") return;
+    const safeContent = content && typeof content === "object" ? content : {};
     document.querySelectorAll(TARGET_SELECTOR).forEach((el) => {
       const key = el.getAttribute("data-editable-background") || "backgrounds.hero_image";
+      const fallback = el.getAttribute("data-bg-fallback") || "";
       const imageUrl = firstText(
-        getValue(content, key),
-        getValue(content, "backgrounds.hero_image"),
-        getValue(content, "backgrounds.image"),
-        getValue(content, "backgrounds.home"),
-        content.hero_background,
-        content.hero_bg
+        getValue(safeContent, key),
+        getValue(safeContent, "backgrounds.hero_image"),
+        getValue(safeContent, "backgrounds.image"),
+        getValue(safeContent, "backgrounds.home"),
+        safeContent.hero_background,
+        safeContent.hero_bg,
+        readStoredBackground(),
+        fallback
       );
       if (!imageUrl) return;
       const overlay = el.getAttribute("data-bg-overlay") || "linear-gradient(135deg, rgba(11, 27, 43, 0.78), rgba(14, 165, 233, 0.28))";
@@ -62,6 +86,14 @@
       if (!response.ok) return;
       const data = await response.json();
       applyEditableBackgrounds(data.content);
+      const saved = firstText(
+        getValue(data.content || {}, "backgrounds.hero_image"),
+        getValue(data.content || {}, "backgrounds.image"),
+        getValue(data.content || {}, "backgrounds.home"),
+        (data.content || {}).hero_background,
+        (data.content || {}).hero_bg
+      );
+      if (saved) storeBackground(saved);
     } catch (error) {
       console.warn("[background-content] Unable to load editable backgrounds", error);
     }
@@ -71,6 +103,7 @@
   window.loadEditableBackgrounds = loadEditableBackgrounds;
 
   function initEditableBackgrounds() {
+    applyEditableBackgrounds({});
     loadEditableBackgrounds();
     setTimeout(loadEditableBackgrounds, 800);
     setTimeout(loadEditableBackgrounds, 1800);
