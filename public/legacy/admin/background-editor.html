@@ -75,6 +75,7 @@
   ];
   let selected = pages[0];
   let pageContent = {};
+  const pageImages = {};
   const list = document.getElementById('page-list');
   const imageUrl = document.getElementById('image-url');
   const currentPreview = document.getElementById('current-preview');
@@ -86,11 +87,15 @@
   function setNested(obj,key,val){ const parts=key.split('.'); let cur=obj; parts.slice(0,-1).forEach(p=>cur=cur[p]=cur[p]||{}); cur[parts.at(-1)] = val; }
   function showToast(msg,type='success'){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+type; setTimeout(()=>t.className='toast',2800); }
   function backgroundStorageKey(page = selected.key){ return 'aquathrill:background:' + page; }
+  function cssUrl(url){ return String(url || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, ''); }
   function storeBackground(url,page = selected.key){
     try {
       if (url) localStorage.setItem(backgroundStorageKey(page), url);
       else localStorage.removeItem(backgroundStorageKey(page));
     } catch(e) {}
+  }
+  function readStoredBackground(page = selected.key){
+    try { return localStorage.getItem(backgroundStorageKey(page)) || ''; } catch(e) { return ''; }
   }
   function activeImage(page = selected) { return getNested(pageContent, 'backgrounds.hero_image') || page.defaultImage; }
   function setPreviewImage(url) {
@@ -104,7 +109,7 @@
   function renderList() {
     list.innerHTML = pages.map(page => `
       <button type="button" class="page-card ${page.key === selected.key ? 'active' : ''}" data-page="${page.key}">
-        <span class="thumb" style="background-image:url('${page.defaultImage}')"></span>
+        <span class="thumb" style="background-image:url('${cssUrl(pageImages[page.key] || readStoredBackground(page.key) || page.defaultImage)}')"></span>
         <span>
           <h3>${page.label}</h3>
           <p>${page.desc}</p>
@@ -120,7 +125,23 @@
     if (!res.ok) throw new Error(data.error || 'โหลดข้อมูลไม่สำเร็จ');
     pageContent = data.content && typeof data.content === 'object' ? data.content : {};
     imageUrl.value = activeImage();
+    pageImages[selected.key] = imageUrl.value;
+    renderList();
     setPreviewImage(imageUrl.value);
+  }
+  async function loadPageThumbnails() {
+    await Promise.all(pages.map(async (page) => {
+      try {
+        const res = await fetch(`${API}/page-content.php?page=${encodeURIComponent(page.key)}&admin=1&_=${Date.now()}`, {credentials:'include', cache:'no-store'});
+        const data = await res.json().catch(()=>({}));
+        const content = data.content && typeof data.content === 'object' ? data.content : {};
+        const saved = getNested(content, 'backgrounds.hero_image');
+        pageImages[page.key] = saved || readStoredBackground(page.key) || page.defaultImage;
+      } catch(e) {
+        pageImages[page.key] = readStoredBackground(page.key) || page.defaultImage;
+      }
+    }));
+    renderList();
   }
   async function selectPage(key) {
     selected = pages.find(page => page.key === key) || pages[0];
@@ -163,6 +184,8 @@
     const data = await res.json().catch(()=>({}));
     if (!res.ok || !data.success) throw new Error(data.error || 'บันทึกไม่สำเร็จ');
     storeBackground(url);
+    pageImages[selected.key] = url;
+    renderList();
     showToast('บันทึกภาพพื้นหลัง ' + selected.label + ' สำเร็จ');
     setTimeout(() => selectPage(selected.key), 350);
   }
@@ -180,6 +203,8 @@
     const data = await res.json().catch(()=>({}));
     if (!res.ok || !data.success) throw new Error(data.error || 'คืนค่าภาพเดิมไม่สำเร็จ');
     storeBackground('');
+    pageImages[selected.key] = selected.defaultImage;
+    renderList();
     showToast('กลับไปใช้ภาพพื้นหลังเดิมแล้ว');
     setTimeout(() => selectPage(selected.key), 350);
   }
@@ -199,6 +224,7 @@
   document.getElementById('reset-btn').addEventListener('click', () => reset().catch(error => showToast(error.message || 'บันทึกไม่สำเร็จ', 'error')));
   previewFrame.addEventListener('load', () => setTimeout(() => setPreviewImage(imageUrl.value.trim() || selected.defaultImage), 450));
   renderList();
+  loadPageThumbnails();
   selectPage('home');
   </script>
 </body>

@@ -1,6 +1,7 @@
 (function () {
   const API = "/api";
   const CONTENT_SELECTOR = "[data-page-content]";
+  const IMAGE_SELECTOR = "[data-page-image]";
 
   function currentScript() {
     return document.currentScript || Array.from(document.scripts).find((script) => (script.src || "").includes("page-content-loader"));
@@ -41,6 +42,27 @@
 
   function getValue(content, key) {
     return key.split(".").reduce((acc, part) => (acc && acc[part] != null ? acc[part] : undefined), content);
+  }
+
+  function storageKey(page = pageKey()) {
+    return `aquathrill:page-content:${page}`;
+  }
+
+  function readCachedContent() {
+    try {
+      const raw = localStorage.getItem(storageKey());
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeCachedContent(content) {
+    try {
+      if (content && typeof content === "object") {
+        localStorage.setItem(storageKey(), JSON.stringify(content));
+      }
+    } catch (error) {}
   }
 
   function applyPageContent(content) {
@@ -127,16 +149,24 @@
       if (value == null || value === "") return;
       el.setAttribute("placeholder", String(value));
     });
+    document.querySelectorAll(IMAGE_SELECTOR).forEach((el) => {
+      const key = el.getAttribute("data-page-image");
+      const value = getValue(content, key);
+      if (value == null || value === "") return;
+      el.setAttribute("src", String(value));
+    });
   }
 
   async function loadPageContent() {
     try {
-      const response = await fetch(`${API}/page-content.php?page=${encodeURIComponent(pageKey())}`, {
+      const response = await fetch(`${API}/page-content.php?page=${encodeURIComponent(pageKey())}&_=${Date.now()}`, {
         cache: "no-store",
+        credentials: "same-origin",
       });
       if (!response.ok) return;
       const data = await response.json();
       applyPageContent(data.content);
+      writeCachedContent(data.content);
     } catch (error) {
       console.warn("[page-content] Unable to load saved page content", error);
     }
@@ -146,10 +176,19 @@
   window.loadPageContent = loadPageContent;
   window.preparePageContentTargets = preparePageContentTargets;
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function initPageContent() {
     preparePageContentTargets();
+    applyPageContent(readCachedContent());
     setTimeout(loadPageContent, 350);
     setTimeout(loadPageContent, 900);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPageContent, { once: true });
+  } else {
+    initPageContent();
+  }
+  window.addEventListener("pageshow", () => {
+    setTimeout(loadPageContent, 80);
   });
   document.addEventListener("langchange", () => {
     setTimeout(loadPageContent, 80);
