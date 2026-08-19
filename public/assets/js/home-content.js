@@ -71,12 +71,18 @@
   window.loadHomeContent = loadHomeContent;
   window.prepareHomeContentTargets = prepareHomeContentTargets;
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function initHomeContent() {
     prepareHomeContentTargets();
     setTimeout(loadHomeContent, 350);
     setTimeout(loadHomeContent, 900);
     setTimeout(loadHomeContent, 1600);
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initHomeContent, { once: true });
+  } else {
+    initHomeContent();
+  }
   window.addEventListener("pageshow", () => {
     setTimeout(loadHomeContent, 80);
   });

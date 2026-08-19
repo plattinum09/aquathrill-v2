@@ -6,6 +6,7 @@ export type PageScript = {
   src?: string;
   code?: string;
   type?: string;
+  attributes?: Record<string, string>;
 };
 
 export default function LegacyPageClient({
@@ -28,6 +29,9 @@ export default function LegacyPageClient({
         if (cancelled) break;
         const script = document.createElement("script");
         if (descriptor.type) script.type = descriptor.type;
+        Object.entries(descriptor.attributes ?? {}).forEach(([name, value]) => {
+          script.setAttribute(name, value);
+        });
         if (descriptor.src) {
           script.src = descriptor.src;
           script.async = false;

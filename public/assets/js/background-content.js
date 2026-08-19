@@ -70,11 +70,17 @@
   window.applyEditableBackgrounds = applyEditableBackgrounds;
   window.loadEditableBackgrounds = loadEditableBackgrounds;
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function initEditableBackgrounds() {
     loadEditableBackgrounds();
     setTimeout(loadEditableBackgrounds, 800);
     setTimeout(loadEditableBackgrounds, 1800);
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initEditableBackgrounds, { once: true });
+  } else {
+    initEditableBackgrounds();
+  }
 
   window.addEventListener("pageshow", () => {
     loadEditableBackgrounds();

@@ -8,6 +8,17 @@ function attribute(source: string, name: string) {
   return match?.[1];
 }
 
+function attributes(source: string) {
+  const result: Record<string, string> = {};
+  source.replace(/([:\w-]+)(?:=(["'])(.*?)\2|=([^\s"'>]+))?/g, (_match, name, _quote, quoted, unquoted) => {
+    const key = String(name || "").toLowerCase();
+    if (!key || key === "src" || key === "type") return "";
+    result[key] = quoted ?? unquoted ?? "";
+    return "";
+  });
+  return result;
+}
+
 export async function readLegacyDocument(filePath: string) {
   const document = await fs.readFile(filePath, "utf8");
   const head = document.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? "";
@@ -18,7 +29,7 @@ export async function readLegacyDocument(filePath: string) {
   const collectScripts = (markup: string) => markup.replace(scriptPattern, (_tag, attrs, code) => {
     const type = attribute(attrs, "type");
     if (type === "application/ld+json") return _tag;
-    scripts.push({ src: attribute(attrs, "src"), type, code: code.trim() || undefined });
+    scripts.push({ src: attribute(attrs, "src"), type, code: code.trim() || undefined, attributes: attributes(attrs) });
     return "";
   });
   const safeHead = collectScripts(head)
