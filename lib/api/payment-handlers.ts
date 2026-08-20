@@ -9,6 +9,12 @@ const escape = (value: any) =>
 
 const OMISE_SOURCE_METHODS = ["promptpay_qr", "mobile_banking", "wechat_pay", "alipay"];
 const OMISE_PAYMENT_METHODS = ["omise", "omise_card", ...OMISE_SOURCE_METHODS];
+const OMISE_SOURCE_LABELS: Record<string, string> = {
+  promptpay_qr: "PromptPay QR",
+  mobile_banking: "Mobile Banking",
+  wechat_pay: "WeChat Pay",
+  alipay: "Alipay",
+};
 
 function omiseSecretKey() {
   return process.env.OMISE_SECRET_KEY || process.env.OMISE_SKEY || "";
@@ -18,13 +24,60 @@ function omiseDefaultSourceType() {
   return process.env.OMISE_DEFAULT_SOURCE_TYPE || "promptpay";
 }
 
-function omiseSourceTypeForMethod(method: string) {
+function envFlag(name: string, defaultValue = false) {
+  const value = String(process.env[name] || "").trim().toLowerCase();
+  if (!value) return defaultValue;
+  return ["1", "true", "yes", "on", "enabled"].includes(value);
+}
+
+function omiseSourceMethodConfig(method: string) {
   const normalized = String(method || "").trim();
-  if (normalized === "promptpay_qr") return process.env.OMISE_PROMPTPAY_SOURCE_TYPE || "promptpay";
-  if (normalized === "mobile_banking") return process.env.OMISE_MOBILE_BANKING_SOURCE_TYPE || "mobile_banking_kbank";
-  if (normalized === "wechat_pay") return process.env.OMISE_WECHAT_PAY_SOURCE_TYPE || "wechat_pay";
-  if (normalized === "alipay") return process.env.OMISE_ALIPAY_SOURCE_TYPE || "alipay";
-  return omiseDefaultSourceType();
+  const config: Record<string, { sourceType: string; enabled: boolean; label: string; envName: string }> = {
+    promptpay_qr: {
+      sourceType: process.env.OMISE_PROMPTPAY_SOURCE_TYPE || "promptpay",
+      enabled: envFlag("OMISE_ENABLE_PROMPTPAY", true),
+      label: OMISE_SOURCE_LABELS.promptpay_qr,
+      envName: "OMISE_ENABLE_PROMPTPAY",
+    },
+    mobile_banking: {
+      sourceType: process.env.OMISE_MOBILE_BANKING_SOURCE_TYPE || "mobile_banking_kbank",
+      enabled: envFlag("OMISE_ENABLE_MOBILE_BANKING", true),
+      label: OMISE_SOURCE_LABELS.mobile_banking,
+      envName: "OMISE_ENABLE_MOBILE_BANKING",
+    },
+    wechat_pay: {
+      sourceType: process.env.OMISE_WECHAT_PAY_SOURCE_TYPE || "wechat_pay",
+      enabled: envFlag("OMISE_ENABLE_WECHAT_PAY", false),
+      label: OMISE_SOURCE_LABELS.wechat_pay,
+      envName: "OMISE_ENABLE_WECHAT_PAY",
+    },
+    alipay: {
+      sourceType: process.env.OMISE_ALIPAY_SOURCE_TYPE || "alipay",
+      enabled: envFlag("OMISE_ENABLE_ALIPAY", false),
+      label: OMISE_SOURCE_LABELS.alipay,
+      envName: "OMISE_ENABLE_ALIPAY",
+    },
+  };
+  return config[normalized] || null;
+}
+
+function omiseSourceTypeForMethod(method: string) {
+  return omiseSourceMethodConfig(method)?.sourceType || omiseDefaultSourceType();
+}
+
+function omisePublicSourceMethods() {
+  return Object.fromEntries(
+    OMISE_SOURCE_METHODS.map((method) => {
+      const config = omiseSourceMethodConfig(method);
+      return [
+        method,
+        {
+          enabled: Boolean(config?.enabled),
+          label: config?.label || method,
+        },
+      ];
+    })
+  );
 }
 
 function paymentBaseUrl(request: NextRequest) {
@@ -184,6 +237,13 @@ async function startOmisePayment(request: NextRequest) {
   if (!OMISE_SOURCE_METHODS.includes(method)) {
     return paymentErrorPage("ช่องทางชำระเงินนี้ยังไม่รองรับ กรุณากลับไปเลือกวิธีชำระเงินใหม่", 400);
   }
+  const sourceConfig = omiseSourceMethodConfig(method);
+  if (!sourceConfig?.enabled) {
+    return paymentErrorPage(
+      `${sourceConfig?.label || "ช่องทางนี้"} ยังไม่ได้เปิดใช้งานกับระบบ Omise ของเว็บไซต์\n\nถ้าบัญชี Omise เปิดช่องทางนี้แล้ว ให้ตั้งค่า ${sourceConfig?.envName || "OMISE_ENABLE_*"}=true ใน .env / Vercel Environment Variables แล้ว redeploy`,
+      400
+    );
+  }
 
   const booking = (await query<any>(
     "SELECT booking_id,total_price,customer_name,customer_phone,status FROM bookings WHERE booking_id=$1",
@@ -205,7 +265,7 @@ async function startOmisePayment(request: NextRequest) {
       customerPhone: booking.customer_phone || "",
       description: `AQUATHRILL Booking ${booking.booking_id}`,
       returnUri,
-      sourceType: omiseSourceTypeForMethod(method),
+      sourceType: sourceConfig.sourceType,
     });
   } catch (error) {
     return paymentErrorPage(error instanceof Error ? error.message : "Omise payment failed", 500);
@@ -377,6 +437,7 @@ export async function omisePayment(request: NextRequest) {
 export async function omiseConfig() {
   return json({
     public_key: process.env.OMISE_PUBLIC_KEY || process.env.NEXT_PUBLIC_OMISE_PUBLIC_KEY || "",
+    source_methods: omisePublicSourceMethods(),
   });
 }
 

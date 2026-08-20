@@ -353,7 +353,7 @@
         .modal-card {
             background: linear-gradient(135deg, #0d2847, #0a1628);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px; width: 100%; max-width: 560px;
+            border-radius: 24px; width: 100%; max-width: 760px;
             max-height: 90vh; overflow-y: auto; padding: 32px;
             box-shadow: 0 25px 80px rgba(0,0,0,0.5);
             position: relative;
@@ -430,12 +430,13 @@
 
         /* Payment method selector */
         .m-payment-methods {
-            margin: 22px 0 8px;
-            padding: 22px;
+            margin: 22px auto 8px;
+            padding: 28px 30px 24px;
             border-radius: 24px;
             background: linear-gradient(180deg, #ffffff, #f8fbff);
             color: #0f172a;
             box-shadow: 0 22px 60px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.55);
+            max-width: 680px;
         }
         .m-omise-brand {
             display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -460,24 +461,52 @@
             margin: 6px 0 18px; text-align: center;
             color: #6b7280; font-size: 0.9rem; line-height: 1.45;
         }
-        .m-payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .m-payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: stretch;
+        }
         .m-payment-option {
-            position: relative; min-height: 88px;
+            position: relative; min-height: 118px;
             border: 1px solid #e4e8ef;
             background: #fff;
-            color: #111827; border-radius: 16px; padding: 14px 42px 14px 14px;
-            display: grid; grid-template-columns: 52px minmax(0,1fr) auto; align-items: center; gap: 14px;
+            color: #111827; border-radius: 18px; padding: 16px 42px 16px 16px;
+            display: grid; grid-template-columns: 64px minmax(0,1fr); align-items: center; gap: 16px;
             cursor: pointer; font-family: 'Kanit', sans-serif; font-weight: 700; text-align: left;
             box-shadow: 0 8px 22px rgba(15,23,42,0.06);
             transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+        .m-payment-option[data-payment-method="alipay"] {
+            grid-column: 1 / -1;
+            min-height: 92px;
         }
         .m-payment-option:hover {
             transform: translateY(-2px);
             border-color: rgba(0,127,255,0.35);
             box-shadow: 0 16px 34px rgba(15,23,42,0.11);
         }
+        .m-payment-option:disabled,
+        .m-payment-option.is-disabled {
+            cursor: not-allowed;
+            opacity: 0.48;
+            background: #f8fafc;
+            border-style: dashed;
+            box-shadow: none;
+            transform: none;
+        }
+        .m-payment-option:disabled:hover,
+        .m-payment-option.is-disabled:hover {
+            transform: none;
+            border-color: #e4e8ef;
+            box-shadow: none;
+        }
+        .m-payment-option:disabled .m-pay-chevron,
+        .m-payment-option.is-disabled .m-pay-chevron {
+            display: none;
+        }
         .m-pay-icon {
-            width: 52px; height: 52px; border-radius: 14px;
+            width: 64px; height: 64px; border-radius: 18px;
             display: flex; align-items: center; justify-content: center;
             color: #0866ff; background: linear-gradient(145deg, #eef7ff, #eaf4ff);
             flex: 0 0 auto; font-size: 1.2rem;
@@ -486,13 +515,15 @@
         .m-pay-icon.mobile { color: #fff; background: linear-gradient(145deg, #22c55e, #0f9f4a); font-weight: 900; font-size: 1.1rem; }
         .m-pay-icon.wechat { color: #fff; background: linear-gradient(145deg, #33c05b, #17a640); font-size: 1.35rem; }
         .m-pay-icon.alipay { color: #fff; background: linear-gradient(145deg, #22b8ff, #0877d9); font-size: 1.35rem; }
-        .m-payment-option strong { display: block; font-size: 0.96rem; line-height: 1.2; color: #111827; }
+        .m-payment-option strong { display: block; font-size: 1.02rem; line-height: 1.22; color: #111827; }
         .m-payment-option .small {
-            display: block; color: #6b7280; font-size: 0.76rem; font-weight: 500; margin-top: 4px; line-height: 1.25;
+            display: block; color: #6b7280; font-size: 0.78rem; font-weight: 500; margin-top: 4px; line-height: 1.35;
         }
         .m-card-brands, .m-bank-brands {
-            display: flex; align-items: center; gap: 5px; white-space: nowrap;
+            grid-column: 2;
+            display: flex; align-items: center; flex-wrap: wrap; gap: 5px; white-space: normal;
             color: #1d4ed8; font-size: 0.76rem; font-weight: 900;
+            margin-top: 8px;
         }
         .m-card-brands .mastercard { color: #ef4444; letter-spacing: -0.28em; padding-right: 3px; }
         .m-card-brands .jcb { color: #0f766e; }
@@ -519,6 +550,13 @@
         .m-payment-option.active .m-pay-chevron { color: #00a6e8; }
         .m-payment-note {
             color: #64748b; font-size: 0.75rem; line-height: 1.55; margin-top: 12px; text-align: center;
+        }
+        .m-payment-note.warning {
+            color: #b45309;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 12px;
+            padding: 9px 12px;
         }
 
         /* Buttons */
@@ -630,12 +668,19 @@
             .month-nav .month-label { font-size: 1.2rem; min-width: 180px; }
             .modal-card { padding: 22px; border-radius: 18px; }
             .m-form-row { grid-template-columns: 1fr; }
-            .m-payment-methods { padding: 18px 14px; border-radius: 22px; }
+            .m-payment-methods { padding: 18px 14px; border-radius: 22px; max-width: none; }
             .m-payment-heading { font-size: 1.25rem; }
             .m-payment-grid { grid-template-columns: 1fr; }
-            .m-payment-option { min-height: 82px; padding: 12px 38px 12px 12px; grid-template-columns: 48px minmax(0,1fr) auto; gap: 12px; }
+            .m-payment-option,
+            .m-payment-option[data-payment-method="alipay"] {
+                grid-column: auto;
+                min-height: 82px;
+                padding: 12px 38px 12px 12px;
+                grid-template-columns: 48px minmax(0,1fr);
+                gap: 12px;
+            }
             .m-pay-icon { width: 48px; height: 48px; }
-            .m-card-brands, .m-bank-brands { grid-column: 2 / 4; margin-top: -4px; }
+            .m-card-brands, .m-bank-brands { grid-column: 2; margin-top: -4px; }
             .m-pay-tab { font-size: 0.7rem; padding: 8px 4px; }
         }
         /* ===== DAY DETAIL POPUP ===== */
@@ -1313,6 +1358,7 @@
         const modal = document.getElementById('booking-modal');
         let modalData = {};
         let selectedPaymentMethod = 'omise_card';
+        let omisePublicConfig = null;
 
         function formatPrice(n) {
             var lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
@@ -1435,6 +1481,61 @@
             });
         });
 
+        function setPaymentNote(message, warning) {
+            var note = document.getElementById('m-payment-note');
+            if (!note) return;
+            note.textContent = message;
+            note.classList.toggle('warning', !!warning);
+        }
+
+        function applyOmisePaymentAvailability(config) {
+            var sourceMethods = (config && config.source_methods) || {};
+            var disabledLabels = [];
+            document.querySelectorAll('.m-payment-option[data-payment-method]').forEach(function(btn) {
+                var method = btn.dataset.paymentMethod || '';
+                var info = sourceMethods[method];
+                if (!info) return;
+                var enabled = info.enabled !== false;
+                btn.disabled = !enabled;
+                btn.classList.toggle('is-disabled', !enabled);
+                btn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+                var small = btn.querySelector('.small');
+                if (small && !small.dataset.originalText) small.dataset.originalText = small.textContent || '';
+                if (small) small.textContent = enabled ? small.dataset.originalText : 'ยังไม่ได้เปิดใช้งานในบัญชี Omise';
+                if (!enabled) disabledLabels.push(info.label || method);
+            });
+            if (document.querySelector('.m-payment-option.active:disabled')) {
+                selectedPaymentMethod = 'omise_card';
+                document.querySelectorAll('.m-payment-option').forEach(function(item) {
+                    item.classList.toggle('active', item.dataset.paymentMethod === selectedPaymentMethod);
+                });
+            }
+            if (disabledLabels.length) {
+                setPaymentNote(
+                    'ช่องทางที่ยังไม่เปิดใช้งาน: ' + disabledLabels.join(', ') + ' — หากต้องการใช้ ให้เปิดในบัญชี Omise และตั้งค่า Environment Variables ก่อน',
+                    true
+                );
+            } else {
+                setPaymentNote('ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง', false);
+            }
+        }
+
+        async function loadOmisePublicConfig() {
+            if (omisePublicConfig) {
+                applyOmisePaymentAvailability(omisePublicConfig);
+                return omisePublicConfig;
+            }
+            try {
+                var res = await fetch('/api/omise-config.php', { credentials: 'include', cache: 'no-store' });
+                omisePublicConfig = await res.json();
+                applyOmisePaymentAvailability(omisePublicConfig);
+                return omisePublicConfig;
+            } catch (e) {
+                return null;
+            }
+        }
+        loadOmisePublicConfig();
+
         // Step 1 → 2
         document.getElementById('m-btn-to-pay').addEventListener('click', function() {
             const name = document.getElementById('m-name').value.trim();
@@ -1455,6 +1556,11 @@
             modalData.time = document.getElementById('m-time').value;
             modalData.timeValue = document.getElementById('m-time').value;
             modalData.timeName = document.getElementById('m-time').options[document.getElementById('m-time').selectedIndex].text;
+            var selectedButton = document.querySelector('.m-payment-option[data-payment-method="' + selectedPaymentMethod + '"]');
+            if (selectedButton && selectedButton.disabled) {
+                alert('ช่องทางชำระเงินนี้ยังไม่ได้เปิดใช้งาน กรุณาเลือกช่องทางอื่น');
+                return;
+            }
             modalData.paymentMethod = selectedPaymentMethod;
             if (selectedPaymentMethod === 'omise_card') {
                 payByCreditCard(this);
