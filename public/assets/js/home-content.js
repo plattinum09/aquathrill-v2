@@ -3,16 +3,9 @@
   const TEXT_SELECTOR = "[data-home-content]";
 
   function prepareHomeContentTargets(root = document) {
-    root.querySelectorAll("[data-i18n]").forEach((el) => {
-      if (!el.hasAttribute("data-home-content")) {
-        el.setAttribute("data-home-content", el.getAttribute("data-i18n"));
-      }
-    });
-    root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-      if (!el.hasAttribute("data-home-placeholder")) {
-        el.setAttribute("data-home-placeholder", el.getAttribute("data-i18n-placeholder"));
-      }
-    });
+    // Keep CMS editing opt-in only. Do not auto-map every data-i18n element,
+    // otherwise saved Home content can overwrite translated header/footer text.
+    if (!root) return;
   }
 
   function getLang() {
@@ -51,6 +44,15 @@
     return key.split(".").reduce((acc, part) => (acc && acc[part] != null ? acc[part] : undefined), content);
   }
 
+  function containsThaiText(value) {
+    return /[\u0E00-\u0E7F]/.test(String(value || ""));
+  }
+
+  function shouldSkipI18nContentOverride(el, value) {
+    const lang = getLang();
+    return lang !== "th" && el.hasAttribute("data-i18n") && containsThaiText(value);
+  }
+
   function applyHomeContent(content) {
     if (!content || typeof content !== "object") return;
     prepareHomeContentTargets();
@@ -58,6 +60,7 @@
       const key = el.getAttribute("data-home-content");
       const value = getValue(content, key);
       if (value == null || value === "") return;
+      if (shouldSkipI18nContentOverride(el, value)) return;
       el.innerHTML = String(value);
     });
     document.querySelectorAll("[data-home-placeholder]").forEach((el) => {

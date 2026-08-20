@@ -15,7 +15,13 @@
     "title": "Аренда Mini Speedboat<br>Путешествие по морю Пхукета",
     "subtitle": "Новый способ познать море — вы сами за штурвалом. Управляйте мини-спидботом по невероятным водам Андаманского моря.",
     "cta_trips": "<i class=\"fas fa-compass\"></i> Все маршруты",
-    "cta_book": "<i class=\"fas fa-calendar-check\"></i> Забронировать"
+    "cta_book": "<i class=\"fas fa-calendar-check\"></i> Забронировать",
+    "trust_insurance": "Страховка включена",
+    "trust_captain": "Капитан на борту",
+    "trust_payment": "Безопасная оплата картой",
+    "trust_reviews": "Реальные отзывы",
+    "google_reviews": "5.0 Google Reviews",
+    "social_label": "Следите за реальными моментами поездок"
   },
   "services": {
     "title": "Приключение на острова Кхай",

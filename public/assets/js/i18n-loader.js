@@ -158,7 +158,7 @@
         }
 
         // Fetch JSON (with cache buster to ensure latest translations)
-        var version = '20260516'; // Update this when locale files change
+        var version = '20260820b'; // Update this when locale files change
         var url = basePath + 'locales/' + lang + '.json?v=' + version;
         fetch(url)
             .then(function (res) {
@@ -222,8 +222,14 @@
      */
     window.I18n.translateNew = function () {
         var lang = I18n.getLang();
-        if (lang === I18n.defaultLang) return;
+        storeOriginals();
+        if (lang === I18n.defaultLang) {
+            restoreOriginals();
+            updateSwitcherUI(lang);
+            return;
+        }
         if (cache[lang]) applyTranslations(cache[lang]);
+        else loadLang(lang);
     };
 
     // Listen for language change events

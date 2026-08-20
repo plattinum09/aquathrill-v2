@@ -15,7 +15,13 @@
     "title": "Thailand’s First Self-Drive<br>Mini Speedboat Experience",
     "subtitle": "No License Needed • Captain On Board • Private Experience",
     "cta_trips": "<i class=\"fas fa-compass\"></i> View All Trips",
-    "cta_book": "<i class=\"fas fa-calendar-check\"></i> Book Your Trip Now"
+    "cta_book": "<i class=\"fas fa-calendar-check\"></i> Book Your Trip Now",
+    "trust_insurance": "Insurance Included",
+    "trust_captain": "Captain On Board",
+    "trust_payment": "Secure Card Payment",
+    "trust_reviews": "Real Reviews",
+    "google_reviews": "5.0 Google Reviews",
+    "social_label": "Follow our real trip moments"
   },
   "services": {
     "title": "Khai Island Self-Drive Adventure",

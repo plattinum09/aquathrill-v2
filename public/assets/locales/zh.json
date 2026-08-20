@@ -15,7 +15,13 @@
     "title": "租赁 Mini Speedboat<br>普吉海上探险",
     "subtitle": "全新的海上探险方式——您就是船长。驾驶迷你快艇，畅游安达曼海的美丽水域。",
     "cta_trips": "<i class=\"fas fa-compass\"></i> 查看所有行程",
-    "cta_book": "<i class=\"fas fa-calendar-check\"></i> 预订行程"
+    "cta_book": "<i class=\"fas fa-calendar-check\"></i> 预订行程",
+    "trust_insurance": "含保险",
+    "trust_captain": "船长随行",
+    "trust_payment": "安全刷卡付款",
+    "trust_reviews": "真实评价",
+    "google_reviews": "5.0 Google Reviews",
+    "social_label": "关注真实行程瞬间"
   },
   "services": {
     "title": "蛋岛自驾冒险之旅",
