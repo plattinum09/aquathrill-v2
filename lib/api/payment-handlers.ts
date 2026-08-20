@@ -52,7 +52,7 @@ function omiseSourceMethodConfig(method: string) {
       envName: "OMISE_ENABLE_WECHAT_PAY",
     },
     alipay: {
-      sourceType: process.env.OMISE_ALIPAY_SOURCE_TYPE || "alipay",
+      sourceType: process.env.OMISE_ALIPAY_SOURCE_TYPE || "alipay_cn",
       enabled: envFlag("OMISE_ENABLE_ALIPAY", false),
       label: OMISE_SOURCE_LABELS.alipay,
       envName: "OMISE_ENABLE_ALIPAY",
@@ -103,6 +103,31 @@ function paymentErrorPage(message: string, status = 500) {
     `<!doctype html><html lang="th"><meta charset="utf-8"><title>Omise Error</title><style>body{margin:0;font-family:sans-serif;background:#0a1628;color:#fff;display:grid;place-items:center;min-height:100vh;padding:24px}.card{max-width:720px;background:#102746;border:1px solid rgba(255,90,120,.35);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}h1{color:#ff6b8a;margin-top:0}.msg{white-space:pre-wrap;background:#071426;border-radius:12px;padding:14px;color:#ffd7df}.hint{color:#a9c8df;line-height:1.7}.btn{display:inline-block;margin-top:18px;background:#00b4ff;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px}</style><div class="card"><h1>Omise payment error</h1><div class="msg">${escape(message)}</div><p class="hint">ตรวจสอบ OMISE_SECRET_KEY, source type, booking amount และ OMISE_RETURN_BASE_URL ใน .env / Vercel Environment Variables</p><a class="btn" href="/booking">กลับไปหน้าจอง</a></div></html>`,
     { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
   );
+}
+
+function omiseSourceErrorMessage(method: string, sourceType: string, error: unknown) {
+  const message = error instanceof Error ? error.message : "Omise payment failed";
+  if (/source type is not valid/i.test(message)) {
+    const label = OMISE_SOURCE_LABELS[method] || method;
+    const hints = [
+      `${label} ยังไม่พร้อมใช้งานกับบัญชี Omise/API key นี้ หรือ source type ที่ตั้งไว้ไม่ถูกต้อง`,
+      "",
+      `Source type ที่เว็บส่งตอนนี้: ${sourceType}`,
+    ];
+    if (method === "alipay") {
+      hints.push(
+        "",
+        "สำหรับ Alipay ให้ตั้งค่าใน .env / Vercel Environment Variables:",
+        "OMISE_ENABLE_ALIPAY=true",
+        "OMISE_ALIPAY_SOURCE_TYPE=alipay_cn",
+        "OMISE_ALIPAY_PLATFORM_TYPE=WEB",
+        "",
+        "ถ้าตั้งครบแล้วยังขึ้น error เดิม ต้องให้ Omise/Opn เปิดใช้งาน Alipay ให้ merchant account/API key นี้ก่อน"
+      );
+    }
+    return hints.join("\n");
+  }
+  return message;
 }
 
 function omiseQrPage(params: {
@@ -191,11 +216,15 @@ async function createOmiseCharge(params: {
   returnUri: string;
   sourceType: string;
 }) {
-  const source = await omisePost("/sources", {
+  const sourcePayload: Record<string, any> = {
     amount: params.amount,
     currency: "thb",
     type: params.sourceType,
-  });
+  };
+  if (/^alipay/i.test(params.sourceType)) {
+    sourcePayload.platform_type = process.env.OMISE_ALIPAY_PLATFORM_TYPE || "WEB";
+  }
+  const source = await omisePost("/sources", sourcePayload);
   return omisePost("/charges", {
     amount: params.amount,
     currency: "thb",
@@ -268,7 +297,7 @@ async function startOmisePayment(request: NextRequest) {
       sourceType: sourceConfig.sourceType,
     });
   } catch (error) {
-    return paymentErrorPage(error instanceof Error ? error.message : "Omise payment failed", 500);
+    return paymentErrorPage(omiseSourceErrorMessage(method, sourceConfig.sourceType, error), 500);
   }
 
   const completed = charge.status === "successful" || charge.paid === true;
