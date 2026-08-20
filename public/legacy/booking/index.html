@@ -429,43 +429,97 @@
         .m-price-box .price { color: #69f0ae; font-size: 1.6rem; font-weight: 700; }
 
         /* Payment method selector */
-        .m-payment-methods { margin: 18px 0 6px; }
-        .m-payment-title {
-            display: flex; align-items: center; gap: 8px;
-            color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px;
+        .m-payment-methods {
+            margin: 22px 0 8px;
+            padding: 22px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            color: #0f172a;
+            box-shadow: 0 22px 60px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.55);
         }
-        .m-payment-title i { color: #00d4ff; }
-        .m-payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .m-omise-brand {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            color: #182338; font-weight: 900; font-size: 1.45rem; letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+        .m-omise-logo {
+            width: 34px; height: 34px; border-radius: 12px; flex: 0 0 auto;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #1178ff, #004fd8);
+            color: #fff; transform: rotate(45deg); box-shadow: 0 10px 24px rgba(0,100,255,0.28);
+        }
+        .m-omise-logo::before {
+            content: ""; width: 13px; height: 13px; border-radius: 4px;
+            border: 4px solid #fff; display: block;
+        }
+        .m-payment-heading {
+            margin: 0; text-align: center; font-size: 1.55rem; line-height: 1.2;
+            color: #0f172a; font-weight: 900; letter-spacing: -0.035em;
+        }
+        .m-payment-subtitle {
+            margin: 6px 0 18px; text-align: center;
+            color: #6b7280; font-size: 0.9rem; line-height: 1.45;
+        }
+        .m-payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .m-payment-option {
-            border: 1px solid rgba(255,255,255,0.14);
-            background: linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
-            color: #fff; border-radius: 14px; padding: 13px 12px;
-            display: flex; align-items: center; gap: 10px; cursor: pointer;
-            font-family: 'Kanit', sans-serif; font-weight: 700; text-align: left;
+            position: relative; min-height: 88px;
+            border: 1px solid #e4e8ef;
+            background: #fff;
+            color: #111827; border-radius: 16px; padding: 14px 42px 14px 14px;
+            display: grid; grid-template-columns: 52px minmax(0,1fr) auto; align-items: center; gap: 14px;
+            cursor: pointer; font-family: 'Kanit', sans-serif; font-weight: 700; text-align: left;
+            box-shadow: 0 8px 22px rgba(15,23,42,0.06);
             transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
-        .m-payment-option:hover { transform: translateY(-1px); border-color: rgba(0,212,255,0.45); }
-        .m-payment-option i {
-            width: 34px; height: 34px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(0,212,255,0.13); color: #00d4ff; flex: 0 0 auto;
+        .m-payment-option:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0,127,255,0.35);
+            box-shadow: 0 16px 34px rgba(15,23,42,0.11);
         }
+        .m-pay-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            color: #0866ff; background: linear-gradient(145deg, #eef7ff, #eaf4ff);
+            flex: 0 0 auto; font-size: 1.2rem;
+        }
+        .m-pay-icon.promptpay { color: #0b3f7d; background: #f5f8fb; font-size: 0.72rem; font-weight: 900; border: 1px solid #d8e1ed; }
+        .m-pay-icon.mobile { color: #fff; background: linear-gradient(145deg, #22c55e, #0f9f4a); font-weight: 900; font-size: 1.1rem; }
+        .m-pay-icon.wechat { color: #fff; background: linear-gradient(145deg, #33c05b, #17a640); font-size: 1.35rem; }
+        .m-pay-icon.alipay { color: #fff; background: linear-gradient(145deg, #22b8ff, #0877d9); font-size: 1.35rem; }
+        .m-payment-option strong { display: block; font-size: 0.96rem; line-height: 1.2; color: #111827; }
         .m-payment-option .small {
-            display: block; color: rgba(255,255,255,0.52);
-            font-size: 0.72rem; font-weight: 500; margin-top: 2px;
+            display: block; color: #6b7280; font-size: 0.76rem; font-weight: 500; margin-top: 4px; line-height: 1.25;
+        }
+        .m-card-brands, .m-bank-brands {
+            display: flex; align-items: center; gap: 5px; white-space: nowrap;
+            color: #1d4ed8; font-size: 0.76rem; font-weight: 900;
+        }
+        .m-card-brands .mastercard { color: #ef4444; letter-spacing: -0.28em; padding-right: 3px; }
+        .m-card-brands .jcb { color: #0f766e; }
+        .m-bank-brands span {
+            width: 22px; height: 22px; border-radius: 6px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 0.62rem; line-height: 1; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+        }
+        .m-bank-brands .kbank { background:#16a34a; }
+        .m-bank-brands .scb { background:#4c1d95; }
+        .m-bank-brands .ktb { background:#0ea5e9; }
+        .m-bank-brands .bay { background:#facc15; color:#6b3a00; }
+        .m-bank-brands .bbl { background:#1d4ed8; }
+        .m-pay-chevron {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            color: #9ca3af; font-size: 0.95rem;
         }
         .m-payment-option.active {
-            border-color: #00d4ff;
-            background: linear-gradient(145deg, rgba(0,212,255,0.22), rgba(0,180,255,0.08));
-            box-shadow: 0 10px 26px rgba(0,180,255,0.16), inset 0 0 0 1px rgba(255,255,255,0.06);
+            border-color: #00b4ff;
+            background: linear-gradient(180deg, #ffffff, #f0fbff);
+            box-shadow: 0 18px 36px rgba(0,180,255,0.16), inset 0 0 0 1px rgba(0,180,255,0.18);
         }
-        .m-payment-option.active i { background: #00d4ff; color: #08213a; }
-        .m-payment-option:disabled {
-            opacity: 0.46; cursor: not-allowed; transform: none;
-            border-style: dashed; filter: grayscale(0.35);
+        .m-payment-option.active .m-pay-icon { box-shadow: 0 10px 24px rgba(0,180,255,0.18); }
+        .m-payment-option.active .m-pay-chevron { color: #00a6e8; }
+        .m-payment-note {
+            color: #64748b; font-size: 0.75rem; line-height: 1.55; margin-top: 12px; text-align: center;
         }
-        .m-payment-option:disabled:hover { transform: none; border-color: rgba(255,255,255,0.14); }
-        .m-payment-note { color: rgba(255,255,255,0.46); font-size: 0.72rem; line-height: 1.55; margin-top: 8px; }
 
         /* Buttons */
         .m-btn-primary {
@@ -576,7 +630,12 @@
             .month-nav .month-label { font-size: 1.2rem; min-width: 180px; }
             .modal-card { padding: 22px; border-radius: 18px; }
             .m-form-row { grid-template-columns: 1fr; }
+            .m-payment-methods { padding: 18px 14px; border-radius: 22px; }
+            .m-payment-heading { font-size: 1.25rem; }
             .m-payment-grid { grid-template-columns: 1fr; }
+            .m-payment-option { min-height: 82px; padding: 12px 38px 12px 12px; grid-template-columns: 48px minmax(0,1fr) auto; gap: 12px; }
+            .m-pay-icon { width: 48px; height: 48px; }
+            .m-card-brands, .m-bank-brands { grid-column: 2 / 4; margin-top: -4px; }
             .m-pay-tab { font-size: 0.7rem; padding: 8px 4px; }
         }
         /* ===== DAY DETAIL POPUP ===== */
@@ -751,19 +810,42 @@
                 </div>
 
                 <div class="m-payment-methods">
-                    <div class="m-payment-title"><i class="fas fa-wallet"></i> เลือกช่องทางการชำระเงิน</div>
+                    <div class="m-omise-brand"><span class="m-omise-logo" aria-hidden="true"></span><span>omise</span></div>
+                    <h3 class="m-payment-heading">Choose your payment method</h3>
+                    <p class="m-payment-subtitle">เลือกช่องทางชำระเงินที่สะดวกสำหรับคุณ</p>
                     <div class="m-payment-grid" id="m-payment-methods">
                         <button type="button" class="m-payment-option active" data-payment-method="omise_card">
-                            <i class="far fa-credit-card"></i>
-                            <span>Credit/Debit Card<span class="small">ชำระผ่านบัตรอย่างปลอดภัย</span></span>
+                            <span class="m-pay-icon"><i class="far fa-credit-card"></i></span>
+                            <span><strong>Credit, debit cards</strong><span class="small">Pay securely with your card</span></span>
+                            <span class="m-card-brands"><b>VISA</b><b class="mastercard">●●</b><b class="jcb">JCB</b></span>
+                            <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
                         </button>
                         <button type="button" class="m-payment-option" data-payment-method="promptpay_qr">
-                            <i class="fas fa-qrcode"></i>
-                            <span>PromptPay QR<span class="small">สแกนจ่ายผ่านแอปธนาคาร</span></span>
+                            <span class="m-pay-icon promptpay">PromptPay</span>
+                            <span><strong>PromptPay</strong><span class="small">Scan QR and pay</span></span>
+                            <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="mobile_banking">
+                            <span class="m-pay-icon mobile">K+</span>
+                            <span><strong>Mobile Banking</strong><span class="small">Pay via your mobile banking app</span></span>
+                            <span class="m-bank-brands" aria-label="Supported bank examples">
+                                <span class="kbank">K</span><span class="scb">SCB</span><span class="ktb">KTB</span><span class="bay">BAY</span><span class="bbl">BBL</span>
+                            </span>
+                            <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="wechat_pay">
+                            <span class="m-pay-icon wechat"><i class="fab fa-weixin"></i></span>
+                            <span><strong>WeChat Pay</strong><span class="small">Pay easily with WeChat</span></span>
+                            <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="alipay">
+                            <span class="m-pay-icon alipay"><i class="fas fa-yen-sign"></i></span>
+                            <span><strong>Alipay</strong><span class="small">Pay with Alipay</span></span>
+                            <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="m-payment-note" id="m-payment-note">
-                        ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง
+                        ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง · บางช่องทางต้องเปิดใช้งานในบัญชี Omise ก่อน
                     </div>
                 </div>
 

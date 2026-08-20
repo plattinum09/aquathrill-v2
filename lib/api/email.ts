@@ -60,6 +60,9 @@ function formatPaymentMethod(value?: string) {
   const methods: Record<string, string> = {
     omise_card: "Credit / Debit Card",
     promptpay_qr: "PromptPay QR",
+    mobile_banking: "Mobile Banking",
+    wechat_pay: "WeChat Pay",
+    alipay: "Alipay",
     omise: "Omise",
     bank_transfer: "Bank Transfer",
   };

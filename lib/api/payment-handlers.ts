@@ -7,7 +7,8 @@ import { body, json } from "./http";
 const escape = (value: any) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
-const OMISE_PAYMENT_METHODS = ["omise", "omise_card", "promptpay_qr"];
+const OMISE_SOURCE_METHODS = ["promptpay_qr", "mobile_banking", "wechat_pay", "alipay"];
+const OMISE_PAYMENT_METHODS = ["omise", "omise_card", ...OMISE_SOURCE_METHODS];
 
 function omiseSecretKey() {
   return process.env.OMISE_SECRET_KEY || process.env.OMISE_SKEY || "";
@@ -20,8 +21,9 @@ function omiseDefaultSourceType() {
 function omiseSourceTypeForMethod(method: string) {
   const normalized = String(method || "").trim();
   if (normalized === "promptpay_qr") return process.env.OMISE_PROMPTPAY_SOURCE_TYPE || "promptpay";
-  if (normalized === "bill_payment_barcode") return process.env.OMISE_BILL_PAYMENT_SOURCE_TYPE || "";
-  if (normalized === "ewallet_others") return process.env.OMISE_EWALLET_SOURCE_TYPE || "truemoney";
+  if (normalized === "mobile_banking") return process.env.OMISE_MOBILE_BANKING_SOURCE_TYPE || "mobile_banking_kbank";
+  if (normalized === "wechat_pay") return process.env.OMISE_WECHAT_PAY_SOURCE_TYPE || "wechat_pay";
+  if (normalized === "alipay") return process.env.OMISE_ALIPAY_SOURCE_TYPE || "alipay";
   return omiseDefaultSourceType();
 }
 
@@ -179,11 +181,8 @@ async function startOmisePayment(request: NextRequest) {
   const bookingId = String(url.searchParams.get("booking_id") || "").trim();
   const method = String(url.searchParams.get("method") || "promptpay_qr").trim();
   if (!/^[A-Za-z0-9-]{6,30}$/.test(bookingId)) return paymentErrorPage("Missing or invalid booking_id", 400);
-  if (!["promptpay_qr", "bill_payment_barcode", "ewallet_others"].includes(method)) {
+  if (!OMISE_SOURCE_METHODS.includes(method)) {
     return paymentErrorPage("ช่องทางชำระเงินนี้ยังไม่รองรับ กรุณากลับไปเลือกวิธีชำระเงินใหม่", 400);
-  }
-  if (method === "bill_payment_barcode" && !process.env.OMISE_BILL_PAYMENT_SOURCE_TYPE) {
-    return paymentErrorPage("Bill Payment / Barcode ถูกยกเลิกจาก Omise แล้ว กรุณาเลือก Credit/Debit Card หรือ PromptPay QR", 400);
   }
 
   const booking = (await query<any>(
