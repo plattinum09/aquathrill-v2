@@ -30,7 +30,9 @@
     "f2": "<strong>ดำน้ำตื้นชมปะการัง:</strong> น้ำทะเลใส ปะการังสมบูรณ์ พบปลาการ์ตูนในธรรมชาติ",
     "f3": "<strong>สำรวจ 3 จุด:</strong> เกาะไข่นุ้ย เกาะไข่นอก เกาะไข่ใน",
     "f4": "<strong>รวมอาหารบนเกาะ:</strong> รับประทานอาหารบนเกาะไข่ในพร้อมเล่นกับน้องแมว",
-    "cta": "ดูรายละเอียดทริป"
+    "cta": "ดูรายละเอียดทริป",
+    "tiktok_title": "ชมวิดีโอประสบการณ์จริง",
+    "tiktok_subtitle": "ประสบการณ์ขับเรือมินิสปีดโบ๊ทด้วยตัวเองจาก AQUATHRILL Phuket"
   },
   "routes": {
     "title": "เส้นทางการเดินทาง",
@@ -117,7 +119,12 @@
     "terms": "เงื่อนไขการให้บริการ",
     "copyright": "&copy; 2026 AQUATHRILL. สงวนลิขสิทธิ์",
     "privacy": "นโยบายความเป็นส่วนตัว",
-    "refund": "นโยบายคืนเงิน"
+    "refund": "นโยบายคืนเงิน",
+    "trust_license": "T.A.T. 33/11987",
+    "trust_payment": "จ่ายเงินปลอดภัย",
+    "book_cta": "จองเลย",
+    "whatsapp_cta": "WhatsApp",
+    "license_address": "T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket"
   },
   "rp": {
     "hero_title": "นโยบายการคืนเงินและยกเลิกการจอง",
@@ -277,6 +284,35 @@
     "pay_error": "ไม่สามารถเชื่อมต่อระบบชำระเงินได้",
     "pay_generic_error": "เกิดข้อผิดพลาด กรุณาลองใหม่",
     "confirm_history": "ดูประวัติการจอง",
-    "confirm_home": "กลับหน้าหลัก"
+    "confirm_home": "กลับหน้าหลัก",
+    "payment_method_title": "เลือกช่องทางการชำระเงิน",
+    "payment_method_subtitle": "เลือกช่องทางชำระเงินที่สะดวกสำหรับคุณ",
+    "pay_card_title": "Credit / Debit Card",
+    "pay_card_desc": "ชำระผ่านบัตรอย่างปลอดภัย",
+    "pay_promptpay_title": "PromptPay",
+    "pay_promptpay_desc": "สแกน QR และชำระเงิน",
+    "pay_mobile_title": "Mobile Banking",
+    "pay_mobile_desc": "ชำระผ่านแอปธนาคาร",
+    "pay_wechat_title": "WeChat Pay",
+    "pay_wechat_desc": "ชำระผ่าน WeChat",
+    "pay_wechat_note": "บัญชี WeChat บางประเภทอาจไม่รองรับการชำระเงินกับร้านค้าต่างประเทศ",
+    "pay_alipay_title": "Alipay",
+    "pay_alipay_desc": "ชำระผ่าน Alipay",
+    "payment_method_note": "ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง",
+    "payment_disabled_prefix": "ช่องทางที่ยังไม่เปิดใช้งาน:",
+    "payment_disabled_suffix": "หากต้องการใช้ ให้เปิดในบัญชี Omise และตั้งค่า Environment Variables ก่อน",
+    "payment_disabled_short": "ยังไม่ได้เปิดใช้งานในบัญชี Omise",
+    "alert_payment_method_disabled": "ช่องทางชำระเงินนี้ยังไม่ได้เปิดใช้งาน กรุณาเลือกช่องทางอื่น",
+    "btn_pay_now": "ดำเนินการชำระเงิน"
+  },
+  "moments": {
+    "card1_text": "คู่รัก",
+    "card2_text": "ครอบครัว",
+    "card3_text": "กลุ่มเพื่อน",
+    "card4_text": "ดำน้ำตื้น",
+    "card5_text": "ทริปส่วนตัว"
+  },
+  "trip": {
+    "badge": "ทริปครึ่งวันยอดนิยม"
   }
 }

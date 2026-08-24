@@ -44,6 +44,17 @@
     return key.split(".").reduce((acc, part) => (acc && acc[part] != null ? acc[part] : undefined), content);
   }
 
+  function containsThaiText(value) {
+    return /[\u0E00-\u0E7F]/.test(String(value || ""));
+  }
+
+  function shouldSkipI18nContentOverride(el, value) {
+    const lang = getLang();
+    if (lang === "th" || !el.hasAttribute("data-i18n")) return false;
+    if (el.hasAttribute("data-i18n-static")) return true;
+    return containsThaiText(value);
+  }
+
   function storageKey(page = pageKey()) {
     return `aquathrill:page-content:${page}`;
   }
@@ -141,6 +152,7 @@
       const key = el.getAttribute("data-page-content");
       const value = getValue(content, key);
       if (value == null || value === "") return;
+      if (shouldSkipI18nContentOverride(el, value)) return;
       el.innerHTML = String(value);
     });
     document.querySelectorAll("[data-page-placeholder]").forEach((el) => {

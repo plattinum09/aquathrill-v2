@@ -514,10 +514,33 @@
         .m-pay-icon.promptpay { color: #0b3f7d; background: #f5f8fb; font-size: 0.72rem; font-weight: 900; border: 1px solid #d8e1ed; }
         .m-pay-icon.mobile { color: #fff; background: linear-gradient(145deg, #22c55e, #0f9f4a); font-weight: 900; font-size: 1.1rem; }
         .m-pay-icon.wechat { color: #fff; background: linear-gradient(145deg, #33c05b, #17a640); font-size: 1.35rem; }
-        .m-pay-icon.alipay { color: #fff; background: linear-gradient(145deg, #22b8ff, #0877d9); font-size: 1.35rem; }
+        .m-pay-icon.alipay {
+            color: #fff;
+            background: linear-gradient(145deg, #14c8ff, #0877d9);
+            font-size: 1.72rem;
+            font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .m-pay-icon.alipay .m-alipay-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1em;
+            height: 1em;
+            transform: translateY(-0.02em);
+        }
         .m-payment-option strong { display: block; font-size: 1.02rem; line-height: 1.22; color: #111827; }
         .m-payment-option .small {
             display: block; color: #6b7280; font-size: 0.78rem; font-weight: 500; margin-top: 4px; line-height: 1.35;
+        }
+        .m-payment-option .m-pay-warning {
+            display: block;
+            margin-top: 6px;
+            color: #a16207;
+            font-size: 0.68rem;
+            font-weight: 650;
+            line-height: 1.35;
         }
         .m-card-brands, .m-bank-brands {
             grid-column: 2;
@@ -856,23 +879,23 @@
 
                 <div class="m-payment-methods">
                     <div class="m-omise-brand"><span class="m-omise-logo" aria-hidden="true"></span><span>omise</span></div>
-                    <h3 class="m-payment-heading">Choose your payment method</h3>
-                    <p class="m-payment-subtitle">เลือกช่องทางชำระเงินที่สะดวกสำหรับคุณ</p>
+                    <h3 class="m-payment-heading" data-i18n="bk.payment_method_title">เลือกช่องทางการชำระเงิน</h3>
+                    <p class="m-payment-subtitle" data-i18n="bk.payment_method_subtitle">เลือกช่องทางชำระเงินที่สะดวกสำหรับคุณ</p>
                     <div class="m-payment-grid" id="m-payment-methods">
                         <button type="button" class="m-payment-option active" data-payment-method="omise_card">
                             <span class="m-pay-icon"><i class="far fa-credit-card"></i></span>
-                            <span><strong>Credit, debit cards</strong><span class="small">Pay securely with your card</span></span>
+                            <span><strong data-i18n="bk.pay_card_title">Credit / Debit Card</strong><span class="small" data-i18n="bk.pay_card_desc">ชำระผ่านบัตรอย่างปลอดภัย</span></span>
                             <span class="m-card-brands"><b>VISA</b><b class="mastercard">●●</b><b class="jcb">JCB</b></span>
                             <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
                         </button>
                         <button type="button" class="m-payment-option" data-payment-method="promptpay_qr">
                             <span class="m-pay-icon promptpay">PromptPay</span>
-                            <span><strong>PromptPay</strong><span class="small">Scan QR and pay</span></span>
+                            <span><strong data-i18n="bk.pay_promptpay_title">PromptPay</strong><span class="small" data-i18n="bk.pay_promptpay_desc">สแกน QR และชำระเงิน</span></span>
                             <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
                         </button>
                         <button type="button" class="m-payment-option" data-payment-method="mobile_banking">
                             <span class="m-pay-icon mobile">K+</span>
-                            <span><strong>Mobile Banking</strong><span class="small">Pay via your mobile banking app</span></span>
+                            <span><strong data-i18n="bk.pay_mobile_title">Mobile Banking</strong><span class="small" data-i18n="bk.pay_mobile_desc">ชำระผ่านแอปธนาคาร</span></span>
                             <span class="m-bank-brands" aria-label="Supported bank examples">
                                 <span class="kbank">K</span><span class="scb">SCB</span><span class="ktb">KTB</span><span class="bay">BAY</span><span class="bbl">BBL</span>
                             </span>
@@ -880,22 +903,22 @@
                         </button>
                         <button type="button" class="m-payment-option" data-payment-method="wechat_pay">
                             <span class="m-pay-icon wechat"><i class="fab fa-weixin"></i></span>
-                            <span><strong>WeChat Pay</strong><span class="small">Pay easily with WeChat</span></span>
+                            <span><strong data-i18n="bk.pay_wechat_title">WeChat Pay</strong><span class="small" data-i18n="bk.pay_wechat_desc">ชำระผ่าน WeChat</span><span class="m-pay-warning" data-i18n="bk.pay_wechat_note">บัญชี WeChat บางประเภทอาจไม่รองรับการชำระเงินกับร้านค้าต่างประเทศ</span></span>
                             <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
                         </button>
                         <button type="button" class="m-payment-option" data-payment-method="alipay">
-                            <span class="m-pay-icon alipay"><i class="fas fa-yen-sign"></i></span>
-                            <span><strong>Alipay</strong><span class="small">Pay with Alipay</span></span>
+                            <span class="m-pay-icon alipay"><span class="m-alipay-mark" aria-hidden="true">支</span></span>
+                            <span><strong data-i18n="bk.pay_alipay_title">Alipay</strong><span class="small" data-i18n="bk.pay_alipay_desc">ชำระผ่าน Alipay</span></span>
                             <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <div class="m-payment-note" id="m-payment-note">
+                    <div class="m-payment-note" id="m-payment-note" data-i18n="bk.payment_method_note">
                         ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง · บางช่องทางต้องเปิดใช้งานในบัญชี Omise ก่อน
                     </div>
                 </div>
 
-                <button class="m-btn-primary" id="m-btn-to-pay" data-i18n="bk.btn_pay_now">
-                    <i class="fas fa-lock"></i> ดำเนินการชำระเงิน
+                <button class="m-btn-primary" id="m-btn-to-pay">
+                    <i class="fas fa-lock"></i> <span data-i18n="bk.btn_pay_now">ดำเนินการชำระเงิน</span>
                 </button>
             </div>
 
@@ -1007,8 +1030,8 @@
 
     <div id="site-footer"></div>
     <script src="../assets/js/i18n-core.js?v=20260724a"></script>
-    <script src="../assets/js/i18n-loader.js?v=20260724a"></script>
-    <script src="../assets/js/components.js?v=20260724a"></script>
+    <script src="../assets/js/i18n-loader.js?v=20260820c"></script>
+    <script src="../assets/js/components.js?v=20260820c"></script>
     <script src="../assets/js/main.js?v=20260724a"></script>
     <script>
     (function() {
@@ -1501,7 +1524,12 @@
                 btn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
                 var small = btn.querySelector('.small');
                 if (small && !small.dataset.originalText) small.dataset.originalText = small.textContent || '';
-                if (small) small.textContent = enabled ? small.dataset.originalText : 'ยังไม่ได้เปิดใช้งานในบัญชี Omise';
+                if (small) {
+                    var smallKey = small.getAttribute('data-i18n');
+                    small.textContent = enabled
+                        ? (smallKey ? t(smallKey, small.dataset.originalText) : small.dataset.originalText)
+                        : t('bk.payment_disabled_short', 'ยังไม่ได้เปิดใช้งานในบัญชี Omise');
+                }
                 if (!enabled) disabledLabels.push(info.label || method);
             });
             if (document.querySelector('.m-payment-option.active:disabled')) {
@@ -1512,11 +1540,11 @@
             }
             if (disabledLabels.length) {
                 setPaymentNote(
-                    'ช่องทางที่ยังไม่เปิดใช้งาน: ' + disabledLabels.join(', ') + ' — หากต้องการใช้ ให้เปิดในบัญชี Omise และตั้งค่า Environment Variables ก่อน',
+                    t('bk.payment_disabled_prefix', 'ช่องทางที่ยังไม่เปิดใช้งาน:') + ' ' + disabledLabels.join(', ') + ' — ' + t('bk.payment_disabled_suffix', 'หากต้องการใช้ ให้เปิดในบัญชี Omise และตั้งค่า Environment Variables ก่อน'),
                     true
                 );
             } else {
-                setPaymentNote('ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง', false);
+                setPaymentNote(t('bk.payment_method_note', 'ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง'), false);
             }
         }
 
@@ -1535,6 +1563,9 @@
             }
         }
         loadOmisePublicConfig();
+        window.addEventListener('langapplied', function() {
+            if (omisePublicConfig) applyOmisePaymentAvailability(omisePublicConfig);
+        });
 
         // Step 1 → 2
         document.getElementById('m-btn-to-pay').addEventListener('click', function() {
@@ -1558,7 +1589,7 @@
             modalData.timeName = document.getElementById('m-time').options[document.getElementById('m-time').selectedIndex].text;
             var selectedButton = document.querySelector('.m-payment-option[data-payment-method="' + selectedPaymentMethod + '"]');
             if (selectedButton && selectedButton.disabled) {
-                alert('ช่องทางชำระเงินนี้ยังไม่ได้เปิดใช้งาน กรุณาเลือกช่องทางอื่น');
+                alert(t('bk.alert_payment_method_disabled', 'ช่องทางชำระเงินนี้ยังไม่ได้เปิดใช้งาน กรุณาเลือกช่องทางอื่น'));
                 return;
             }
             modalData.paymentMethod = selectedPaymentMethod;

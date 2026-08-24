@@ -50,7 +50,9 @@
 
   function shouldSkipI18nContentOverride(el, value) {
     const lang = getLang();
-    return lang !== "th" && el.hasAttribute("data-i18n") && containsThaiText(value);
+    if (lang === "th" || !el.hasAttribute("data-i18n")) return false;
+    if (el.hasAttribute("data-i18n-static")) return true;
+    return containsThaiText(value);
   }
 
   function applyHomeContent(content) {

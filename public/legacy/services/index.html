@@ -329,6 +329,38 @@
             zh: { book: '立即预订', unit: '/ 艘', pax: '人', maxW: '最大', captain: '配船长' }
         };
         var ui = uiText[lang] || uiText['th'];
+        function hasThaiText(value) { return /[\u0E00-\u0E7F]/.test(String(value || '')); }
+        function getBoatSizeKey(bt) {
+            var raw = String((bt && (bt.id || bt.slug || bt.name || bt.title || bt.boat_type)) || '').toLowerCase();
+            if (raw.indexOf('18') !== -1) return '18';
+            if (raw.indexOf('17') !== -1) return '17';
+            if (raw.indexOf('14') !== -1) return '14';
+            return '12';
+        }
+        function fallbackBoatCopy(bt, lang) {
+            var copy = {
+                en: {
+                    '12': { title: 'SEASTORM 12 Feet', desc: 'Compact 12 ft mini speedboat for couples or small groups. Easy to handle, fun, and perfect for a private half-day Khai Islands trip with a captain onboard.' },
+                    '14': { title: 'SEASTORM 14 Feet', desc: 'A larger 14 ft mini speedboat with more comfort for friends or families. Drive yourself with a professional captain caring for the whole trip.' },
+                    '17': { title: 'SEASTORM 17 Feet', desc: 'Spacious premium mini speedboat for a more stable and comfortable private trip, ideal for larger groups.' },
+                    '18': { title: 'SEASTORM 18 Feet', desc: 'Premium 18 ft mini speedboat for 2–6 guests, offering more space and comfort with captain support throughout the journey.' }
+                },
+                zh: {
+                    '12': { title: 'SEASTORM 12英尺', desc: '12英尺迷你快艇，适合情侣或小团体。轻松好开、充满乐趣，并有船长全程陪同，适合半日蛋岛私人行程。' },
+                    '14': { title: 'SEASTORM 14英尺', desc: '14英尺迷你快艇空间更大，更适合朋友或家庭。您可亲自驾驶，并由专业船长全程照看。' },
+                    '17': { title: 'SEASTORM 17英尺', desc: '更宽敞的高级迷你快艇，航行更稳定舒适，适合较大的私人团体。' },
+                    '18': { title: 'SEASTORM 18英尺', desc: '18英尺高级迷你快艇，适合2–6位客人，空间更舒适，并有船长全程协助。' }
+                },
+                ru: {
+                    '12': { title: 'SEASTORM 12 футов', desc: 'Компактный мини-спидбот 12 футов для пары или небольшой группы. Лёгкий в управлении и идеально подходит для приватного тура на полдня к островам Khai с капитаном на борту.' },
+                    '14': { title: 'SEASTORM 14 футов', desc: 'Более просторный мини-спидбот 14 футов для друзей или семьи. Управляйте сами, а профессиональный капитан сопровождает весь маршрут.' },
+                    '17': { title: 'SEASTORM 17 футов', desc: 'Просторный премиальный мини-спидбот для более стабильной и комфортной приватной поездки, отлично подходит для больших групп.' },
+                    '18': { title: 'SEASTORM 18 футов', desc: 'Премиальный мини-спидбот 18 футов для 2–6 гостей: больше места, комфорт и поддержка капитана на всём маршруте.' }
+                }
+            };
+            var langCopy = copy[lang] || {};
+            return langCopy[getBoatSizeKey(bt)] || {};
+        }
 
         fetch('/api/boat-types-v2.php').then(function(r){return r.json();}).then(function(d){
             var apiBoats = d.boat_types || [];
@@ -337,6 +369,9 @@
                 var loc = i18n[lang] || i18n['th'] || {};
                 var title = loc.title || bt.name;
                 var desc = loc.description || bt.description || '';
+                var fallbackCopy = fallbackBoatCopy(bt, lang);
+                if (lang !== 'th' && (!title || hasThaiText(title)) && fallbackCopy.title) title = fallbackCopy.title;
+                if (lang !== 'th' && (!desc || hasThaiText(desc)) && fallbackCopy.desc) desc = fallbackCopy.desc;
                 var priceDisplay = loc.price || ('฿' + Number(bt.price||0).toLocaleString('th-TH'));
                 if (priceDisplay) {
                     var sfx = lang === 'th' ? 'บาท' : 'THB';
@@ -493,8 +528,8 @@
     </div>
 
     <div id="site-footer"></div>
-    <script src="../assets/js/i18n-loader.js?v=20260724a" defer></script>
-    <script src="../assets/js/components.js?v=20260724a"></script>
+    <script src="../assets/js/i18n-loader.js?v=20260820c" defer></script>
+    <script src="../assets/js/components.js?v=20260820c"></script>
     <script src="../assets/js/main.js?v=20260724a"></script>
     <script>
     (function(){

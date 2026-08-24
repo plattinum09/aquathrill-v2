@@ -28,9 +28,11 @@
     "desc": "As one of the first mini speedboat trip providers in Phuket, Aquathrill Phuket invites you to experience the sea differently — not just as a passenger, but as the captain of your own journey.",
     "f1": "<strong>Self-Drive:</strong> Learn the basics and drive a mini speedboat with confidence",
     "f2": "<strong>Snorkeling:</strong> Crystal clear water, vibrant coral reefs, and Nemo clownfish",
-    "f3": "<strong>Explore 3 Spots:</strong> Khai Nui, Khai Nok, Khai Nai",
+    "f3": "<strong>Explore 3 spots:</strong> Khai Nui Island, Khai Nok Island, Khai Nai Island",
     "f4": "<strong>Lunch on the Island:</strong> Enjoy a meal on Khai Nai island with friendly cats",
-    "cta": "View Trip Details"
+    "cta": "View Trip Details",
+    "tiktok_title": "Watch real trip video",
+    "tiktok_subtitle": "Self-drive mini speedboat experience from AQUATHRILL Phuket"
   },
   "routes": {
     "title": "Travel Routes",
@@ -117,7 +119,12 @@
     "terms": "Terms of Service",
     "copyright": "&copy; 2026 AQUATHRILL. All rights reserved",
     "privacy": "Privacy Policy",
-    "refund": "Refund Policy"
+    "refund": "Refund Policy",
+    "trust_license": "T.A.T. 33/11987",
+    "trust_payment": "Secure Payment",
+    "book_cta": "Book Now",
+    "whatsapp_cta": "WhatsApp",
+    "license_address": "T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket"
   },
   "svc": {
     "hero_title": "Khai Island Self-Drive Adventure",
@@ -345,7 +352,7 @@
     "afternoon": "Afternoon",
     "depart": "Departure:",
     "departure_point": "Departure Point",
-    "pier_location": "Koh Sirey, Phuket",
+    "pier_location": "Royal Phuket Marina",
     "cta_title": "🔥 Book Today for Special Discount!",
     "cta_sub": "Contact us or book via WhatsApp instantly",
     "terms_title": "📋 Terms & Conditions",
@@ -575,7 +582,26 @@
     "th_boat": "Boat",
     "th_slot": "Slot",
     "th_status": "Status",
-    "th_price": "Price"
+    "th_price": "Price",
+    "payment_method_title": "Choose your payment method",
+    "payment_method_subtitle": "Select a payment option that is convenient for you.",
+    "pay_card_title": "Credit / Debit Card",
+    "pay_card_desc": "Pay securely with your card",
+    "pay_promptpay_title": "PromptPay",
+    "pay_promptpay_desc": "Scan QR and pay",
+    "pay_mobile_title": "Mobile Banking",
+    "pay_mobile_desc": "Pay via your mobile banking app",
+    "pay_wechat_title": "WeChat Pay",
+    "pay_wechat_desc": "Pay easily with WeChat",
+    "pay_wechat_note": "Some WeChat account types may not support payments to overseas merchants.",
+    "pay_alipay_title": "Alipay",
+    "pay_alipay_desc": "Pay with Alipay",
+    "payment_method_note": "Omise will open the payment page after checking your booking details",
+    "payment_disabled_prefix": "Payment methods not enabled:",
+    "payment_disabled_suffix": "To use them, enable the methods in your Omise account and set the Environment Variables first",
+    "payment_disabled_short": "Not enabled in Omise account",
+    "alert_payment_method_disabled": "This payment method is not enabled yet. Please choose another method.",
+    "btn_pay_now": "Proceed to Payment"
   },
   "agent": {
     "portal_title": "Agent Portal",
@@ -757,5 +783,15 @@
     "s11_p1": "We reserve the right to update these terms at any time. Changes take effect upon publication on the website. Continued use of our services after changes constitutes acceptance of the updated terms.",
     "s12_title": "12. Contact Us",
     "s12_p1": "If you have questions about these Terms of Service, please contact us at:"
+  },
+  "moments": {
+    "card1_text": "Couple Escape",
+    "card2_text": "Family Adventure",
+    "card3_text": "Group of Friends",
+    "card4_text": "Snorkeling",
+    "card5_text": "Private Trip"
+  },
+  "trip": {
+    "badge": "Half Day Signature Trip"
   }
 }

@@ -72,12 +72,12 @@
                     <a href="${rootPrefix}" class="footer-logo"><img src="${assetPrefix}images/logo-footer.png" alt="AQUATHRILL"></a>
                     <p class="footer-desc" data-i18n="footer.desc">บริการ Mini Speedboat self-drive<br>(with captain)</p>
                     <div class="footer-trust-mini">
-                        <span><i class="fas fa-shield-halved"></i> <span data-home-content="footer.trust_license">T.A.T. 33/11987</span></span>
-                        <span><i class="fas fa-credit-card"></i> <span data-home-content="footer.trust_payment">Secure Payment</span></span>
+                        <span><i class="fas fa-shield-halved"></i> <span data-i18n="footer.trust_license" data-i18n-static data-home-content="footer.trust_license">T.A.T. 33/11987</span></span>
+                        <span><i class="fas fa-credit-card"></i> <span data-i18n="footer.trust_payment" data-i18n-static data-home-content="footer.trust_payment">Secure Payment</span></span>
                     </div>
                     <div class="footer-actions">
-                        <a href="/booking" class="footer-action primary"><i class="fas fa-calendar-check"></i> <span data-home-content="footer.book_cta">จองเลย</span></a>
-                        <a href="https://wa.me/66958192778" target="_blank" class="footer-action whatsapp"><i class="fab fa-whatsapp"></i> <span data-home-content="footer.whatsapp_cta">WhatsApp</span></a>
+                        <a href="/booking" class="footer-action primary"><i class="fas fa-calendar-check"></i> <span data-i18n="footer.book_cta" data-i18n-static data-home-content="footer.book_cta">จองเลย</span></a>
+                        <a href="https://wa.me/66958192778" target="_blank" class="footer-action whatsapp"><i class="fab fa-whatsapp"></i> <span data-i18n="footer.whatsapp_cta" data-i18n-static data-home-content="footer.whatsapp_cta">WhatsApp</span></a>
                     </div>
                     <div class="social-links">
                         <a href="https://www.facebook.com/share/1MVoNcx4K6/?mibextid=wwXIfr" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -115,7 +115,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p data-home-content="footer.license_address">T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket</p>
+                <p data-i18n="footer.license_address" data-i18n-static data-home-content="footer.license_address">T.A.T. Licence: 33/11987 | Royal Phuket Marina, Phuket</p>
                 <p style="margin-top:8px;"><span data-i18n="footer.copyright">&copy; 2026 AQUATHRILL. สงวนลิขสิทธิ์</span> | <a href="/terms" style="color:rgba(255,255,255,0.6);" data-i18n="footer.terms">เงื่อนไขการให้บริการ</a> | <a href="/privacy-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.privacy">นโยบายความเป็นส่วนตัว</a> | <a href="/refund-policy" style="color:rgba(255,255,255,0.6);" data-i18n="footer.refund">นโยบายคืนเงิน</a></p>
             </div>
         </div>
@@ -125,6 +125,11 @@
     // Load immediately (this script runs before main.js)
     loadHeader();
     loadFooter();
+    setTimeout(function () {
+        if (window.I18n && typeof window.I18n.translateNew === 'function') {
+            window.I18n.translateNew();
+        }
+    }, 0);
 
     // Update the flag/label in the header to show current language
     (function() {

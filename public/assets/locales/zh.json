@@ -28,9 +28,11 @@
     "desc": "作为普吉岛最早的迷你快艇旅游提供商之一，Aquathrill Phuket 邀请您以全新的方式体验大海——不只是乘客，更是自己旅程的船长。",
     "f1": "<strong>自驾体验：</strong>学习基础知识，自信驾驶迷你快艇",
     "f2": "<strong>浮潜观珊瑚：</strong>清澈海水、丰富珊瑚礁、小丑鱼尼莫",
-    "f3": "<strong>探索5个景点：</strong>玛帕劳角、小蛋岛、蛋岛、内蛋岛、利佩岛",
+    "f3": "<strong>探索3个景点：</strong>小蛋岛、外蛋岛、内蛋岛",
     "f4": "<strong>岛上午餐：</strong>在内蛋岛享用美食，与友善的猫咪玩耍",
-    "cta": "查看行程详情"
+    "cta": "查看行程详情",
+    "tiktok_title": "观看真实体验视频",
+    "tiktok_subtitle": "AQUATHRILL Phuket 迷你快艇自驾体验"
   },
   "routes": {
     "title": "旅行路线",
@@ -117,7 +119,12 @@
     "terms": "服务条款",
     "copyright": "&copy; 2026 AQUATHRILL. 版权所有",
     "privacy": "隐私政策",
-    "refund": "退款政策"
+    "refund": "退款政策",
+    "trust_license": "T.A.T. 33/11987",
+    "trust_payment": "安全支付",
+    "book_cta": "立即预订",
+    "whatsapp_cta": "WhatsApp",
+    "license_address": "T.A.T. 许可证: 33/11987 | Royal Phuket Marina, Phuket"
   },
   "svc": {
     "hero_title": "蛋岛自驾冒险之旅",
@@ -345,7 +352,7 @@
     "afternoon": "下午班",
     "depart": "出发时间：",
     "departure_point": "出发地点",
-    "pier_location": "阁锡雷，普吉岛",
+    "pier_location": "Royal Phuket Marina",
     "cta_title": "🔥 今天预订享特别折扣！",
     "cta_sub": "通过 WhatsApp 联系我们或立即预订",
     "terms_title": "📋 条款与须知",
@@ -575,7 +582,26 @@
     "th_boat": "船只",
     "th_slot": "时段",
     "th_status": "状态",
-    "th_price": "价格"
+    "th_price": "价格",
+    "payment_method_title": "选择付款方式",
+    "payment_method_subtitle": "请选择最方便的付款选项",
+    "pay_card_title": "信用卡 / 借记卡",
+    "pay_card_desc": "安全刷卡付款",
+    "pay_promptpay_title": "PromptPay",
+    "pay_promptpay_desc": "扫描二维码付款",
+    "pay_mobile_title": "手机银行",
+    "pay_mobile_desc": "通过银行 App 付款",
+    "pay_wechat_title": "微信支付",
+    "pay_wechat_desc": "使用微信轻松付款",
+    "pay_wechat_note": "部分微信账户类型可能不支持向境外商户付款。",
+    "pay_alipay_title": "支付宝",
+    "pay_alipay_desc": "使用支付宝付款",
+    "payment_method_note": "Omise 将在确认预订信息后打开付款页面",
+    "payment_disabled_prefix": "尚未启用的付款方式：",
+    "payment_disabled_suffix": "如需使用，请先在 Omise 账户中启用并设置环境变量",
+    "payment_disabled_short": "尚未在 Omise 账户中启用",
+    "alert_payment_method_disabled": "此付款方式尚未启用，请选择其他付款方式。",
+    "btn_pay_now": "继续付款"
   },
   "agent": {
     "portal_title": "代理商门户",
@@ -757,5 +783,15 @@
     "s11_p1": "我们保留随时更新这些条款的权利。变更在网站发布后立即生效。变更后继续使用我们的服务即表示接受更新后的条款。",
     "s12_title": "12. 联系我们",
     "s12_p1": "如果您对服务条款有任何疑问，请通过以下方式联系我们："
+  },
+  "moments": {
+    "card1_text": "情侣之旅",
+    "card2_text": "家庭冒险",
+    "card3_text": "朋友同行",
+    "card4_text": "浮潜体验",
+    "card5_text": "私人行程"
+  },
+  "trip": {
+    "badge": "半日精选行程"
   }
 }
