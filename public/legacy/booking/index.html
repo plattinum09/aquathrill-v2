@@ -1135,9 +1135,7 @@
         let calendarData = {};
         let publicPastSet = new Set();
         let publicDetailsData = {};
-        const availabilityMemory = new Map();
         const availabilityInflight = new Map();
-        const availabilityTtlMs = 60 * 1000;
 
         function getStatusLabel(status) {
             switch(status) {
@@ -1153,36 +1151,17 @@
             const month = currentMonth + 1;
             const boat = selectedBoat;
             const key = currentYear + '-' + month + '-' + boat;
-            const storageKey = 'aq_availability_' + key;
             const applyAvailability = function(d) {
                 calendarData = d.calendar || {};
                 publicPastSet = new Set(d.pastDates || []);
                 publicDetailsData = d.details || {};
             };
-            const cached = availabilityMemory.get(key);
-            if (cached && Date.now() - cached.time < availabilityTtlMs) {
-                applyAvailability(cached.data);
-                renderCalendar();
-                return;
-            }
-            try {
-                const stored = JSON.parse(sessionStorage.getItem(storageKey) || 'null');
-                if (stored && Date.now() - stored.time < availabilityTtlMs) {
-                    availabilityMemory.set(key, stored);
-                    applyAvailability(stored.data);
-                    renderCalendar();
-                    return;
-                }
-            } catch(e) {}
             renderCalendarSkeleton();
             try {
                 if (!availabilityInflight.has(key)) {
                     availabilityInflight.set(key, fetch('/api/availability.php?month=' + month + '&year=' + currentYear + '&boat=' + boat + '&_=' + Date.now(), { cache: 'no-store' }).then(function(r){ return r.json(); }).finally(function(){ availabilityInflight.delete(key); }));
                 }
                 const d = await availabilityInflight.get(key);
-                const entry = { time: Date.now(), data: d };
-                availabilityMemory.set(key, entry);
-                try { sessionStorage.setItem(storageKey, JSON.stringify(entry)); } catch(e) {}
                 applyAvailability(d);
             } catch(e) {
                 console.warn('API unavailable, using empty calendar');
@@ -1307,7 +1286,7 @@
             boatList.forEach(function(boat) {
                 slotsArr.forEach(function(slot) {
                     var boatSlots = detail[boat.id] || {};
-                    var slotInfo = boatSlots[slot.id] || {total: boat.total_boats || 1, booked: 0, blocked: 0, available: boat.total_boats || 1};
+                    var slotInfo = boatSlots[slot.id] || {total: boat.total_boats || 1, booked: 0, blocked: boat.total_boats || 1, available: 0};
                     var s = slotInfo.available <= 0 ? 'booked' : (slotInfo.available < slotInfo.total ? 'limited' : 'available');
                     var canBook = slotInfo.available > 0;
                     var countText = slotInfo.available + '/' + slotInfo.total + ' ' + t('bk.remaining','ลำ');
