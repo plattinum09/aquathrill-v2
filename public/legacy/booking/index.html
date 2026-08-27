@@ -1666,14 +1666,16 @@
                 var cfgRes = await fetch('/api/omise-config.php', { credentials: 'include' });
                 var cfg = await cfgRes.json();
                 if (!cfg.public_key) throw new Error('Missing Omise public key');
-                OmiseCard.configure({ publicKey: cfg.public_key, currency: 'THB', frameLabel: 'AQUATHRILL PHUKET', submitLabel: 'ชำระเงิน' });
+                var payLang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
+                var submitLabel = { th: 'ชำระเงิน', en: 'Pay', ru: 'Оплатить', zh: '付款' }[payLang] || 'Pay';
+                OmiseCard.configure({ publicKey: cfg.public_key, currency: 'THB', frameLabel: 'AQUATHRILL PHUKET', submitLabel: submitLabel });
                 OmiseCard.open({
                     amount: Math.round(Number(apiData.total_price || modalData.price || 0) * 100),
                     onCreateTokenSuccess: async function(token) {
                         var payRes = await fetch('/api/omise-payment.php', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({ booking_id: apiData.booking_id, omise_token: token })
+                            body: JSON.stringify({ booking_id: apiData.booking_id, omise_token: token, lang: payLang })
                         });
                         var payData = await payRes.json();
                         if (payData.success && payData.redirect_url) window.location.href = payData.redirect_url;
@@ -1700,8 +1702,9 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('bk.processing','กำลังดำเนินการ...');
             try {
                 var apiData = await createBookingForPayment(method);
+                var payLang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
                 window.location.href = '/api/omise-payment.php?go=1&booking_id=' +
-                    encodeURIComponent(apiData.booking_id) + '&method=' + encodeURIComponent(method);
+                    encodeURIComponent(apiData.booking_id) + '&method=' + encodeURIComponent(method) + '&lang=' + encodeURIComponent(payLang);
             } catch(e) {
                 alert(e.message || t('bk.alert_payment_error','ไม่สามารถเชื่อมต่อระบบชำระเงินได้ กรุณาลองใหม่'));
                 btn.disabled = false;

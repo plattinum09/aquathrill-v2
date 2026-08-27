@@ -70,10 +70,69 @@
     (async function() {
         const params = new URLSearchParams(window.location.search);
         const bookingId = params.get('booking_id');
+        const lang = (function(){
+            const value = (params.get('lang') || localStorage.getItem('preferredLanguage') || localStorage.getItem('language') || 'th').toLowerCase();
+            return ['th','en','ru','zh'].includes(value) ? value : 'th';
+        })();
+        localStorage.setItem('preferredLanguage', lang);
+        document.documentElement.lang = lang;
+        const L = {
+            th: {
+                title: 'ผลการชำระเงิน | AQUATHRILL', checkingTitle: 'กำลังตรวจสอบ...', checkingDesc: 'กรุณารอสักครู่ ระบบกำลังตรวจสอบสถานะการชำระเงิน',
+                missingTitle: 'ไม่พบข้อมูลการจอง', missingDesc: 'ไม่พบหมายเลขการจอง กรุณาลองใหม่อีกครั้ง', notFoundTitle: 'ไม่พบการจอง', notFoundDesc: 'ไม่พบข้อมูลการจองหมายเลข ',
+                successTitle: 'ชำระเงินสำเร็จ!', successDesc: 'ขอบคุณที่ใช้บริการ AQUATHRILL การจองของคุณได้รับการยืนยันแล้ว',
+                failedTitle: 'การชำระเงินล้มเหลว', failedDesc: 'การชำระเงินไม่สำเร็จ กรุณาลองใหม่อีกครั้งหรือเลือกช่องทางชำระเงินอื่น',
+                pendingTitle: 'รอการยืนยัน', pendingDesc: 'การชำระเงินกำลังดำเนินการตรวจสอบ ระบบจะอัปเดตสถานะโดยอัตโนมัติ',
+                errorTitle: 'เกิดข้อผิดพลาด', errorDesc: 'ไม่สามารถตรวจสอบสถานะได้ กรุณาติดต่อเรา',
+                bookingNo: 'หมายเลขการจอง', boatType: 'ประเภทเรือ', date: 'วันที่', time: 'เวลา', amount: 'ยอดชำระ', status: 'สถานะ',
+                morning: 'รอบเช้า', afternoon: 'รอบบ่าย', confirmed: 'ชำระเงินสำเร็จ', pending: 'รอตรวจสอบ', failed: 'ล้มเหลว',
+                nextTitle: 'ขั้นตอนถัดไป', next1: 'ทีมงานจะตรวจสอบรายละเอียดและติดต่อยืนยันผ่าน WhatsApp/โทรศัพท์', next2: 'กรุณาเตรียมเอกสารหรือบัตรประจำตัวสำหรับวันเดินทาง', next3: 'เวลารับจากโรงแรมและรายละเอียดทริปจะแจ้งให้ทราบก่อนออกเดินทาง',
+                home: 'กลับหน้าหลัก', contact: 'ติดต่อเรา', baht: ' บาท'
+            },
+            en: {
+                title: 'Payment Result | AQUATHRILL', checkingTitle: 'Checking...', checkingDesc: 'Please wait while we check your payment status.',
+                missingTitle: 'Booking not found', missingDesc: 'Missing booking number. Please try again.', notFoundTitle: 'Booking not found', notFoundDesc: 'No booking found for ',
+                successTitle: 'Payment successful!', successDesc: 'Thank you for booking with AQUATHRILL. Your booking has been confirmed.',
+                failedTitle: 'Payment failed', failedDesc: 'The payment was not completed. Please try again or choose another payment method.',
+                pendingTitle: 'Waiting for confirmation', pendingDesc: 'Your payment is being checked. The system will update the status automatically.',
+                errorTitle: 'Something went wrong', errorDesc: 'Could not check the payment status. Please contact us.',
+                bookingNo: 'Booking number', boatType: 'Boat type', date: 'Date', time: 'Time', amount: 'Amount', status: 'Status',
+                morning: 'Morning', afternoon: 'Afternoon', confirmed: 'Payment successful', pending: 'Pending review', failed: 'Failed',
+                nextTitle: 'Next steps', next1: 'Our team will review the details and confirm via WhatsApp/phone.', next2: 'Please prepare your ID or required documents for the trip date.', next3: 'Hotel pickup time and trip details will be sent before departure.',
+                home: 'Back home', contact: 'Contact us', baht: ' THB'
+            },
+            ru: {
+                title: 'Результат оплаты | AQUATHRILL', checkingTitle: 'Проверяем...', checkingDesc: 'Пожалуйста, подождите, мы проверяем статус оплаты.',
+                missingTitle: 'Бронирование не найдено', missingDesc: 'Номер бронирования отсутствует. Попробуйте еще раз.', notFoundTitle: 'Бронирование не найдено', notFoundDesc: 'Нет данных по бронированию ',
+                successTitle: 'Оплата успешна!', successDesc: 'Спасибо за бронирование в AQUATHRILL. Ваше бронирование подтверждено.',
+                failedTitle: 'Оплата не прошла', failedDesc: 'Платеж не был завершен. Попробуйте еще раз или выберите другой способ оплаты.',
+                pendingTitle: 'Ожидает подтверждения', pendingDesc: 'Оплата проверяется. Статус обновится автоматически.',
+                errorTitle: 'Произошла ошибка', errorDesc: 'Не удалось проверить статус оплаты. Пожалуйста, свяжитесь с нами.',
+                bookingNo: 'Номер бронирования', boatType: 'Тип лодки', date: 'Дата', time: 'Время', amount: 'Сумма', status: 'Статус',
+                morning: 'Утро', afternoon: 'День', confirmed: 'Оплата успешна', pending: 'На проверке', failed: 'Неудачно',
+                nextTitle: 'Следующие шаги', next1: 'Наша команда проверит детали и подтвердит через WhatsApp/телефон.', next2: 'Пожалуйста, подготовьте документы или удостоверение личности на день поездки.', next3: 'Время трансфера из отеля и детали тура будут отправлены перед выездом.',
+                home: 'На главную', contact: 'Связаться', baht: ' THB'
+            },
+            zh: {
+                title: '付款结果 | AQUATHRILL', checkingTitle: '正在检查...', checkingDesc: '请稍等，系统正在检查付款状态。',
+                missingTitle: '找不到预订信息', missingDesc: '缺少预订编号，请重试。', notFoundTitle: '找不到预订', notFoundDesc: '找不到此预订编号：',
+                successTitle: '付款成功！', successDesc: '感谢您预订 AQUATHRILL，您的预订已确认。',
+                failedTitle: '付款失败', failedDesc: '付款未完成，请重新尝试或选择其他付款方式。',
+                pendingTitle: '等待确认', pendingDesc: '付款正在检查中，系统会自动更新状态。',
+                errorTitle: '发生错误', errorDesc: '无法检查付款状态，请联系我们。',
+                bookingNo: '预订编号', boatType: '船型', date: '日期', time: '时间', amount: '付款金额', status: '状态',
+                morning: '上午', afternoon: '下午', confirmed: '付款成功', pending: '等待审核', failed: '失败',
+                nextTitle: '下一步', next1: '我们的团队会检查详情，并通过 WhatsApp/电话确认。', next2: '请在出行当天准备身份证件或相关文件。', next3: '酒店接送时间和行程详情会在出发前通知。',
+                home: '返回首页', contact: '联系我们', baht: ' THB'
+            }
+        }[lang];
+        document.title = L.title;
         const card = document.getElementById('result-card');
+        card.querySelector('.result-title').textContent = L.checkingTitle;
+        card.querySelector('.result-desc').textContent = L.checkingDesc;
 
         if (!bookingId) {
-            showResult('failed', 'fa-exclamation-circle', 'ไม่พบข้อมูลการจอง', 'ไม่พบหมายเลขการจอง กรุณาลองใหม่อีกครั้ง');
+            showResult('failed', 'fa-exclamation-circle', L.missingTitle, L.missingDesc);
             return;
         }
 
@@ -90,38 +149,38 @@
             }
 
             if (!booking) {
-                showResult('failed', 'fa-exclamation-circle', 'ไม่พบการจอง', 'ไม่พบข้อมูลการจองหมายเลข ' + bookingId);
+                showResult('failed', 'fa-exclamation-circle', L.notFoundTitle, L.notFoundDesc + bookingId);
                 return;
             }
 
             if (booking.status === 'confirmed') {
-                showResult('success', 'fa-check-circle', 'ชำระเงินสำเร็จ!', 'ขอบคุณที่ใช้บริการ AQUATHRILL การจองของคุณได้รับการยืนยันแล้ว', booking);
+                showResult('success', 'fa-check-circle', L.successTitle, L.successDesc, booking);
             } else if (booking.status === 'cancelled') {
-                showResult('failed', 'fa-times-circle', 'การชำระเงินล้มเหลว', 'การชำระเงินไม่สำเร็จ กรุณาลองใหม่อีกครั้งหรือเลือกช่องทางชำระเงินอื่น', booking);
+                showResult('failed', 'fa-times-circle', L.failedTitle, L.failedDesc, booking);
             } else {
                 // pending — could be callback hasn't arrived yet
-                showResult('pending', 'fa-clock', 'รอการยืนยัน', 'การชำระเงินกำลังดำเนินการตรวจสอบ ระบบจะอัปเดตสถานะโดยอัตโนมัติ', booking);
+                showResult('pending', 'fa-clock', L.pendingTitle, L.pendingDesc, booking);
             }
         } catch(e) {
-            showResult('failed', 'fa-exclamation-triangle', 'เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบสถานะได้ กรุณาติดต่อเรา');
+            showResult('failed', 'fa-exclamation-triangle', L.errorTitle, L.errorDesc);
         }
 
         function showResult(type, icon, title, desc, booking) {
             card.classList.remove('loading');
-            const lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
             const fmtPrice = (n) => {
                 const s = '฿' + Number(n || 0).toLocaleString('th-TH');
-                return s + (lang === 'th' ? ' บาท' : ' THB');
+                return s + L.baht;
             };
             const fmtDate = (value) => {
                 if (!value) return '-';
                 const date = new Date(value);
                 if (Number.isNaN(date.getTime())) return value;
-                return date.toLocaleDateString(lang === 'th' ? 'th-TH' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+                const locale = { th: 'th-TH', en: 'en-GB', ru: 'ru-RU', zh: 'zh-CN' }[lang] || 'en-GB';
+                return date.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
             };
             const fmtSlot = (value) => ({
-                morning: lang === 'th' ? 'รอบเช้า' : 'Morning',
-                afternoon: lang === 'th' ? 'รอบบ่าย' : 'Afternoon'
+                morning: L.morning,
+                afternoon: L.afternoon
             }[value] || value || '-');
             let html = `
                 <div class="result-icon ${type}">
@@ -134,40 +193,40 @@
                 html += `
                 <div class="result-details">
                     <div class="detail-row">
-                        <span class="label">หมายเลขการจอง</span>
+                        <span class="label">${L.bookingNo}</span>
                         <span class="value">${booking.booking_id || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="label">ประเภทเรือ</span>
+                        <span class="label">${L.boatType}</span>
                         <span class="value">${booking.boat_type || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="label">วันที่</span>
+                        <span class="label">${L.date}</span>
                         <span class="value">${fmtDate(booking.booking_date)}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="label">เวลา</span>
+                        <span class="label">${L.time}</span>
                         <span class="value">${fmtSlot(booking.time_slot)}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="label">ยอดชำระ</span>
+                        <span class="label">${L.amount}</span>
                         <span class="value amount">${fmtPrice(booking.total_price)}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="label">สถานะ</span>
+                        <span class="label">${L.status}</span>
                         <span class="value ${type === 'success' ? 'status-success' : type === 'pending' ? 'status-pending' : 'status-failed'}">
-                            ${booking.status === 'confirmed' ? 'ชำระเงินสำเร็จ' : booking.status === 'pending' ? 'รอตรวจสอบ' : 'ล้มเหลว'}
+                            ${booking.status === 'confirmed' ? L.confirmed : booking.status === 'pending' ? L.pending : L.failed}
                         </span>
                     </div>
                 </div>`;
                 if (type === 'success') {
                     html += `
                 <div class="next-steps">
-                    <h3><i class="fas fa-list-check"></i> ขั้นตอนถัดไป</h3>
+                    <h3><i class="fas fa-list-check"></i> ${L.nextTitle}</h3>
                     <ul>
-                        <li><i class="fas fa-check-circle"></i><span>ทีมงานจะตรวจสอบรายละเอียดและติดต่อยืนยันผ่าน WhatsApp/โทรศัพท์</span></li>
-                        <li><i class="fas fa-check-circle"></i><span>กรุณาเตรียมเอกสารหรือบัตรประจำตัวสำหรับวันเดินทาง</span></li>
-                        <li><i class="fas fa-check-circle"></i><span>เวลารับจากโรงแรมและรายละเอียดทริปจะแจ้งให้ทราบก่อนออกเดินทาง</span></li>
+                        <li><i class="fas fa-check-circle"></i><span>${L.next1}</span></li>
+                        <li><i class="fas fa-check-circle"></i><span>${L.next2}</span></li>
+                        <li><i class="fas fa-check-circle"></i><span>${L.next3}</span></li>
                     </ul>
                 </div>`;
                 }
@@ -175,8 +234,8 @@
 
             html += `
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                    <a href="/" class="btn-back"><i class="fas fa-home"></i> กลับหน้าหลัก</a>
-                    <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> ติดต่อเรา</a>
+                    <a href="/" class="btn-back"><i class="fas fa-home"></i> ${L.home}</a>
+                    <a href="https://wa.me/66958192778" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> ${L.contact}</a>
                 </div>`;
 
             card.innerHTML = html;

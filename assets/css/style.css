@@ -607,6 +607,21 @@ nav .container {
 .bg-navy { background: var(--navy); color: var(--white); }
 .bg-light { background: var(--light); }
 
+.routes-map-wrap {
+    width: min(1120px, 100%);
+    margin: 34px auto 40px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow: 0 22px 60px rgba(0,0,0,0.28);
+    background: rgba(255,255,255,0.06);
+}
+.routes-map-wrap img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
 .category-grid {
     display: flex;
     flex-wrap: wrap;
