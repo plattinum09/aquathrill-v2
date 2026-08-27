@@ -4,6 +4,9 @@ require_once __DIR__ . '/config.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $db = getDB();
 
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
+
 // One-time cleanup: remove stale boat_availability rows that were auto-created by
 // agent-booking with only status set. These rows can have wrong total_boats defaults
 // that override the correct boat_types.total_boats values.

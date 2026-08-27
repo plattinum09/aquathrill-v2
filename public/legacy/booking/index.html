@@ -1177,7 +1177,7 @@
             renderCalendarSkeleton();
             try {
                 if (!availabilityInflight.has(key)) {
-                    availabilityInflight.set(key, fetch('/api/availability.php?month=' + month + '&year=' + currentYear + '&boat=' + boat, { cache: 'force-cache' }).then(function(r){ return r.json(); }).finally(function(){ availabilityInflight.delete(key); }));
+                    availabilityInflight.set(key, fetch('/api/availability.php?month=' + month + '&year=' + currentYear + '&boat=' + boat + '&_=' + Date.now(), { cache: 'no-store' }).then(function(r){ return r.json(); }).finally(function(){ availabilityInflight.delete(key); }));
                 }
                 const d = await availabilityInflight.get(key);
                 const entry = { time: Date.now(), data: d };

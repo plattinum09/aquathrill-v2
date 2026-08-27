@@ -1,4 +1,5 @@
 import { after, type NextRequest } from "next/server";
+import { put } from "@vercel/blob";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { query } from "./db";
 import { sendBookingEmailsForBookingId } from "./email";
@@ -162,7 +163,7 @@ function omiseQrPage(params: {
   const bookingId = JSON.stringify(params.bookingId);
   const returnUri = JSON.stringify(params.returnUri);
   return new Response(
-    `<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ชำระเงิน PromptPay | AQUATHRILL</title><style>body{margin:0;font-family:Kanit,system-ui,sans-serif;background:radial-gradient(circle at top,#12385d,#071426 62%);color:#fff;display:grid;place-items:center;min-height:100vh;padding:24px}.card{width:min(520px,100%);background:linear-gradient(180deg,#102746,#0b1d35);border:1px solid rgba(0,212,255,.25);border-radius:28px;padding:28px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.38)}h1{margin:0 0 8px;font-size:1.8rem}.muted{color:#a9c8df;line-height:1.6}.amount{font-size:2.25rem;font-weight:900;color:#00d4ff;margin:12px 0;text-shadow:0 0 24px rgba(0,212,255,.35)}.qr{background:#fff;border-radius:22px;padding:18px;margin:20px auto;width:min(300px,90%);box-shadow:0 18px 45px rgba(0,0,0,.25)}.qr img{display:block;width:100%;height:auto}.status{display:flex;align-items:center;justify-content:center;gap:10px;color:#d7f3ff;margin:14px 0 4px;font-weight:700}.dot{width:10px;height:10px;border-radius:999px;background:#00d4ff;box-shadow:0 0 18px #00d4ff;animation:pulse 1.2s infinite}.btn{display:inline-flex;align-items:center;justify-content:center;margin:10px 6px 0;background:#00b4ff;color:#fff;text-decoration:none;padding:13px 20px;border-radius:14px;font-weight:700}.btn.secondary{background:#243a5d}@keyframes pulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}@media(max-width:520px){body{padding:14px}.card{padding:22px 16px;border-radius:24px}.qr{width:min(280px,88%)}}</style><main class="card"><h1>สแกนจ่าย PromptPay</h1><p class="muted">หมายเลขการจอง ${escape(params.bookingId)}</p><div class="amount">฿${Number(params.amount || 0).toLocaleString("th-TH")}</div><div class="qr"><img src="${escape(params.qrUrl)}" alt="PromptPay QR"></div><div class="status"><span class="dot"></span><span id="auto-status">กำลังรอการชำระเงิน ระบบจะตรวจสอบให้อัตโนมัติ</span></div><p class="muted">หลังชำระเงินสำเร็จ หน้านี้จะพาไปหน้าทำรายการสำเร็จเอง${expiresText ? `<br>QR หมดอายุ: ${escape(expiresText)}` : ""}</p><a class="btn" href="${escape(params.returnUri)}">ตรวจสอบสถานะตอนนี้</a><a class="btn secondary" href="/booking">กลับหน้าจอง</a></main><script>(function(){var bookingId=${bookingId};var returnUri=${returnUri};var statusEl=document.getElementById("auto-status");var attempts=0;var maxAttempts=180;var checking=false;function setText(t){if(statusEl)statusEl.textContent=t}async function poll(){if(checking)return;checking=true;attempts++;try{var res=await fetch("/api/omise-sync-status.php?booking_id="+encodeURIComponent(bookingId)+"&_="+Date.now(),{cache:"no-store",credentials:"include"});var data=await res.json().catch(function(){return {}});if(data&&data.status==="confirmed"){setText("ชำระเงินสำเร็จ กำลังพาไปหน้าสรุปรายการ...");window.location.replace(returnUri);return}if(data&&data.status==="cancelled"){setText("รายการนี้ถูกยกเลิกหรือ QR หมดอายุ กรุณาทำรายการใหม่");return}setText("กำลังตรวจสอบสถานะการชำระเงินอัตโนมัติ...")}catch(e){setText("กำลังเชื่อมต่อระบบตรวจสอบสถานะ...")}finally{checking=false;if(attempts<maxAttempts)setTimeout(poll,3000)}}setTimeout(poll,2500)})();</script></html>`,
+    `<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ชำระเงิน PromptPay | AQUATHRILL</title><style>body{margin:0;font-family:Kanit,system-ui,sans-serif;background:radial-gradient(circle at top,#12385d,#071426 62%);color:#fff;display:grid;place-items:center;min-height:100vh;padding:24px}.card{width:min(520px,100%);background:linear-gradient(180deg,#102746,#0b1d35);border:1px solid rgba(0,212,255,.25);border-radius:28px;padding:28px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.38)}h1{margin:0 0 8px;font-size:1.8rem}.muted{color:#a9c8df;line-height:1.6}.amount{font-size:2.25rem;font-weight:900;color:#00d4ff;margin:12px 0;text-shadow:0 0 24px rgba(0,212,255,.35)}.qr{background:#fff;border-radius:22px;padding:18px;margin:20px auto 14px;width:min(300px,90%);box-shadow:0 18px 45px rgba(0,0,0,.25)}.qr img{display:block;width:100%;height:auto}.status{display:flex;align-items:center;justify-content:center;gap:10px;color:#d7f3ff;margin:14px 0 4px;font-weight:700}.dot{width:10px;height:10px;border-radius:999px;background:#00d4ff;box-shadow:0 0 18px #00d4ff;animation:pulse 1.2s infinite}.btn{display:inline-flex;align-items:center;justify-content:center;margin:10px 6px 0;background:#00b4ff;color:#fff;text-decoration:none;padding:13px 20px;border-radius:14px;font-weight:700;border:0;cursor:pointer;font-family:inherit;font-size:1rem}.btn.secondary{background:#243a5d}.slip-box{margin:0 auto 12px;width:min(300px,90%)}.slip-btn{width:100%;background:rgba(255,255,255,.08);border:1px dashed rgba(0,212,255,.55);color:#dff7ff}.slip-btn:hover{background:rgba(0,180,255,.16)}.slip-note{font-size:.82rem;color:#9fc3d9;margin:8px 0 0;min-height:1.3em}.slip-note.ok{color:#86efac}.slip-note.err{color:#ff9aae}@keyframes pulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}@media(max-width:520px){body{padding:14px}.card{padding:22px 16px;border-radius:24px}.qr,.slip-box{width:min(280px,88%)}}</style><main class="card"><h1>สแกนจ่าย PromptPay</h1><p class="muted">หมายเลขการจอง ${escape(params.bookingId)}</p><div class="amount">฿${Number(params.amount || 0).toLocaleString("th-TH")}</div><div class="qr"><img src="${escape(params.qrUrl)}" alt="PromptPay QR"></div><div class="slip-box"><input id="slip-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden><button class="btn slip-btn" id="slip-btn" type="button">แนบสลิป</button><p class="slip-note" id="slip-note">JPG, PNG, WebP หรือ GIF ไม่เกิน 5MB</p></div><div class="status"><span class="dot"></span><span id="auto-status">กำลังรอการชำระเงิน ระบบจะตรวจสอบให้อัตโนมัติ</span></div><p class="muted">หลังชำระเงินสำเร็จ หน้านี้จะพาไปหน้าทำรายการสำเร็จเอง${expiresText ? `<br>QR หมดอายุ: ${escape(expiresText)}` : ""}</p><a class="btn" href="${escape(params.returnUri)}">ตรวจสอบสถานะตอนนี้</a><a class="btn secondary" href="/booking">กลับหน้าจอง</a></main><script>(function(){var bookingId=${bookingId};var returnUri=${returnUri};var statusEl=document.getElementById("auto-status");var slipBtn=document.getElementById("slip-btn");var slipFile=document.getElementById("slip-file");var slipNote=document.getElementById("slip-note");var attempts=0;var maxAttempts=180;var checking=false;function setText(t){if(statusEl)statusEl.textContent=t}function setSlip(t,c){if(!slipNote)return;slipNote.textContent=t;slipNote.className="slip-note"+(c?" "+c:"")}if(slipBtn&&slipFile){slipBtn.addEventListener("click",function(){slipFile.click()});slipFile.addEventListener("change",async function(){var file=slipFile.files&&slipFile.files[0];if(!file)return;if(file.size>5*1024*1024){setSlip("ไฟล์ใหญ่เกิน 5MB","err");slipFile.value="";return}var form=new FormData();form.append("booking_id",bookingId);form.append("slip",file);slipBtn.disabled=true;slipBtn.textContent="กำลังอัปโหลด...";setSlip("กำลังส่งสลิป...","");try{var res=await fetch("/api/promptpay-slip.php",{method:"POST",body:form,cache:"no-store"});var data=await res.json().catch(function(){return {}});if(!res.ok||!data.success)throw new Error(data.error||"อัปโหลดสลิปไม่สำเร็จ");slipBtn.textContent="แนบสลิปแล้ว";setSlip("ส่งสลิปเรียบร้อยแล้ว","ok")}catch(e){slipBtn.disabled=false;slipBtn.textContent="แนบสลิป";setSlip(e.message||"อัปโหลดสลิปไม่สำเร็จ","err")}})}async function poll(){if(checking)return;checking=true;attempts++;try{var res=await fetch("/api/omise-sync-status.php?booking_id="+encodeURIComponent(bookingId)+"&_="+Date.now(),{cache:"no-store",credentials:"include"});var data=await res.json().catch(function(){return {}});if(data&&data.status==="confirmed"){setText("ชำระเงินสำเร็จ กำลังพาไปหน้าสรุปรายการ...");window.location.replace(returnUri);return}if(data&&data.status==="cancelled"){setText("รายการนี้ถูกยกเลิกหรือ QR หมดอายุ กรุณาทำรายการใหม่");return}setText("กำลังตรวจสอบสถานะการชำระเงินอัตโนมัติ...")}catch(e){setText("กำลังเชื่อมต่อระบบตรวจสอบสถานะ...")}finally{checking=false;if(attempts<maxAttempts)setTimeout(poll,3000)}}setTimeout(poll,2500)})();</script></html>`,
     { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
   );
 }
@@ -497,6 +498,49 @@ export async function omiseSyncStatus(request: NextRequest) {
   const result = await syncOmiseBooking(bookingId);
   if ("error" in result) return json({ error: result.error }, result.statusCode || 500);
   return json(result);
+}
+
+export async function promptpaySlip(request: NextRequest) {
+  if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  const form = await request.formData();
+  const bookingId = String(form.get("booking_id") || "").trim();
+  const file = form.get("slip");
+  if (!/^[A-Za-z0-9-]{6,30}$/.test(bookingId)) return json({ error: "Invalid booking_id" }, 400);
+  if (!(file instanceof File)) return json({ error: "กรุณาเลือกไฟล์สลิป" }, 400);
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) return json({ error: "รองรับเฉพาะ JPG, PNG, WebP, GIF" }, 400);
+  if (file.size > 5 * 1024 * 1024) return json({ error: "ไฟล์ใหญ่เกิน 5MB" }, 400);
+
+  const booking = (await query<any>("SELECT booking_id,total_price,status,notes FROM bookings WHERE booking_id=$1 LIMIT 1", [bookingId])).rows[0];
+  if (!booking) return json({ error: "ไม่พบรายการจองนี้" }, 404);
+  if (booking.status === "cancelled") return json({ error: "รายการนี้ถูกยกเลิกแล้ว" }, 400);
+
+  const safeName = `${bookingId}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+  let slipUrl = "";
+  let storage = "vercel_blob";
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    if (process.env.NODE_ENV === "production") return json({ error: "ระบบยังไม่ได้ตั้งค่าอัปโหลดไฟล์" }, 500);
+    const [{ mkdir, writeFile }, path] = await Promise.all([import("node:fs/promises"), import("node:path")]);
+    const dir = path.join(process.cwd(), "public", "images", "slips");
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, safeName), Buffer.from(await file.arrayBuffer()));
+    slipUrl = `/images/slips/${safeName}`;
+    storage = "local";
+  } else {
+    const blob = await put(`slips/${safeName}`, file, { access: "public", addRandomSuffix: true });
+    slipUrl = blob.url;
+  }
+
+  const payload = { type: "promptpay_slip", slip_url: slipUrl, storage, uploaded_at: new Date().toISOString() };
+  await query(
+    "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,NULL,'promptpay_qr',$2,'slip_uploaded',$3::jsonb)",
+    [bookingId, Number(booking.total_price || 0), JSON.stringify(payload)]
+  );
+  const noteLine = `PromptPay slip: ${slipUrl}`;
+  await query(
+    "UPDATE bookings SET notes=CASE WHEN COALESCE(notes,'')='' THEN $2 WHEN notes LIKE $3 THEN notes ELSE notes || E'\\n' || $2 END,payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN 'promptpay_qr' ELSE payment_method END WHERE booking_id=$1",
+    [bookingId, noteLine, `%${slipUrl}%`]
+  );
+  return json({ success: true, slip_url: slipUrl });
 }
 
 export async function omiseWebhook(request: NextRequest) {
