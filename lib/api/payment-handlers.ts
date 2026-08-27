@@ -15,6 +15,7 @@ const OMISE_SOURCE_LABELS: Record<string, string> = {
   wechat_pay: "WeChat Pay",
   alipay: "Alipay",
 };
+const OMISE_FAILED_STATUSES = ["failed", "expired", "reversed"];
 
 function omiseSecretKey() {
   return process.env.OMISE_SECRET_KEY || process.env.OMISE_SKEY || "";
@@ -96,6 +97,23 @@ function satang(amount: unknown) {
 
 async function notifyConfirmedBooking(bookingId: string) {
   after(() => sendBookingEmailsForBookingId(bookingId));
+}
+
+function omiseChargeFromEvent(data: any) {
+  if (data?.object === "charge") return data;
+  if (data?.data?.object === "charge") return data.data;
+  if (data?.data?.object?.object === "charge") return data.data.object;
+  if (data?.object?.object === "charge") return data.object;
+  return null;
+}
+
+function omiseChargeState(charge: any) {
+  const status = String(charge?.status || "");
+  return {
+    status,
+    completed: status === "successful" || charge?.paid === true,
+    failed: OMISE_FAILED_STATUSES.includes(status),
+  };
 }
 
 function paymentErrorPage(message: string, status = 500) {
@@ -341,24 +359,26 @@ function verifyOmiseSignature(rawBody: string, signature: string) {
 
 async function handleOmiseEvent(data: any) {
   const eventKey = String(data.key || "");
-  const charge = data.data?.object === "charge" ? data.data : data.object === "charge" ? data : null;
+  const charge = omiseChargeFromEvent(data);
   if (!charge) return { ignored: true, reason: "not_charge_event" };
 
   const bookingId = charge.metadata?.booking_id || charge.description?.match(/AQUATHRILL Booking ([A-Za-z0-9-]+)/)?.[1];
   if (!bookingId) return { ignored: true, reason: "missing_booking_id" };
 
-  const status = String(charge.status || "");
-  const completed = status === "successful";
-  const failed = ["failed", "expired", "reversed"].includes(status);
+  const { status, completed, failed } = omiseChargeState(charge);
+  const booking = (await query<any>("SELECT payment_method FROM bookings WHERE booking_id=$1 LIMIT 1", [bookingId])).rows[0];
+  const paymentMethod = OMISE_PAYMENT_METHODS.includes(String(booking?.payment_method || ""))
+    ? String(booking.payment_method)
+    : "omise";
   await query(
-    "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,'omise',$3,$4,$5::jsonb)",
-    [bookingId, charge.id || null, Number(charge.amount || 0) / 100, completed ? "completed" : failed ? "failed" : status || eventKey || "pending", JSON.stringify(data)]
+    "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,$3,$4,$5,$6::jsonb)",
+    [bookingId, charge.id || null, paymentMethod, Number(charge.amount || 0) / 100, completed ? "completed" : failed ? "failed" : status || eventKey || "pending", JSON.stringify(data)]
   );
   if (completed) {
-    const result = await query("UPDATE bookings SET status='confirmed',payment_method='omise' WHERE booking_id=$1 AND status!='confirmed'", [bookingId]);
+    const result = await query("UPDATE bookings SET status='confirmed',payment_method=$2 WHERE booking_id=$1 AND status!='confirmed'", [bookingId, paymentMethod]);
     if (result.rowCount) await notifyConfirmedBooking(bookingId);
   }
-  if (failed) await query("UPDATE bookings SET status='cancelled',payment_method='omise' WHERE booking_id=$1 AND status='pending'", [bookingId]);
+  if (failed) await query("UPDATE bookings SET status='cancelled',payment_method=$2 WHERE booking_id=$1 AND status='pending'", [bookingId, paymentMethod]);
   return { success: true, booking_id: bookingId, charge_id: charge.id, status };
 }
 
@@ -394,15 +414,13 @@ async function syncOmiseBooking(bookingId: string) {
   }
 
   const charge = await omiseGet(`/charges/${encodeURIComponent(chargeId)}`);
-  const status = String(charge.status || "");
-  const completed = status === "successful" || charge.paid === true;
-  const failed = ["failed", "expired", "reversed"].includes(status);
+  const { status, completed, failed } = omiseChargeState(charge);
   await query(
     "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,$3,$4,$5,$6::jsonb)",
     [bookingId, charge.id || chargeId, latestLog.payment_method || "omise_card", Number(charge.amount || 0) / 100, completed ? "completed" : failed ? "failed" : status || "pending", JSON.stringify(charge)]
   );
   if (completed) {
-    const result = await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN 'omise_card' ELSE payment_method END WHERE booking_id=$1 AND status!='confirmed'", [bookingId]);
+    const result = await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN $2 ELSE payment_method END WHERE booking_id=$1 AND status!='confirmed'", [bookingId, latestLog.payment_method || "omise"]);
     if (result.rowCount) await notifyConfirmedBooking(bookingId);
     return { success: true, booking_id: bookingId, status: "confirmed", synced: true, source: "omise_charge" };
   }
