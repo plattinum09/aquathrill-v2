@@ -98,6 +98,9 @@
       ['trip.include_food','รวม: อาหาร','input'], ['trip.include_drink','รวม: เครื่องดื่ม','input'],
       ['trip.include_captain','รวม: กัปตัน','input'], ['trip.include_insurance','รวม: ประกันภัย','input'],
       ['trip.cta','ปุ่ม WhatsApp','input']
+    ]},
+    {title:'Section เส้นทางการเดินทาง', icon:'fa-route', fields:[
+      ['routes.map_image','รูปแผนที่เส้นทาง Travel Routes','image']
     ]}
   ];
   let currentLang = 'th';
@@ -304,9 +307,6 @@
       });
       const d = await r.json().catch(()=>({}));
       if (!r.ok || !d.success) throw new Error(d.error || 'บันทึกไม่สำเร็จ');
-      try {
-        localStorage.setItem('aquathrill:page-content:' + pageKey(), JSON.stringify(content));
-      } catch(e) {}
       dirty = false;
       showToast('บันทึกหน้าแรกสำเร็จ');
     } catch(e) {
@@ -327,9 +327,6 @@
     });
     const d = await r.json().catch(()=>({}));
     if (!r.ok || !d.success) return showToast(d.error || 'ล้างค่าไม่สำเร็จ','error');
-    try {
-      localStorage.removeItem('aquathrill:page-content:' + pageKey());
-    } catch(e) {}
     showToast('ล้างค่าแล้ว');
     loadContent();
   }
