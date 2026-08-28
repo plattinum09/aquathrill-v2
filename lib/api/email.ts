@@ -311,7 +311,7 @@ export async function sendBookingEmailsForBookingId(bookingId: string, options: 
 
   const booking = bookingFromRow(row);
   const sent = options.force ? [] : (await query<any>(
-    "SELECT recipient_type FROM booking_email_logs WHERE booking_id=$1 AND status IN ('sent','skipped')",
+    "SELECT recipient_type FROM booking_email_logs WHERE booking_id=$1 AND (status='sent' OR (status='skipped' AND reason='missing_customer_email'))",
     [bookingId]
   )).rows.map((x: any) => String(x.recipient_type));
 

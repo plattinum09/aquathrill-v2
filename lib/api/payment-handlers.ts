@@ -113,7 +113,11 @@ function satang(amount: unknown) {
 }
 
 async function notifyConfirmedBooking(bookingId: string) {
-  after(() => sendBookingEmailsForBookingId(bookingId));
+  after(() => {
+    sendBookingEmailsForBookingId(bookingId).catch((error) => {
+      console.error("[email] Confirmed booking email queue failed", { bookingId, error });
+    });
+  });
 }
 
 function omiseChargeFromEvent(data: any) {
