@@ -465,7 +465,19 @@
             border-style: dashed; filter: grayscale(0.35);
         }
         .m-payment-option:disabled:hover { transform: none; border-color: rgba(255,255,255,0.14); }
+        .m-payment-option .m-pay-icon.touchngo {
+            width: 34px; height: 34px; border-radius: 12px;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex: 0 0 auto;
+            color: #fff;
+            background: linear-gradient(145deg, #00a8e8, #0b74d1 52%, #18b56b);
+            font-size: 0.52rem;
+            font-weight: 900;
+            line-height: 1;
+            text-align: center;
+        }
         .m-payment-note { color: rgba(255,255,255,0.46); font-size: 0.72rem; line-height: 1.55; margin-top: 8px; }
+        .m-payment-note.warning { color: #ffd166; }
 
         /* Buttons */
         .m-btn-primary {
@@ -760,6 +772,10 @@
                         <button type="button" class="m-payment-option" data-payment-method="promptpay_qr">
                             <i class="fas fa-qrcode"></i>
                             <span>PromptPay QR<span class="small">สแกนจ่ายผ่านแอปธนาคาร</span></span>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="touch_n_go">
+                            <span class="m-pay-icon touchngo">TNG</span>
+                            <span>Touch 'n Go<span class="small">ชำระผ่าน eWallet</span></span>
                         </button>
                     </div>
                     <div class="m-payment-note" id="m-payment-note">
@@ -1210,6 +1226,7 @@
         const modal = document.getElementById('booking-modal');
         let modalData = {};
         let selectedPaymentMethod = 'omise_card';
+        let omisePublicConfig = null;
 
         function formatPrice(n) {
             var lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'th';
@@ -1264,6 +1281,7 @@
             document.querySelectorAll('.m-payment-option').forEach(function(btn) {
                 btn.classList.toggle('active', btn.dataset.paymentMethod === selectedPaymentMethod);
             });
+            loadOmisePublicConfig();
             // Reset payment
             document.querySelectorAll('.m-pay-tab').forEach(function(t,i) {
                 t.classList.toggle('active', i===0);
@@ -1332,6 +1350,64 @@
             });
         });
 
+        function setPaymentNote(message, warning) {
+            var note = document.getElementById('m-payment-note');
+            if (!note) return;
+            note.textContent = message;
+            note.classList.toggle('warning', !!warning);
+        }
+
+        function applyOmisePaymentAvailability(config) {
+            var sourceMethods = (config && config.source_methods) || {};
+            var disabledLabels = [];
+            document.querySelectorAll('.m-payment-option[data-payment-method]').forEach(function(btn) {
+                var method = btn.dataset.paymentMethod || '';
+                var info = sourceMethods[method];
+                if (!info) return;
+                var enabled = info.enabled !== false;
+                btn.disabled = !enabled;
+                btn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+                var small = btn.querySelector('.small');
+                if (small && !small.dataset.originalText) small.dataset.originalText = small.textContent || '';
+                if (small) {
+                    small.textContent = enabled
+                        ? small.dataset.originalText
+                        : t('bk.payment_disabled_short', 'ยังไม่ได้เปิดใช้งานในบัญชี Omise');
+                }
+                if (!enabled) disabledLabels.push(info.label || method);
+            });
+            if (document.querySelector('.m-payment-option.active:disabled')) {
+                selectedPaymentMethod = 'omise_card';
+                document.querySelectorAll('.m-payment-option').forEach(function(item) {
+                    item.classList.toggle('active', item.dataset.paymentMethod === selectedPaymentMethod);
+                });
+            }
+            if (disabledLabels.length) {
+                setPaymentNote(
+                    t('bk.payment_disabled_prefix', 'ช่องทางที่ยังไม่เปิดใช้งาน:') + ' ' + disabledLabels.join(', ') + ' - ' + t('bk.payment_disabled_suffix', 'หากต้องการใช้ ให้เปิดในบัญชี Omise และตั้งค่า Environment Variables ก่อน'),
+                    true
+                );
+            } else {
+                setPaymentNote(t('bk.payment_method_note', 'ระบบจะเปิดหน้าชำระเงินของ Omise หลังตรวจสอบข้อมูลการจอง'), false);
+            }
+        }
+
+        async function loadOmisePublicConfig() {
+            if (omisePublicConfig) {
+                applyOmisePaymentAvailability(omisePublicConfig);
+                return omisePublicConfig;
+            }
+            try {
+                var res = await fetch('/api/omise-config.php', { credentials: 'include', cache: 'no-store' });
+                omisePublicConfig = await res.json();
+                applyOmisePaymentAvailability(omisePublicConfig);
+                return omisePublicConfig;
+            } catch (e) {
+                return null;
+            }
+        }
+        loadOmisePublicConfig();
+
         // Step 1 → 2
         document.getElementById('m-btn-to-pay').addEventListener('click', function() {
             const name = document.getElementById('m-name').value.trim();
@@ -1352,6 +1428,11 @@
             modalData.time = document.getElementById('m-time').value;
             modalData.timeValue = document.getElementById('m-time').value;
             modalData.timeName = document.getElementById('m-time').options[document.getElementById('m-time').selectedIndex].text;
+            var selectedButton = document.querySelector('.m-payment-option[data-payment-method="' + selectedPaymentMethod + '"]');
+            if (selectedButton && selectedButton.disabled) {
+                alert(t('bk.alert_payment_method_disabled', 'ช่องทางชำระเงินนี้ยังไม่ได้เปิดใช้งาน กรุณาเลือกช่องทางอื่น'));
+                return;
+            }
             modalData.paymentMethod = selectedPaymentMethod;
             if (selectedPaymentMethod === 'omise_card') {
                 payByCreditCard(this);

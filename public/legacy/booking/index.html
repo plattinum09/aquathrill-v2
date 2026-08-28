@@ -514,6 +514,17 @@
         .m-pay-icon.promptpay { color: #0b3f7d; background: #f5f8fb; font-size: 0.72rem; font-weight: 900; border: 1px solid #d8e1ed; }
         .m-pay-icon.mobile { color: #fff; background: linear-gradient(145deg, #22c55e, #0f9f4a); font-weight: 900; font-size: 1.1rem; }
         .m-pay-icon.wechat { color: #fff; background: linear-gradient(145deg, #33c05b, #17a640); font-size: 1.35rem; }
+        .m-pay-icon.touchngo {
+            color: #fff;
+            background: linear-gradient(145deg, #00a8e8, #0b74d1 52%, #18b56b);
+            font-size: 0.82rem;
+            font-weight: 900;
+            letter-spacing: 0;
+            text-align: center;
+            line-height: 1.05;
+            flex-direction: column;
+        }
+        .m-pay-icon.touchngo .m-tng-plus { color: #7cff9b; font-size: 1.05rem; line-height: 1; }
         .m-pay-icon.alipay {
             color: #fff;
             background: linear-gradient(145deg, #14c8ff, #0877d9);
@@ -909,6 +920,11 @@
                         <button type="button" class="m-payment-option" data-payment-method="alipay">
                             <span class="m-pay-icon alipay"><span class="m-alipay-mark" aria-hidden="true">支</span></span>
                             <span><strong data-i18n="bk.pay_alipay_title">Alipay</strong><span class="small" data-i18n="bk.pay_alipay_desc">ชำระผ่าน Alipay</span></span>
+                            <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="m-payment-option" data-payment-method="touch_n_go">
+                            <span class="m-pay-icon touchngo"><span>Touch</span><span class="m-tng-plus">n Go</span></span>
+                            <span><strong data-i18n="bk.pay_touchngo_title">Touch 'n Go</strong><span class="small" data-i18n="bk.pay_touchngo_desc">ชำระผ่าน Touch 'n Go eWallet</span></span>
                             <i class="fas fa-chevron-right m-pay-chevron" aria-hidden="true"></i>
                         </button>
                     </div>

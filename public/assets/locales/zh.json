@@ -596,6 +596,8 @@
     "pay_wechat_note": "部分微信账户类型可能不支持向境外商户付款。",
     "pay_alipay_title": "支付宝",
     "pay_alipay_desc": "使用支付宝付款",
+    "pay_touchngo_title": "Touch 'n Go",
+    "pay_touchngo_desc": "使用 Touch 'n Go 电子钱包付款",
     "payment_method_note": "Omise 将在确认预订信息后打开付款页面",
     "payment_disabled_prefix": "尚未启用的付款方式：",
     "payment_disabled_suffix": "如需使用，请先在 Omise 账户中启用并设置环境变量",

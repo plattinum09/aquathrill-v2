@@ -63,6 +63,7 @@ function formatPaymentMethod(value?: string) {
     mobile_banking: "Mobile Banking",
     wechat_pay: "WeChat Pay",
     alipay: "Alipay",
+    touch_n_go: "Touch 'n Go",
     omise: "Omise",
     bank_transfer: "Bank Transfer",
   };

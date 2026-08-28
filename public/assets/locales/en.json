@@ -596,6 +596,8 @@
     "pay_wechat_note": "Some WeChat account types may not support payments to overseas merchants.",
     "pay_alipay_title": "Alipay",
     "pay_alipay_desc": "Pay with Alipay",
+    "pay_touchngo_title": "Touch 'n Go",
+    "pay_touchngo_desc": "Pay with Touch 'n Go eWallet",
     "payment_method_note": "Omise will open the payment page after checking your booking details",
     "payment_disabled_prefix": "Payment methods not enabled:",
     "payment_disabled_suffix": "To use them, enable the methods in your Omise account and set the Environment Variables first",

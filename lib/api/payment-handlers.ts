@@ -8,13 +8,14 @@ import { body, json } from "./http";
 const escape = (value: any) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
-const OMISE_SOURCE_METHODS = ["promptpay_qr", "mobile_banking", "wechat_pay", "alipay"];
+const OMISE_SOURCE_METHODS = ["promptpay_qr", "mobile_banking", "wechat_pay", "alipay", "touch_n_go"];
 const OMISE_PAYMENT_METHODS = ["omise", "omise_card", ...OMISE_SOURCE_METHODS];
 const OMISE_SOURCE_LABELS: Record<string, string> = {
   promptpay_qr: "PromptPay QR",
   mobile_banking: "Mobile Banking",
   wechat_pay: "WeChat Pay",
   alipay: "Alipay",
+  touch_n_go: "Touch 'n Go",
 };
 const OMISE_FAILED_STATUSES = ["failed", "expired", "reversed"];
 
@@ -58,6 +59,12 @@ function omiseSourceMethodConfig(method: string) {
       enabled: envFlag("OMISE_ENABLE_ALIPAY", false),
       label: OMISE_SOURCE_LABELS.alipay,
       envName: "OMISE_ENABLE_ALIPAY",
+    },
+    touch_n_go: {
+      sourceType: process.env.OMISE_TOUCH_N_GO_SOURCE_TYPE || "touch_n_go",
+      enabled: envFlag("OMISE_ENABLE_TOUCH_N_GO", false),
+      label: OMISE_SOURCE_LABELS.touch_n_go,
+      envName: "OMISE_ENABLE_TOUCH_N_GO",
     },
   };
   return config[normalized] || null;
@@ -151,6 +158,16 @@ function omiseSourceErrorMessage(method: string, sourceType: string, error: unkn
         "OMISE_ALIPAY_PLATFORM_TYPE=WEB",
         "",
         "ถ้าตั้งครบแล้วยังขึ้น error เดิม ต้องให้ Omise/Opn เปิดใช้งาน Alipay ให้ merchant account/API key นี้ก่อน"
+      );
+    }
+    if (method === "touch_n_go") {
+      hints.push(
+        "",
+        "สำหรับ Touch 'n Go ให้ตั้งค่าใน .env / Vercel Environment Variables:",
+        "OMISE_ENABLE_TOUCH_N_GO=true",
+        "OMISE_TOUCH_N_GO_SOURCE_TYPE=touch_n_go",
+        "",
+        "ถ้าตั้งครบแล้วยังขึ้น error เดิม ต้องให้ Omise/Opn เปิดใช้งาน Touch 'n Go ให้ merchant account/API key นี้ก่อน"
       );
     }
     return hints.join("\n");
