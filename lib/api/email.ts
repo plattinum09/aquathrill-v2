@@ -42,8 +42,27 @@ function formatDate(value: string) {
 
 function formatTimeSlot(value: string) {
   const slots: Record<string, string> = {
-    morning: "รอบเช้า",
-    afternoon: "รอบบ่าย",
+    morning: "Morning",
+    afternoon: "Afternoon",
+  };
+  return slots[value] || value;
+}
+
+function formatDateEn(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Asia/Bangkok",
+  });
+}
+
+function formatTimeSlotEn(value: string) {
+  const slots: Record<string, string> = {
+    morning: "Morning",
+    afternoon: "Afternoon",
   };
   return slots[value] || value;
 }
@@ -111,20 +130,20 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
 
   const rows = [
     ["Booking ID", booking.bookingId],
-    ["วันที่", formatDate(booking.bookingDate)],
-    ["รอบ", formatTimeSlot(booking.timeSlot)],
-    ["ประเภทเรือ", booking.boatType],
-    ["ชื่อลูกค้า", booking.customerName],
-    ["เบอร์โทร", booking.customerPhone],
-    ["อีเมลลูกค้า", booking.customerEmail || "-"],
-    ["ช่องทางชำระเงิน", formatPaymentMethod(booking.paymentMethod)],
-    ["ยอดชำระ", formatMoney(booking.totalPrice)],
+    ["Date", formatDateEn(booking.bookingDate)],
+    ["Trip", formatTimeSlot(booking.timeSlot)],
+    ["Boat", booking.boatType],
+    ["Customer Name", booking.customerName],
+    ["Phone", booking.customerPhone],
+    ["Customer Email", booking.customerEmail || "-"],
+    ["Payment Method", formatPaymentMethod(booking.paymentMethod)],
+    ["Amount Paid", formatMoney(booking.totalPrice)],
   ];
 
   const htmlRows = rows
     .map(
       ([label, value]) => {
-        const isAmount = label === "ยอดชำระ";
+        const isAmount = label === "Amount Paid";
         return `
         <tr>
           <td style="padding:15px 20px;color:#64748b;border-bottom:1px solid #e5edf6;font-size:15px;">${escapeHtml(label)}</td>
@@ -138,15 +157,15 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
     from: config.from,
     to,
     replyTo: isValidEmail(booking.customerEmail) ? booking.customerEmail : undefined,
-    subject: `New booking ${booking.bookingId} | AQUATHRILL`,
+    subject: `New Confirmed Booking ${booking.bookingId} | AQUATHRILL`,
     text: rows.map(([label, value]) => `${label}: ${value}`).join("\n"),
     html: `
       <div style="font-family:Arial,'Helvetica Neue',sans-serif;background:linear-gradient(135deg,#eaf8ff 0%,#f8fafc 45%,#ffffff 100%);padding:28px;">
         <div style="max-width:680px;margin:0 auto;background:#ffffff;border-radius:26px;overflow:hidden;border:1px solid #dbeafe;box-shadow:0 20px 60px rgba(8,35,62,.14);">
           <div style="background:linear-gradient(135deg,#061b31,#08375e 58%,#06b6d4);color:white;padding:30px 30px 26px;">
             <div style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 13px;color:#bae6fd;font-size:13px;font-weight:700;letter-spacing:.4px;">AQUATHRILL PHUKET</div>
-            <h1 style="margin:18px 0 8px;font-size:30px;line-height:1.25;">มีรายการจองใหม่สำเร็จ</h1>
-            <p style="margin:0;color:#d7f3ff;font-size:16px;">ลูกค้าชำระเงินเรียบร้อย กรุณาตรวจสอบรายละเอียดการจอง</p>
+            <h1 style="margin:18px 0 8px;font-size:30px;line-height:1.25;">New Confirmed Booking</h1>
+            <p style="margin:0;color:#d7f3ff;font-size:16px;">The customer has completed payment. Please review the booking details.</p>
           </div>
           <div style="padding:24px 30px;background:#f8fbff;border-bottom:1px solid #e5edf6;">
             <div style="font-size:13px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Booking Reference</div>
@@ -158,7 +177,7 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
             </table>
           </div>
           <div style="padding:18px 30px 26px;background:#f8fafc;color:#64748b;font-size:13px;line-height:1.6;">
-            อีเมลนี้ถูกส่งอัตโนมัติจากระบบจอง AQUATHRILL เมื่อสถานะรายการเป็น confirmed
+            This email was sent automatically by the AQUATHRILL booking system when the booking status changed to confirmed.
           </div>
         </div>
       </div>
@@ -180,13 +199,13 @@ export async function sendCustomerBookingConfirmationEmail(booking: BookingNotif
 
   const rows = [
     ["Booking ID", booking.bookingId],
-    ["วันที่", formatDate(booking.bookingDate)],
-    ["รอบ", formatTimeSlot(booking.timeSlot)],
-    ["ประเภทเรือ", booking.boatType],
-    ["ชื่อลูกค้า", booking.customerName],
-    ["เบอร์โทร", booking.customerPhone],
-    ["ช่องทางชำระเงิน", formatPaymentMethod(booking.paymentMethod)],
-    ["ยอดชำระ", formatMoney(booking.totalPrice)],
+    ["Date", formatDateEn(booking.bookingDate)],
+    ["Trip", formatTimeSlotEn(booking.timeSlot)],
+    ["Boat", booking.boatType],
+    ["Customer Name", booking.customerName],
+    ["Phone", booking.customerPhone],
+    ["Payment Method", formatPaymentMethod(booking.paymentMethod)],
+    ["Amount Paid", formatMoney(booking.totalPrice)],
   ];
 
   const htmlRows = rows.map(([label, value]) => `
@@ -197,28 +216,28 @@ export async function sendCustomerBookingConfirmationEmail(booking: BookingNotif
   `).join("");
 
   const siteUrl = (env("NEXT_PUBLIC_SITE_URL") || env("PUBLIC_SITE_URL") || "https://www.aquathrill-thailand.com").replace(/\/+$/, "");
-  const whatsappUrl = `https://wa.me/66958192778?text=${encodeURIComponent(`สวัสดีค่ะ/ครับ ต้องการสอบถามรายการจอง ${booking.bookingId}`)}`;
+  const whatsappUrl = `https://wa.me/66958192778?text=${encodeURIComponent(`Hello, I would like to ask about booking ${booking.bookingId}`)}`;
 
   await config.transporter.sendMail({
     from: config.from,
     to: booking.customerEmail,
     replyTo: env("BOOKING_NOTIFY_EMAIL") || "Aquathrill70@gmail.com",
-    subject: `ยืนยันการจอง ${booking.bookingId} | AQUATHRILL Phuket`,
+    subject: `Booking Confirmed ${booking.bookingId} | AQUATHRILL Phuket`,
     text: [
-      `ขอบคุณที่จองกับ AQUATHRILL Phuket`,
-      `การจองของคุณได้รับการยืนยันแล้ว`,
+      `Thank you for booking with AQUATHRILL Phuket.`,
+      `Your booking has been confirmed.`,
       "",
       ...rows.map(([label, value]) => `${label}: ${value}`),
       "",
-      `ติดต่อเรา: +66958192778`,
+      `Contact us: +66 95 819 2778`,
     ].join("\n"),
     html: `
       <div style="font-family:Arial,'Helvetica Neue',sans-serif;background:linear-gradient(135deg,#e0f7ff 0%,#f8fafc 50%,#ffffff 100%);padding:28px;">
         <div style="max-width:680px;margin:0 auto;background:#ffffff;border-radius:28px;overflow:hidden;border:1px solid #dbeafe;box-shadow:0 22px 70px rgba(8,35,62,.14);">
           <div style="background:linear-gradient(135deg,#05172a,#06365e 55%,#04c8e8);color:white;padding:34px 30px 30px;text-align:center;">
             <div style="display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;color:#cffafe;font-size:13px;font-weight:800;letter-spacing:.4px;">AQUATHRILL PHUKET</div>
-            <h1 style="margin:18px 0 10px;font-size:30px;line-height:1.25;">ยืนยันการจองสำเร็จ</h1>
-            <p style="margin:0;color:#d7f3ff;font-size:16px;line-height:1.65;">ขอบคุณที่จอง Mini Speedboat กับเรา<br>ทีมงานได้รับรายการของคุณเรียบร้อยแล้ว</p>
+            <h1 style="margin:18px 0 10px;font-size:30px;line-height:1.25;">Booking Confirmed</h1>
+            <p style="margin:0;color:#d7f3ff;font-size:16px;line-height:1.65;">Thank you for booking a Mini Speedboat with us.<br>Your booking has been received and confirmed.</p>
           </div>
           <div style="padding:24px 30px;background:#f8fbff;border-bottom:1px solid #e5edf6;text-align:center;">
             <div style="font-size:13px;color:#64748b;font-weight:800;text-transform:uppercase;letter-spacing:.5px;">Booking Reference</div>
@@ -229,11 +248,11 @@ export async function sendCustomerBookingConfirmationEmail(booking: BookingNotif
           </div>
           <div style="padding:24px 30px;background:#f8fafc;">
             <div style="background:#ecfeff;border:1px solid #bae6fd;border-radius:18px;padding:16px 18px;color:#0f4c66;font-size:14px;line-height:1.7;">
-              กรุณาเตรียมตัวตามเวลารับที่แจ้งไว้ หากต้องการแก้ไขข้อมูลหรือติดต่อทีมงาน สามารถกดปุ่มด้านล่างได้เลย
+              Please be ready at your scheduled pickup time. If you need to update your booking details or contact our team, use the buttons below.
             </div>
             <div style="text-align:center;margin-top:20px;">
-              <a href="${escapeHtml(whatsappUrl)}" style="display:inline-block;background:#22c55e;color:#ffffff;text-decoration:none;padding:13px 20px;border-radius:14px;font-weight:800;margin:5px;">ติดต่อ WhatsApp</a>
-              <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:13px 20px;border-radius:14px;font-weight:800;margin:5px;">กลับไปที่เว็บไซต์</a>
+              <a href="${escapeHtml(whatsappUrl)}" style="display:inline-block;background:#22c55e;color:#ffffff;text-decoration:none;padding:13px 20px;border-radius:14px;font-weight:800;margin:5px;">Contact on WhatsApp</a>
+              <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:13px 20px;border-radius:14px;font-weight:800;margin:5px;">Visit Website</a>
             </div>
           </div>
         </div>
@@ -373,12 +392,12 @@ export async function bookingEmailTest(request: NextRequest) {
     paymentMethod: "omise_card",
     totalPrice: 0,
   });
-  if (bookingId && (result as any)?.error === "booking_not_found") return json({ success: false, message: "ไม่พบ booking_id นี้", configured: config, result }, 404);
+  if (bookingId && (result as any)?.error === "booking_not_found") return json({ success: false, message: "Booking ID not found", configured: config, result }, 404);
 
-  if (result?.success) return json({ success: true, message: "ส่งเมลทดสอบสำเร็จ", configured: config, result });
+  if (result?.success) return json({ success: true, message: "Test email sent successfully", configured: config, result });
   return json({
     success: false,
-    message: "ส่งเมลทดสอบไม่สำเร็จ",
+    message: "Test email could not be sent",
     configured: config,
     result,
     reason: (result as any)?.reason || ((result as any)?.error instanceof Error ? (result as any).error.message : String((result as any)?.error || "unknown")),
