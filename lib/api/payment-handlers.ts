@@ -120,6 +120,15 @@ async function notifyConfirmedBooking(bookingId: string) {
   });
 }
 
+async function sendConfirmedBookingEmailNow(bookingId: string) {
+  try {
+    return await sendBookingEmailsForBookingId(bookingId);
+  } catch (error) {
+    console.error("[email] Confirmed booking email failed", { bookingId, error });
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 function omiseChargeFromEvent(data: any) {
   if (data?.object === "charge") return data;
   if (data?.data?.object === "charge") return data.data;
@@ -431,8 +440,8 @@ async function syncOmiseBooking(bookingId: string) {
   if (!booking) return { error: "Booking not found", statusCode: 404 };
 
   if (booking.status === "confirmed") {
-    await notifyConfirmedBooking(bookingId);
-    return { success: true, booking_id: bookingId, status: "confirmed", synced: false };
+    const email = await sendConfirmedBookingEmailNow(bookingId);
+    return { success: true, booking_id: bookingId, status: "confirmed", synced: false, email };
   }
 
   const paidLog = (await query<any>(
@@ -440,9 +449,9 @@ async function syncOmiseBooking(bookingId: string) {
     [bookingId, OMISE_PAYMENT_METHODS]
   )).rows[0];
   if (paidLog) {
-    const result = await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN $2 ELSE payment_method END WHERE booking_id=$1 AND status!='confirmed'", [bookingId, paidLog.payment_method || "omise_card"]);
-    if (result.rowCount) await notifyConfirmedBooking(bookingId);
-    return { success: true, booking_id: bookingId, status: "confirmed", synced: true, source: "payment_log" };
+    await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN $2 ELSE payment_method END WHERE booking_id=$1 AND status!='confirmed'", [bookingId, paidLog.payment_method || "omise_card"]);
+    const email = await sendConfirmedBookingEmailNow(bookingId);
+    return { success: true, booking_id: bookingId, status: "confirmed", synced: true, source: "payment_log", email };
   }
 
   const latestLog = (await query<any>(
@@ -461,9 +470,9 @@ async function syncOmiseBooking(bookingId: string) {
     [bookingId, charge.id || chargeId, latestLog.payment_method || "omise_card", Number(charge.amount || 0) / 100, completed ? "completed" : failed ? "failed" : status || "pending", JSON.stringify(charge)]
   );
   if (completed) {
-    const result = await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN $2 ELSE payment_method END WHERE booking_id=$1 AND status!='confirmed'", [bookingId, latestLog.payment_method || "omise"]);
-    if (result.rowCount) await notifyConfirmedBooking(bookingId);
-    return { success: true, booking_id: bookingId, status: "confirmed", synced: true, source: "omise_charge" };
+    await query("UPDATE bookings SET status='confirmed',payment_method=CASE WHEN COALESCE(payment_method,'')='' THEN $2 ELSE payment_method END WHERE booking_id=$1 AND status!='confirmed'", [bookingId, latestLog.payment_method || "omise"]);
+    const email = await sendConfirmedBookingEmailNow(bookingId);
+    return { success: true, booking_id: bookingId, status: "confirmed", synced: true, source: "omise_charge", email };
   }
   if (failed) await query("UPDATE bookings SET status='cancelled' WHERE booking_id=$1 AND status='pending'", [bookingId]);
   return { success: true, booking_id: bookingId, status: failed ? "cancelled" : booking.status || "pending", synced: false, charge_status: status };
