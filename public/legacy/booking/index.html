@@ -477,10 +477,6 @@
             box-shadow: 0 8px 22px rgba(15,23,42,0.06);
             transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
-        .m-payment-option[data-payment-method="alipay"] {
-            grid-column: 1 / -1;
-            min-height: 92px;
-        }
         .m-payment-option:hover {
             transform: translateY(-2px);
             border-color: rgba(0,127,255,0.35);
@@ -705,8 +701,7 @@
             .m-payment-methods { padding: 18px 14px; border-radius: 22px; max-width: none; }
             .m-payment-heading { font-size: 1.25rem; }
             .m-payment-grid { grid-template-columns: 1fr; }
-            .m-payment-option,
-            .m-payment-option[data-payment-method="alipay"] {
+            .m-payment-option {
                 grid-column: auto;
                 min-height: 82px;
                 padding: 12px 38px 12px 12px;
