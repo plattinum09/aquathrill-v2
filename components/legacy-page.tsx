@@ -39,11 +39,15 @@ export async function readLegacyDocument(filePath: string) {
   const description = head.match(/<meta\b[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1]
     ?? head.match(/<meta\b[^>]*content=["']([^"']*)["'][^>]*name=["']description["'][^>]*>/i)?.[1]
     ?? "AQUATHRILL Mini Speedboat Phuket";
+  const keywords = head.match(/<meta\b[^>]*name=["']keywords["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1]
+    ?? head.match(/<meta\b[^>]*content=["']([^"']*)["'][^>]*name=["']keywords["'][^>]*>/i)?.[1]
+    ?? "";
 
   return {
     bodyClass: attribute(bodyAttributes, "class"),
     description,
     html: `${safeHead}${safeBody}`,
+    keywords,
     scripts,
     title: head.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "AQUATHRILL",
   };

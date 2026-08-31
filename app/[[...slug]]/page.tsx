@@ -13,7 +13,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const filePath = getLegacyPagePath((await params).slug);
   if (!filePath) return {};
   const page = await readLegacyDocument(filePath);
-  return { title: page.title, description: page.description };
+  return {
+    title: page.title,
+    description: page.description,
+    keywords: page.keywords ? page.keywords.split(",").map((keyword) => keyword.trim()).filter(Boolean) : undefined,
+  };
 }
 
 export default async function Page({ params }: PageProps) {
