@@ -1,7 +1,7 @@
 import { after, type NextRequest } from "next/server";
 import { readSession } from "./auth";
 import { query } from "./db";
-import { sendBookingEmailsForBookingId } from "./email";
+import { sendBookingEmailsForBookingId, sendShopBookingNotificationForBookingId } from "./email";
 import { body, json, publicJson } from "./http";
 
 export async function availability(request:NextRequest){
@@ -54,6 +54,7 @@ export async function bookings(request:NextRequest){
     const id=bookingId(input.booking_type==="agent"?"AG":"BK",input.admin_create?input.booking_date:undefined);const price=input.admin_create&&input.total_price!=null?Number(input.total_price):Number(boat.price);const minAmount=minOnlineBookingAmount();if(!Number.isFinite(price)||price<minAmount)return json({error:`Invalid booking price: amount must be at least ${minAmount} THB`},400);const status=input.admin_create?(input.status||"confirmed"):"pending";
     await query("INSERT INTO bookings(booking_id,boat_type,booking_date,time_slot,guests,customer_name,customer_phone,customer_email,payment_method,total_price,status,notes,agent_id) VALUES($1,$2,$3::date,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",[id,input.boat_type,input.booking_date,input.time_slot,Number(input.guests),input.customer_name,input.customer_phone,input.customer_email||"",input.payment_method||"",price,status,input.notes||"",input.agent_id||null]);
     if(input.admin_create&&status==="confirmed") after(()=>sendBookingEmailsForBookingId(id));
+    if(!input.admin_create) after(()=>sendShopBookingNotificationForBookingId(id).catch((error)=>console.error("[email] New website booking notification failed",{bookingId:id,error})));
     return json({success:true,booking_id:id,total_price:price},201);
   }
   if(!admin)return json({error:"Unauthorized"},401);

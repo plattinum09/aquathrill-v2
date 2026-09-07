@@ -13,6 +13,7 @@ export type BookingNotification = {
   customerPhone: string;
   customerEmail?: string;
   paymentMethod?: string;
+  status?: string;
   totalPrice: number;
 };
 
@@ -127,6 +128,12 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
     return { skipped: true, reason: config.reason };
   }
   const to = env("BOOKING_NOTIFY_EMAIL") || "Aquathrill70@gmail.com";
+  const statusText = {
+    pending: "Pending Payment",
+    confirmed: "Payment Successful",
+    cancelled: "Cancelled",
+  }[String(booking.status || "")] || String(booking.status || "New Booking");
+  const isConfirmed = booking.status === "confirmed";
 
   const rows = [
     ["Booking ID", booking.bookingId],
@@ -137,13 +144,14 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
     ["Phone", booking.customerPhone],
     ["Customer Email", booking.customerEmail || "-"],
     ["Payment Method", formatPaymentMethod(booking.paymentMethod)],
-    ["Amount Paid", formatMoney(booking.totalPrice)],
+    [isConfirmed ? "Amount Paid" : "Total Amount", formatMoney(booking.totalPrice)],
+    ["Status", statusText],
   ];
 
   const htmlRows = rows
     .map(
       ([label, value]) => {
-        const isAmount = label === "Amount Paid";
+        const isAmount = label === "Amount Paid" || label === "Total Amount";
         return `
         <tr>
           <td style="padding:15px 20px;color:#64748b;border-bottom:1px solid #e5edf6;font-size:15px;">${escapeHtml(label)}</td>
@@ -157,15 +165,15 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
     from: config.from,
     to,
     replyTo: isValidEmail(booking.customerEmail) ? booking.customerEmail : undefined,
-    subject: `New Confirmed Booking ${booking.bookingId} | AQUATHRILL`,
+    subject: `${isConfirmed ? "New Confirmed Booking" : "New Website Booking"} ${booking.bookingId} | AQUATHRILL`,
     text: rows.map(([label, value]) => `${label}: ${value}`).join("\n"),
     html: `
       <div style="font-family:Arial,'Helvetica Neue',sans-serif;background:linear-gradient(135deg,#eaf8ff 0%,#f8fafc 45%,#ffffff 100%);padding:28px;">
         <div style="max-width:680px;margin:0 auto;background:#ffffff;border-radius:26px;overflow:hidden;border:1px solid #dbeafe;box-shadow:0 20px 60px rgba(8,35,62,.14);">
           <div style="background:linear-gradient(135deg,#061b31,#08375e 58%,#06b6d4);color:white;padding:30px 30px 26px;">
             <div style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 13px;color:#bae6fd;font-size:13px;font-weight:700;letter-spacing:.4px;">AQUATHRILL PHUKET</div>
-            <h1 style="margin:18px 0 8px;font-size:30px;line-height:1.25;">New Confirmed Booking</h1>
-            <p style="margin:0;color:#d7f3ff;font-size:16px;">The customer has completed payment. Please review the booking details.</p>
+            <h1 style="margin:18px 0 8px;font-size:30px;line-height:1.25;">${isConfirmed ? "New Confirmed Booking" : "New Website Booking"}</h1>
+            <p style="margin:0;color:#d7f3ff;font-size:16px;">${isConfirmed ? "The customer has completed payment." : "A customer has created a booking on the website."} Please review the booking details.</p>
           </div>
           <div style="padding:24px 30px;background:#f8fbff;border-bottom:1px solid #e5edf6;">
             <div style="font-size:13px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Booking Reference</div>
@@ -177,7 +185,7 @@ export async function sendBookingNotificationEmail(booking: BookingNotification)
             </table>
           </div>
           <div style="padding:18px 30px 26px;background:#f8fafc;color:#64748b;font-size:13px;line-height:1.6;">
-            This email was sent automatically by the AQUATHRILL booking system when the booking status changed to confirmed.
+            This email was sent automatically by the AQUATHRILL booking system.
           </div>
         </div>
       </div>
@@ -302,6 +310,7 @@ function bookingFromRow(row: any): BookingNotification {
     customerPhone: String(row.customer_phone || ""),
     customerEmail: String(row.customer_email || ""),
     paymentMethod: String(row.payment_method || ""),
+    status: String(row.status || ""),
     totalPrice: Number(row.total_price || 0),
   };
 }
@@ -361,6 +370,32 @@ export async function sendBookingEmailsForBookingId(bookingId: string, options: 
     booking_id: bookingId,
     ...details,
   };
+}
+
+export async function sendShopBookingNotificationForBookingId(bookingId: string, recipientType = "shop_new_booking") {
+  await ensureBookingEmailLogsTable();
+  const row = (await query<any>(
+    "SELECT booking_id,booking_date::text,time_slot,boat_type,customer_name,customer_phone,customer_email,payment_method,total_price,status FROM bookings WHERE booking_id=$1 LIMIT 1",
+    [bookingId]
+  )).rows[0];
+  if (!row) return { success: false, error: "booking_not_found" };
+
+  const alreadySent = (await query<any>(
+    "SELECT 1 FROM booking_email_logs WHERE booking_id=$1 AND recipient_type=$2 AND status='sent' LIMIT 1",
+    [bookingId, recipientType]
+  )).rowCount;
+  if (alreadySent) return { success: true, skipped: true, reason: "already_sent" };
+
+  const booking = bookingFromRow(row);
+  let result: any;
+  try {
+    result = await sendBookingNotificationEmail(booking);
+  } catch (error) {
+    result = { success: false, error };
+    console.error("[email] Shop booking notification failed", { bookingId, error });
+  }
+  await insertEmailLog(bookingId, recipientType, env("BOOKING_NOTIFY_EMAIL") || "Aquathrill70@gmail.com", result);
+  return { booking_id: bookingId, shop: result, success: Boolean(result?.success || result?.skipped) };
 }
 
 export async function bookingEmailTest(request: NextRequest) {
