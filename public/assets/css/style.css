@@ -188,7 +188,7 @@ nav {
     top: 18px;
     left: 50%;
     transform: translateX(-50%);
-    width: auto;
+    width: max-content;
     max-width: calc(100vw - 32px);
     z-index: 1000;
     padding: 8px 24px;
@@ -213,6 +213,8 @@ nav .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    max-width: none;
+    padding: 0;
 }
 .logo {
     font-size: 1.8rem;
@@ -224,8 +226,9 @@ nav .container {
 }
 .nav-links {
     display: flex;
-    gap: 24px;
+    gap: clamp(8px, 1.5vw, 24px);
     align-items: center;
+    justify-content: center;
     flex-wrap: nowrap;
     white-space: nowrap;
 }
@@ -1402,6 +1405,7 @@ footer .container {
     position: relative;
     margin-left: 8px;
     list-style: none;
+    flex-shrink: 0;
 }
 .lang-toggle {
     display: flex;
@@ -1484,6 +1488,19 @@ footer .container {
 }
 
 /* === Responsive === */
+@media (min-width: 769px) and (max-width: 1100px) {
+    nav {
+        width: calc(100vw - 32px);
+    }
+    nav .container {
+        width: 100%;
+        max-width: none;
+        gap: 8px;
+    }
+    .nav-links { display: none; }
+    .menu-toggle { display: flex; }
+    .lang-dropdown { margin-left: auto; }
+}
 @media (max-width: 1024px) {
     .about-grid, .footer-grid { grid-template-columns: 1fr 1fr; }
     .yacht-grid, .services-grid { grid-template-columns: 1fr 1fr; }

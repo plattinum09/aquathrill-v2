@@ -374,7 +374,7 @@ async function startOmisePayment(request: NextRequest) {
   );
   if (completed) {
     await query("UPDATE bookings SET status='confirmed',payment_method=$2 WHERE booking_id=$1", [booking.booking_id, method]);
-    await notifyConfirmedBooking(booking.booking_id);
+    await sendConfirmedBookingEmailNow(booking.booking_id);
   }
   else await query("UPDATE bookings SET payment_method=$2 WHERE booking_id=$1 AND status!='confirmed'", [booking.booking_id, method]);
 
@@ -426,7 +426,7 @@ async function handleOmiseEvent(data: any) {
   );
   if (completed) {
     const result = await query("UPDATE bookings SET status='confirmed',payment_method=$2 WHERE booking_id=$1 AND status!='confirmed'", [bookingId, paymentMethod]);
-    if (result.rowCount) await notifyConfirmedBooking(bookingId);
+    if (result.rowCount) await sendConfirmedBookingEmailNow(bookingId);
   }
   if (failed) await query("UPDATE bookings SET status='cancelled',payment_method=$2 WHERE booking_id=$1 AND status='pending'", [bookingId, paymentMethod]);
   return { success: true, booking_id: bookingId, charge_id: charge.id, status };
@@ -490,7 +490,10 @@ export async function omisePayment(request: NextRequest) {
     const booking = (await query<any>("SELECT booking_id,total_price,customer_name,customer_phone,status FROM bookings WHERE booking_id=$1", [input.booking_id])).rows[0];
     if (!booking) return json({ error: "Booking not found" }, 404);
     const lang = paymentLang(input.lang);
-    if (booking.status === "confirmed") return json({ success: true, redirect_url: `${paymentBaseUrl(request)}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}${langQuery(lang)}` });
+    if (booking.status === "confirmed") {
+      const email = await sendConfirmedBookingEmailNow(booking.booking_id);
+      return json({ success: true, email, redirect_url: `${paymentBaseUrl(request)}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}${langQuery(lang)}` });
+    }
 
     const baseUrl = paymentBaseUrl(request);
     const returnUri = `${baseUrl}/booking/payment/result.html?booking_id=${encodeURIComponent(booking.booking_id)}${langQuery(lang)}`;
@@ -517,15 +520,18 @@ export async function omisePayment(request: NextRequest) {
       "INSERT INTO payment_logs(booking_id,transaction_id,payment_method,amount,status,gateway_response) VALUES($1,$2,'omise_card',$3,$4,$5::jsonb)",
       [booking.booking_id, charge.id || null, booking.total_price, completed ? "completed" : charge.status || "pending", JSON.stringify(charge)]
     );
+    let email: any = null;
     if (completed) {
       const result = await query("UPDATE bookings SET status='confirmed',payment_method='omise_card' WHERE booking_id=$1 AND status!='confirmed'", [booking.booking_id]);
-      if (result.rowCount) await notifyConfirmedBooking(booking.booking_id);
+      email = await sendConfirmedBookingEmailNow(booking.booking_id);
+      if (!result.rowCount) console.info("[email] Confirmed booking email retried for already-confirmed card booking", { bookingId: booking.booking_id, email });
     }
     else await query("UPDATE bookings SET payment_method='omise_card' WHERE booking_id=$1 AND status!='confirmed'", [booking.booking_id]);
 
     return json({
       success: true,
       status: completed ? "confirmed" : charge.status || "pending",
+      email,
       redirect_url: charge.authorize_uri || charge.authorizeUri || returnUri,
     });
   }

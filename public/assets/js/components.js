@@ -27,6 +27,7 @@
             <ul class="nav-links">
                 <li><a href="${rootPrefix}" data-i18n="nav.home">หน้าแรก</a></li>
                 <li><a href="/services" data-i18n="nav.services">บริการ</a></li>
+                <li><a href="/one-day-trip" id="one-day-trip-nav">One Day Trip</a></li>
                 <li><a href="/promotions" data-i18n="nav.promotions">โปรโมชั่น</a></li>
                 <li><a href="/reviews" data-i18n="nav.reviews">รีวิว</a></li>
                 <li><a href="/contact" data-i18n="nav.contact">ติดต่อเรา</a></li>

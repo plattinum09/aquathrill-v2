@@ -4,6 +4,8 @@ const pageFiles: Record<string, string> = {
   "": "index.html",
   services: "services/index.html",
   promotions: "promotions/index.html",
+  "one-day-trip": "one-day-trip/index.html",
+  "one-day-trip/details": "one-day-trip/details.html",
   reviews: "reviews/index.html",
   contact: "contact/index.html",
   gallery: "gallery/index.html",
@@ -28,6 +30,7 @@ const pageFiles: Record<string, string> = {
   "admin/payment-settings": "admin/payment-settings.html",
   "admin/promotions-editor": "admin/promotions-editor.html",
   "admin/promotions": "admin/promotions.html",
+  "admin/one-day-trip": "admin/one-day-trip.html",
   "admin/reviews": "admin/reviews.html",
 };
 
