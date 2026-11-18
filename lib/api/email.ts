@@ -398,6 +398,31 @@ export async function sendShopBookingNotificationForBookingId(bookingId: string,
   return { booking_id: bookingId, shop: result, success: Boolean(result?.success || result?.skipped) };
 }
 
+export async function bookingEmailStatus(request: NextRequest) {
+  if (!(await readSession(request, "admin"))) return json({ error: "Unauthorized" }, 401);
+  const bookingId = request.method === "GET"
+    ? new URL(request.url).searchParams.get("booking_id") || ""
+    : String((await request.json().catch(() => ({}))).booking_id || "");
+  if (!/^[A-Za-z0-9-]{6,50}$/.test(bookingId)) return json({ error: "Invalid booking ID" }, 400);
+  if (request.method !== "GET" && request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const booking = (await query<any>("SELECT status FROM bookings WHERE booking_id=$1 LIMIT 1", [bookingId])).rows[0];
+  if (!booking) return json({ error: "Booking not found" }, 404);
+  await ensureBookingEmailLogsTable();
+
+  if (request.method === "POST") {
+    const type = booking.status === "confirmed" ? "shop" : "shop_new_booking";
+    const result = await sendShopBookingNotificationForBookingId(bookingId, type);
+    if (!result.success) return json({ error: result.shop?.error?.message || result.shop?.error || result.shop?.reason || "Email delivery failed", result }, 502);
+  }
+
+  const logs = (await query<any>(
+    "SELECT recipient_type,status,reason,created_at FROM booking_email_logs WHERE booking_id=$1 AND recipient_type IN ('shop','shop_new_booking') ORDER BY id DESC LIMIT 10",
+    [bookingId]
+  )).rows;
+  return json({ booking_id: bookingId, company_email: env("BOOKING_NOTIFY_EMAIL") || "Aquathrill70@gmail.com", latest: logs[0] || null, logs });
+}
+
 export async function bookingEmailTest(request: NextRequest) {
   if (!(await readSession(request, "admin"))) return json({ error: "Unauthorized" }, 401);
   const config = {

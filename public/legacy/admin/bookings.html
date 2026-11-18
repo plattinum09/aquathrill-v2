@@ -52,6 +52,12 @@
         .modal-box h3{margin-bottom:16px;font-size:1.2rem}
         .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem}
         .detail-row .lbl{color:rgba(255,255,255,.5)}
+        .email-delivery{margin-top:20px;padding:16px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.04)}
+        .email-delivery h4{margin:0 0 8px;font-size:1rem}
+        .email-delivery p{font-size:.85rem;line-height:1.5;overflow-wrap:anywhere}
+        .email-delivery .sent{color:#62dca0}.email-delivery .failed{color:#ffaf83}.email-delivery .muted{color:#afc0d2}
+        .email-delivery button{margin-top:12px;padding:8px 14px;border:0;border-radius:6px;background:#0ea5e9;color:#fff;font:inherit;cursor:pointer}
+        .email-delivery button:disabled{opacity:.5;cursor:wait}
         .btn-add{padding:10px 20px;background:linear-gradient(135deg,#00c853,#00a844);color:#fff;border:none;border-radius:10px;font-family:inherit;cursor:pointer;font-size:.9rem;font-weight:600;transition:.2s}
         .btn-add:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,200,83,.3)}
         .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -256,7 +262,8 @@
 
         const r=await fetch(API+'/bookings.php?'+params,{credentials:'include'});
         const d=await r.json();
-        renderTable(d.bookings||[]);
+        allBookings=d.bookings||[];
+        renderTable(allBookings);
         renderPagination(d.pages||1,d.page||1);
     }
 
@@ -302,9 +309,7 @@
 
     let allBookings=[];
     async function viewDetail(id){
-        const r=await fetch(API+'/bookings.php?limit=1000',{credentials:'include'});
-        const d=await r.json();
-        const b=(d.bookings||[]).find(x=>x.id==id);
+        const b=allBookings.find(x=>x.id==id);
         if(!b) return;
         const slotText=b.time_slot==='morning'?'Morning trip (09:00-13:00)':'Afternoon trip (14:00-18:00)';
         const statusText={'pending':'Pending','confirmed':'Payment Successful','cancelled':'Cancelled'}[b.status]||b.status;
@@ -335,8 +340,48 @@
             <div class="detail-row"><span class="lbl">Status</span><span>${statusText}</span></div>
             <div class="detail-row"><span class="lbl">Notes</span><span>${b.notes||'-'}</span></div>
             <div class="detail-row"><span class="lbl">Created At</span><span>${b.created_at}</span></div>
+            <div id="email-delivery" class="email-delivery" role="status"><h4>Company email</h4><p class="muted">Checking delivery status...</p></div>
         `;
         document.getElementById('detail-modal').classList.add('active');
+        loadEmailDelivery(b.booking_id);
+    }
+
+    async function loadEmailDelivery(bookingId){
+        const box=document.getElementById('email-delivery');
+        if(!box)return;
+        try{
+            const response=await fetch(API+'/booking-email-status.php?booking_id='+encodeURIComponent(bookingId),{credentials:'include',cache:'no-store'});
+            const data=await response.json();
+            if(!response.ok)throw new Error(data.error||'Could not check email status');
+            if(box!==document.getElementById('email-delivery'))return;
+            box.replaceChildren();
+            const heading=document.createElement('h4');heading.textContent='Company email';box.append(heading);
+            const status=document.createElement('p');
+            const latest=data.latest;
+            status.className=latest?.status==='sent'?'sent':latest?.status==='failed'?'failed':'muted';
+            status.textContent=latest?.status==='sent'?'Sent':latest?.status==='failed'?'Delivery failed':latest?.status==='skipped'?'Not sent':'No delivery attempt recorded';
+            box.append(status);
+            const recipient=document.createElement('p');recipient.textContent='To: '+data.company_email;box.append(recipient);
+            if(latest?.reason){const reason=document.createElement('p');reason.textContent='Reason: '+latest.reason;box.append(reason)}
+            if(latest?.status!=='sent'){
+                const retry=document.createElement('button');retry.type='button';retry.textContent='Retry company email';
+                retry.onclick=()=>retryCompanyEmail(bookingId,retry);box.append(retry);
+            }
+        }catch(error){box.querySelector('p').textContent=error.message}
+    }
+
+    async function retryCompanyEmail(bookingId,button){
+        button.disabled=true;button.textContent='Sending...';
+        try{
+            const response=await fetch(API+'/booking-email-status.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({booking_id:bookingId}),credentials:'include'});
+            const data=await response.json();
+            if(!response.ok)throw new Error(data.error||'Email delivery failed');
+            await loadEmailDelivery(bookingId);
+        }catch(error){
+            const box=document.getElementById('email-delivery');
+            if(box){const message=document.createElement('p');message.className='failed';message.textContent=error.message;box.append(message)}
+            button.disabled=false;button.textContent='Retry company email';
+        }
     }
 
     function closeDetail(){document.getElementById('detail-modal').classList.remove('active')}

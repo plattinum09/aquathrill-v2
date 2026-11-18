@@ -420,6 +420,10 @@
         }
         .m-form-group select option { background: #0d2847; color: #fff; }
         .m-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .m-phone-row { display: flex; gap: 8px; min-width: 0; }
+        .m-phone-row #m-country-code { width: 132px; flex: 0 0 132px; padding-left: 10px; padding-right: 25px; background-position: right 9px center; }
+        .m-phone-row #m-phone { min-width: 0; flex: 1; }
+        @media (max-width: 400px) { .m-phone-row #m-country-code { width: 112px; flex-basis: 112px; } }
 
         /* Price display */
         .m-price-box {
@@ -871,7 +875,10 @@
                 <div class="m-form-row">
                     <div class="m-form-group">
                         <label data-i18n="bk.label_phone"><i class="fas fa-phone"></i> เบอร์โทร</label>
-                        <input type="tel" id="m-phone" placeholder="08xxxxxxxx" inputmode="numeric" pattern="[0-9]*" autocomplete="tel">
+                        <div class="m-phone-row">
+                            <select id="m-country-code" aria-label="Country calling code" title="Country calling code"></select>
+                            <input type="tel" id="m-phone" placeholder="08xxxxxxxx" inputmode="tel" autocomplete="tel-national" aria-label="Phone number">
+                        </div>
                     </div>
                     <div class="m-form-group">
                         <label data-i18n="bk.label_email"><i class="fas fa-envelope"></i> อีเมล</label>
@@ -1404,8 +1411,55 @@
             return String(value || '').replace(/\D/g, '');
         }
 
+        // ISO country code and international calling code. Keep the selected country
+        // separate from the national number so the booking stores one usable number.
+        const callingCodes = [
+            ['TH','66'],['MY','60'],['SG','65'],['CN','86'],['HK','852'],['MO','853'],['TW','886'],
+            ['IN','91'],['ID','62'],['PH','63'],['VN','84'],['KH','855'],['LA','856'],['MM','95'],
+            ['JP','81'],['KR','82'],['AU','61'],['NZ','64'],['US','1'],['CA','1'],['GB','44'],
+            ['RU','7'],['DE','49'],['FR','33'],['IT','39'],['ES','34'],['NL','31'],['CH','41'],
+            ['AT','43'],['BE','32'],['SE','46'],['NO','47'],['DK','45'],['FI','358'],['IE','353'],
+            ['PT','351'],['PL','48'],['CZ','420'],['HU','36'],['GR','30'],['TR','90'],['AE','971'],
+            ['SA','966'],['QA','974'],['KW','965'],['BH','973'],['OM','968'],['IL','972'],
+            ['EG','20'],['ZA','27'],['NG','234'],['KE','254'],['MA','212'],['BR','55'],['MX','52'],
+            ['AR','54'],['CL','56'],['CO','57'],['PE','51'],['PK','92'],['BD','880'],['LK','94'],
+            ['NP','977'],['MV','960'],['BN','673'],['MN','976'],['KZ','7'],['UZ','998'],
+            ['UA','380'],['BY','375'],['GE','995'],['AM','374'],['AZ','994'],['RS','381'],
+            ['HR','385'],['SI','386'],['SK','421'],['RO','40'],['BG','359'],['CY','357'],
+            ['MT','356'],['IS','354'],['LU','352'],['EE','372'],['LV','371'],['LT','370'],
+            ['AF','93'],['AL','355'],['DZ','213'],['AO','244'],['BO','591'],
+            ['CR','506'],['CU','53'],['DO','1'],['EC','593'],['FJ','679'],['GT','502'],
+            ['HN','504'],['JM','1'],['JO','962'],['LB','961'],['MU','230'],['PA','507'],
+            ['PY','595'],['TN','216'],['UY','598'],['VE','58']
+        ];
+        const countrySelect = document.getElementById('m-country-code');
+        function countryFlag(code) {
+            return String.fromCodePoint(...code.split('').map(function(letter) { return 127397 + letter.charCodeAt(0); }));
+        }
+        function renderCallingCodes() {
+            const lang = (window.I18n && I18n.getLang) ? I18n.getLang() : 'en';
+            const locale = {th:'th',en:'en',zh:'zh',ru:'ru'}[lang] || 'en';
+            const names = new Intl.DisplayNames([locale], {type:'region'});
+            const selected = countrySelect.value || 'TH';
+            countrySelect.replaceChildren();
+            callingCodes.filter(function(item, index, all) {
+                return all.findIndex(function(other) { return other[0] === item[0]; }) === index;
+            }).sort(function(a,b) { return names.of(a[0]).localeCompare(names.of(b[0]), locale); }).forEach(function(item) {
+                const option = document.createElement('option');
+                option.value = item[0];
+                option.dataset.dial = item[1];
+                option.textContent = countryFlag(item[0]) + ' +' + item[1] + ' ' + names.of(item[0]);
+                countrySelect.appendChild(option);
+            });
+            countrySelect.value = selected;
+        }
+        renderCallingCodes();
+        document.addEventListener('langchange', renderCallingCodes);
+
         document.getElementById('m-phone').addEventListener('input', function() {
-            const cleaned = digitsOnly(this.value);
+            const dial = countrySelect.selectedOptions[0].dataset.dial;
+            let cleaned = digitsOnly(this.value);
+            if (this.value.trim().startsWith('+') && cleaned.startsWith(dial)) cleaned = cleaned.slice(dial.length);
             if (this.value !== cleaned) this.value = cleaned;
         });
 
@@ -1422,6 +1476,7 @@
             document.getElementById('m-time').selectedIndex = 0;
             document.getElementById('m-name').value = '';
             document.getElementById('m-phone').value = '';
+            countrySelect.value = 'TH';
             document.getElementById('m-email').value = '';
             selectedPaymentMethod = 'omise_card';
             document.querySelectorAll('.m-payment-option').forEach(function(btn) {
@@ -1563,13 +1618,20 @@
             const name = document.getElementById('m-name').value.trim();
             const phoneInput = document.getElementById('m-phone');
             const phone = digitsOnly(phoneInput.value);
-            phoneInput.value = phone;
+            const callingCode = countrySelect.selectedOptions[0].dataset.dial;
+            const nationalPhone = phone.replace(/^0+/, '');
+            phoneInput.value = nationalPhone;
+            const internationalPhone = '+' + callingCode + nationalPhone;
             const email = document.getElementById('m-email').value.trim();
             if (!name) { alert(t('bk.alert_name','กรุณากรอกชื่อ-นามสกุล')); return; }
-            if (!phone) { alert(t('bk.alert_phone','กรุณากรอกเบอร์โทร')); return; }
+            if (nationalPhone.length < 6 || nationalPhone.length > 15 || internationalPhone.length > 16) {
+                alert(t('bk.alert_phone','กรุณากรอกเบอร์โทรให้ถูกต้อง'));
+                phoneInput.focus();
+                return;
+            }
             if (!email) { alert(t('bk.alert_email','กรุณากรอกอีเมล')); return; }
             modalData.name = name;
-            modalData.phone = phone;
+            modalData.phone = internationalPhone;
             modalData.email = email;
             modalData.boat = document.getElementById('m-boat').value;
             modalData.boatValue = document.getElementById('m-boat').value;
